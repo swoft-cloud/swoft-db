@@ -64,7 +64,7 @@ class EntityCommand
      */
     public function createCommand()
     {
-        $this->init();
+        $this->initDatabase();
 
         $database = '';
         $tablesEnabled = $tablesDisabled = [];
@@ -86,7 +86,7 @@ class EntityCommand
     /**
      * 初始化方法
      */
-    public function init(): bool
+    private function initDatabase(): bool
     {
         App::setAlias('@entityPath', $this->filePath);
         $pool = App::getBean(DbSlavePool::class);
