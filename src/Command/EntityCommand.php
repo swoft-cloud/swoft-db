@@ -1,11 +1,9 @@
 <?php
 
-namespace Swoft\Db\Console\Command;
+namespace Swoft\Db\Command;
 
 use Swoft\App;
-use Swoft\Console\ConsoleController;
-use Swoft\Console\Input\Input;
-use Swoft\Console\Output\Output;
+use Swoft\Console\Bean\Annotation\Command;
 use Swoft\Db\Entity\Generator;
 use Swoft\Db\Entity\Mysql\Schema;
 use Swoft\Db\Pool\DbSlavePool;
@@ -13,13 +11,14 @@ use Swoft\Db\Pool\DbSlavePool;
 /**
  * the group command list of database entity
  *
- * @uses      EntityController
+ * @Command(coroutine=false)
+ * @uses      EntityCommand
  * @version   2017年10月11日
  * @author    stelin <phpcrazy@126.com>
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class EntityController extends ConsoleController
+class EntityCommand
 {
     /**
      * @var array $drivers 数据库驱动列表
@@ -42,20 +41,9 @@ class EntityController extends ConsoleController
     private $filePath = '@app/Models/Entity';
 
     /**
-     * 初始化
-     *
-     * @param Input  $input  输入
-     * @param Output $output 输出
-     */
-    public function __construct(Input $input, Output $output)
-    {
-        parent::__construct($input, $output);
-    }
-
-    /**
      * Auto create entity by table structure
      *
-     * @usage
+     * @Usage
      * entity:create -d[|--database] <database>
      * entity:create -d[|--database] <database> [table]
      * entity:create -d[|--database] <database> -i[|--include] <table>
@@ -63,7 +51,7 @@ class EntityController extends ConsoleController
      * entity:create -d[|--database] <database> -i[|--include] <table1,table2> -e[|--exclude] <table3>
      * entity:create -d[|--database] <database> -i[|--include] <table1,table2> -e[|--exclude] <table3,table4>
      *
-     * @options
+     * @Options
      * -d  数据库
      * --database  数据库
      * -i  指定特定的数据表，多表之间用逗号分隔
@@ -71,7 +59,7 @@ class EntityController extends ConsoleController
      * -e  排除指定的数据表，多表之间用逗号分隔
      * --exclude  排除指定的数据表，多表之间用逗号分隔
      *
-     * @example
+     * @Example
      * php bin/swoft entity:create -d test
      */
     public function createCommand()
@@ -86,7 +74,7 @@ class EntityController extends ConsoleController
         $this->parseDisableTablesCommand($tablesDisabled);
 
         if (empty($database)) {
-            $this->output->writeln('databases doesn\'t not empty!');
+            output()->writeln('databases doesn\'t not empty!');
         } else {
             $this->generatorEntity->db = $database;
             $this->generatorEntity->tablesEnabled = $tablesEnabled;
@@ -123,8 +111,8 @@ class EntityController extends ConsoleController
      */
     private function parseDatabaseCommand(string &$database)
     {
-        if ($this->input->hasSOpt('d') || $this->input->hasLOpt('database')) {
-            $database = $this->input->hasSOpt('d') ? $this->input->getShortOpt('d') : $this->input->getLongOpt('database');
+        if (input()->hasSOpt('d') || input()->hasLOpt('database')) {
+            $database = input()->hasSOpt('d') ? input()->getShortOpt('d') : input()->getLongOpt('database');
         }
     }
 
@@ -135,14 +123,14 @@ class EntityController extends ConsoleController
      */
     private function parseEnableTablesCommand(&$tablesEnabled)
     {
-        if ($this->input->hasSOpt('i') || $this->input->hasLOpt('include')) {
-            $tablesEnabled = $this->input->hasSOpt('i') ? $this->input->getShortOpt('i') : $this->input->getLongOpt('include');
+        if (input()->hasSOpt('i') || input()->hasLOpt('include')) {
+            $tablesEnabled = input()->hasSOpt('i') ? input()->getShortOpt('i') : input()->getLongOpt('include');
             $tablesEnabled = !empty($tablesEnabled) ? explode(',', $tablesEnabled) : [];
         }
 
         // 参数优先级大于选项
-        if (!empty($this->input->getArg(0))) {
-            $tablesEnabled = [$this->input->getArg(0)];
+        if (!empty(input()->getArg(0))) {
+            $tablesEnabled = [input()->getArg(0)];
         }
     }
 
@@ -153,8 +141,8 @@ class EntityController extends ConsoleController
      */
     private function parseDisableTablesCommand(&$tablesDisabled)
     {
-        if ($this->input->hasSOpt('e') || $this->input->hasLOpt('exclude')) {
-            $tablesDisabled = $this->input->hasSOpt('e') ? $this->input->getShortOpt('e') : $this->input->getLongOpt('exclude');
+        if (input()->hasSOpt('e') || input()->hasLOpt('exclude')) {
+            $tablesDisabled = input()->hasSOpt('e') ? input()->getShortOpt('e') : input()->getLongOpt('exclude');
             $tablesDisabled = !empty($tablesDisabled) ? explode(',', $tablesDisabled) : [];
         }
     }
