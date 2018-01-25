@@ -3,7 +3,7 @@ return [
     "version"           => '1.0',
     'autoInitBean'      => true,
     'beanScan'          => [
-        'Swoft\\Db\\Test' => BASE_PATH
+        'Swoft\\Db\\Test\\Testing' => BASE_PATH."/Testing"
     ],
     'I18n'              => [
         'sourceLanguage' => '@root/resources/messages/',

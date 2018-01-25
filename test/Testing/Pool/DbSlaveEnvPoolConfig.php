@@ -1,6 +1,6 @@
 <?php
 
-namespace Swoft\Db\Test\Cases\Pool;
+namespace Swoft\Db\Test\Testing\Pool;
 
 use Swoft\Bean\Annotation\Bean;
 use Swoft\Bean\Annotation\Value;

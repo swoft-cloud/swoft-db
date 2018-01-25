@@ -4,10 +4,10 @@ namespace Swoft\Db\Test\Cases;
 
 use PHPUnit\Framework\TestCase;
 use Swoft\App;
-use Swoft\Db\Test\Cases\Pool\DbEnvPoolConfig;
-use Swoft\Db\Test\Cases\Pool\DbPptPoolConfig;
-use Swoft\Db\Test\Cases\Pool\DbSlaveEnvPoolConfig;
-use Swoft\Db\Test\Cases\Pool\DbSlavePptConfig;
+use Swoft\Db\Test\Testing\Pool\DbEnvPoolConfig;
+use Swoft\Db\Test\Testing\Pool\DbPptPoolConfig;
+use Swoft\Db\Test\Testing\Pool\DbSlaveEnvPoolConfig;
+use Swoft\Db\Test\Testing\Pool\DbSlavePptConfig;
 
 /**
  *
