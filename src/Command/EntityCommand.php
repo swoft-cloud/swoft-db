@@ -62,7 +62,7 @@ class EntityCommand
      * @Example
      * php bin/swoft entity:create -d test
      */
-    public function createCommand()
+    public function create()
     {
         $this->initDatabase();
 
