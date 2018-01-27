@@ -17,19 +17,17 @@ interface EntityManagerInterface
      * 实例化一个实体管理器
      *
      * @param bool $isMaster 默认从节点
-     *
      * @return EntityManager
      */
-    public static function create($isMaster = false);
+    public static function create($isMaster = false): EntityManager;
 
     /**
      * 实例化一个指定ID的实体管理器
      *
      * @param string $poolId 其它数据库连接池ID
-     *
      * @return EntityManager
      */
-    public static function createById(string $poolId);
+    public static function createById(string $poolId): EntityManager;
 
     /**
      * 回滚事务
@@ -51,8 +49,7 @@ interface EntityManagerInterface
      * 创建一个查询器
      *
      * @param string $sql sql语句，默认为空
-     *
      * @return QueryBuilder
      */
-    public function createQuery(string $sql = '');
+    public function createQuery(string $sql = ''): QueryBuilder;
 }

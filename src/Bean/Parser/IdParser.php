@@ -25,11 +25,16 @@ class IdParser extends AbstractParserInterface
      * @param Id     $objectAnnotation
      * @param string $propertyName
      * @param string $methodName
-     *
+     * @param null   $propertyValue
      * @return mixed
      */
-    public function parser(string $className, $objectAnnotation = null, string $propertyName = "", string $methodName = "", $propertyValue = null)
-    {
+    public function parser(
+        string $className,
+        $objectAnnotation = null,
+        string $propertyName = '',
+        string $methodName = '',
+        $propertyValue = null
+    ) {
         EntityCollector::collect($className, $objectAnnotation, $propertyName, $methodName, $propertyValue);
         return null;
     }

@@ -20,16 +20,20 @@ class ColumnParser extends AbstractParserInterface
     /**
      * Column注解解析
      *
-     * @param string      $className
-     * @param Column      $objectAnnotation
-     * @param string      $propertyName
-     * @param string      $methodName
+     * @param string $className
+     * @param Column $objectAnnotation
+     * @param string $propertyName
+     * @param string $methodName
      * @param string|null $propertyValue
-     *
      * @return mixed
      */
-    public function parser(string $className, $objectAnnotation = null, string $propertyName = "", string $methodName = "", $propertyValue = null)
-    {
+    public function parser(
+        string $className,
+        $objectAnnotation = null,
+        string $propertyName = '',
+        string $methodName = '',
+        $propertyValue = null
+    ) {
         EntityCollector::collect($className, $objectAnnotation, $propertyName, $methodName, $propertyValue);
         return null;
     }

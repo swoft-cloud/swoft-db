@@ -20,7 +20,7 @@ use Swoft\Pool\ConnectPoolInterface;
  */
 class DbPool extends ConnectPoolInterface
 {
-    const MYSQL = "Mysql";
+    const MYSQL = 'Mysql';
 
     /**
      * @Inject()
@@ -36,15 +36,19 @@ class DbPool extends ConnectPoolInterface
      */
     private $driver = self::MYSQL;
 
+    /**
+     * @return mixed
+     * @throws \InvalidArgumentException
+     */
     public function createConnect()
     {
         if (App::isWorkerStatus()) {
-            $connectClassName = "Swoft\Db\\Drivers\\" . $this->driver . "\\" . $this->driver . "Connect";
+            $connectClassName = "Swoft\Db\\Drivers\\" . $this->driver . "\\" . $this->driver . 'Connect';
         } else {
-            $connectClassName = "Swoft\Db\\Drivers\\" . $this->driver . "\\Sync" . $this->driver . "Connect";
+            $connectClassName = "Swoft\Db\\Drivers\\" . $this->driver . "\\Sync" . $this->driver . 'Connect';
         }
         if (!class_exists($connectClassName)) {
-            throw new \InvalidArgumentException("暂时不支持该驱动数据库，driver=" . $this->driver);
+            throw new \InvalidArgumentException('暂时不支持该驱动数据库，driver=' . $this->driver);
         }
         return new $connectClassName($this);
     }

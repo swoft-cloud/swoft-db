@@ -11,7 +11,8 @@
     "description": "microservice framework base on swoole",
     "license": "Apache-2.0",
     "require": {
-        "swoft/framework": "dev-component"
+        "swoft/framework": "dev-component",
+        "swoft/console": "dev-master"
     },
     "autoload": {
         "psr-4": {
@@ -27,6 +28,10 @@
         }
     },
     "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/swoft-cloud/swoft-console"
+        },
         {
             "type": "git",
             "url": "https://github.com/swoft-cloud/framework"

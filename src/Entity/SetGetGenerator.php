@@ -154,19 +154,20 @@ class SetGetGenerator
     {
         $property      = $fieldInfo['name'];
         $aliasProperty = $property;
-        $primaryKey    = $fieldInfo['key'] === 'PRI' ? true : false;
-        $required      = $primaryKey ? false : ($fieldInfo['nullable'] === 'NO' ? true : false);
+        $primaryKey    = $fieldInfo['key'] === 'PRI';
+        $required      = $primaryKey ? false : ($fieldInfo['nullable'] === 'NO');
         $default       = !empty($fieldInfo['default']) ? $fieldInfo['default'] : false;
-        $dbType        = isset($this->schema->dbSchema[$fieldInfo['type']]) ? $this->schema->dbSchema[$fieldInfo['type']] : '';
-        $phpType       = isset($this->schema->phpSchema[$fieldInfo['type']]) ? $this->schema->phpSchema[$fieldInfo['type']] : 'mixed';
+        $dbType        = $this->schema->dbSchema[$fieldInfo['type']] ?? '';
+        $phpType       = $this->schema->phpSchema[$fieldInfo['type']] ?? 'mixed';
         $length        = $fieldInfo['length'];
         $columnType    = $fieldInfo['column_type'];
         $comment       = $fieldInfo['column_comment'];
-        $isEnum        = strpos($columnType, 'enum') === false ? false : true;
+        $isEnum        = strpos($columnType, 'enum') !== false;
         if ($isEnum) {
             preg_match_all("/enum\((.*?)\)/", $columnType, $matches);
             $enumParam = $matches[1][0];
             $enumParam = explode(',', str_replace('\'', '', $enumParam));
+            // TODO $enumParam never use ?
         }
 
         $this->checkAliasProperty($aliasProperty);
@@ -190,10 +191,10 @@ class SetGetGenerator
                 $primaryKey ? "     * @Id()\n" : '',
                 $property,
                 $aliasProperty,
-                !empty($dbType) ? $dbType : ($isEnum ? '"feature-enum"' : (is_int($default) ? '"int"' : '"string"')),
+                !empty($dbType) ? $dbType : ($isEnum ? '"feature-enum"' : (\is_int($default) ? '"int"' : '"string"')),
                 $length !== null ? ", length={$length}" : '',
                 $required ? "     * @Required()\n" : '',
-                $default !== false ? (is_int($default) ? " = {$default};" : " = '{$default}';") : ($required ? ' = \'\';' : ';')
+                $default !== false ? (\is_int($default) ? " = {$default};" : " = '{$default}';") : ($required ? ' = \'\';' : ';')
             ], $propertyStub);
     }
 
@@ -210,8 +211,8 @@ class SetGetGenerator
         $aliasProperty = $property;
         $this->checkAliasProperty($aliasProperty);
         $function         = 'set' . ucfirst($aliasProperty);
-        $primaryKey       = $fieldInfo['key'] === 'PRI' ? true : false;
-        $type             = isset($this->schema->phpSchema[$fieldInfo['type']]) ? $this->schema->phpSchema[$fieldInfo['type']] : 'mixed';
+        $primaryKey       = $fieldInfo['key'] === 'PRI';
+        $type             = $this->schema->phpSchema[$fieldInfo['type']] ?? 'mixed';
         $this->setterStub .= PHP_EOL . str_replace([
                 '{{function}}',
                 '{{attribute}}',
@@ -239,8 +240,8 @@ class SetGetGenerator
         $this->checkAliasProperty($aliasProperty);
         $function         = 'get' . ucfirst($aliasProperty);
         $default          = !empty($fieldInfo['default']) ? $fieldInfo['default'] : false;
-        $primaryKey       = $fieldInfo['key'] === 'PRI' ? true : false;
-        $returnType       = isset($this->schema->phpSchema[$fieldInfo['type']]) ? $this->schema->phpSchema[$fieldInfo['type']] : 'mixed';
+        $primaryKey       = $fieldInfo['key'] === 'PRI';
+        $returnType       = $this->schema->phpSchema[$fieldInfo['type']] ?? 'mixed';
         $this->getterStub .= PHP_EOL . str_replace([
                 '{{function}}',
                 '{{attribute}}',

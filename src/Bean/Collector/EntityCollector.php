@@ -32,8 +32,13 @@ class EntityCollector implements CollectorInterface
      * @param string $methodName
      * @param null   $propertyValue
      */
-    public static function collect(string $className, $objectAnnotation = null, string $propertyName = "", string $methodName = "", $propertyValue = null)
-    {
+    public static function collect(
+        string $className,
+        $objectAnnotation = null,
+        string $propertyName = "",
+        string $methodName = "",
+        $propertyValue = null
+    ) {
         if ($objectAnnotation instanceof Column) {
             self::collectColumn($objectAnnotation, $className, $propertyName, $propertyValue);
         } elseif ($objectAnnotation instanceof Entity) {
@@ -90,24 +95,28 @@ class EntityCollector implements CollectorInterface
      * @param string $propertyName
      * @param mixed  $propertyValue
      */
-    private static function collectColumn(Column $objectAnnotation, string $className, string $propertyName, $propertyValue)
-    {
+    private static function collectColumn(
+        Column $objectAnnotation,
+        string $className,
+        string $propertyName,
+        $propertyValue
+    ) {
         $columnName = $objectAnnotation->getName();
 
-        $entity                                             = [
+        $entity = [
             'type'    => $objectAnnotation->getType(),
             'length'  => $objectAnnotation->getLength(),
             'column'  => $columnName,
             'default' => $propertyValue,
         ];
         self::$entities[$className]['field'][$propertyName] = $entity;
-        self::$entities[$className]['column'][$columnName]  = $propertyName;
+        self::$entities[$className]['column'][$columnName] = $propertyName;
     }
 
     /**
      * @return array
      */
-    public static function getCollector()
+    public static function getCollector(): array
     {
         return self::$entities;
     }

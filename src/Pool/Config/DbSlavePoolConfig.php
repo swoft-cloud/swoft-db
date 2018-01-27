@@ -26,7 +26,7 @@ class DbSlavePoolConfig extends PoolProperties
      * @Value(name="${config.db.slave.name}", env="${DB_SLAVE_NAME}")
      * @var string
      */
-    protected $name = "";
+    protected $name = '';
 
     /**
      * the maximum number of idle connections

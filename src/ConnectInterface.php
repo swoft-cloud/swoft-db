@@ -46,7 +46,7 @@ interface ConnectInterface
      *
      * @return int
      */
-    public function getAffectedRows();
+    public function getAffectedRows(): int;
 
     /**
      * 回滚事务

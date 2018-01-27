@@ -76,10 +76,9 @@ class EntityManager implements EntityManagerInterface
      * 实例化一个实体管理器
      *
      * @param bool $isMaster 默认从节点
-     *
      * @return EntityManager
      */
-    public static function create($isMaster = false)
+    public static function create($isMaster = false): EntityManager
     {
         $pool = self::getPool($isMaster);
         return new EntityManager($pool);
@@ -89,13 +88,13 @@ class EntityManager implements EntityManagerInterface
      * 实例化一个指定ID的实体管理器
      *
      * @param string $poolId 其它数据库连接池ID
-     *
      * @return EntityManager
+     * @throws \InvalidArgumentException
      */
-    public static function createById(string $poolId)
+    public static function createById(string $poolId): EntityManager
     {
-        if (!BeanFactory::hasBean($poolId)) {
-            throw new \InvalidArgumentException("数据库连接池未配置，poolId=" . $poolId);
+        if (! BeanFactory::hasBean($poolId)) {
+            throw new \InvalidArgumentException('数据库连接池未配置，poolId=' . $poolId);
         }
 
         /* @var DbPool $dbPool */
@@ -107,10 +106,10 @@ class EntityManager implements EntityManagerInterface
      * 创建一个查询器
      *
      * @param string $sql sql语句，默认为空
-     *
      * @return QueryBuilder
+     * @throws \Swoft\Db\Exception\DbException
      */
-    public function createQuery(string $sql = "")
+    public function createQuery(string $sql = ''): QueryBuilder
     {
         $this->checkStatus();
         $className = self::getQueryClassName($this->driver);
@@ -123,10 +122,9 @@ class EntityManager implements EntityManagerInterface
      * @param string $className 实体类名称
      * @param bool   $isMaster  是否主节点，默认从节点
      * @param bool   $release   是否释放链接
-     *
      * @return QueryBuilder
      */
-    public static function getQuery(string $className, $isMaster = false, $release = true)
+    public static function getQuery(string $className, $isMaster = false, $release = true): QueryBuilder
     {
         // 获取连接
         $pool = self::getPool($isMaster);
@@ -149,8 +147,8 @@ class EntityManager implements EntityManagerInterface
      *
      * @param object $entity 实体
      * @param bool   $defer  是否延迟操作
-     *
      * @return DataResult|bool 返回数据结果对象，成功返回插入ID，如果ID传值，插入数据库返回0，错误返回false
+     * @throws \Swoft\Db\Exception\DbException
      */
     public function save($entity, $defer = false)
     {
@@ -164,8 +162,8 @@ class EntityManager implements EntityManagerInterface
      *
      * @param object $entity 实体
      * @param bool   $defer  是否延迟操作
-     *
      * @return DataResult|bool|int 返回数据结果对象，成功返回影响行数，如果失败返回false
+     * @throws \Swoft\Db\Exception\DbException
      */
     public function delete($entity, $defer = false)
     {
@@ -180,8 +178,8 @@ class EntityManager implements EntityManagerInterface
      * @param string $className 实体类名
      * @param mixed  $id        删除ID
      * @param bool   $defer     是否延迟操作
-     *
      * @return DataResult|bool|int 返回数据结果对象，成功返回影响行数，如果失败返回false
+     * @throws \Swoft\Db\Exception\DbException
      */
     public function deleteById($className, $id, $defer = false)
     {
@@ -196,8 +194,8 @@ class EntityManager implements EntityManagerInterface
      * @param string $className 实体类名
      * @param array  $ids       ID集合
      * @param bool   $defer     是否延迟操作
-     *
      * @return DataResult|bool|int 返回数据结果对象，成功返回影响行数，如果失败返回false
+     * @throws \Swoft\Db\Exception\DbException
      */
     public function deleteByIds($className, array $ids, $defer = false)
     {
@@ -210,10 +208,10 @@ class EntityManager implements EntityManagerInterface
      * 按实体信息查找
      *
      * @param object $entity 实体实例
-     *
      * @return QueryBuilder
+     * @throws \Swoft\Db\Exception\DbException
      */
-    public function find($entity)
+    public function find($entity): QueryBuilder
     {
         $this->checkStatus();
         $executor = $this->getExecutor();
@@ -225,10 +223,10 @@ class EntityManager implements EntityManagerInterface
      *
      * @param string $className 实体类名
      * @param mixed  $id        ID
-     *
      * @return QueryBuilder
+     * @throws \Swoft\Db\Exception\DbException
      */
-    public function findById($className, $id)
+    public function findById($className, $id): QueryBuilder
     {
         $this->checkStatus();
         $executor = $this->getExecutor();
@@ -240,10 +238,10 @@ class EntityManager implements EntityManagerInterface
      *
      * @param string $className 类名
      * @param array  $ids
-     *
      * @return QueryBuilder
+     * @throws \Swoft\Db\Exception\DbException
      */
-    public function findByIds($className, array $ids)
+    public function findByIds($className, array $ids): QueryBuilder
     {
         $this->checkStatus();
         $executor = $this->getExecutor();
@@ -252,6 +250,8 @@ class EntityManager implements EntityManagerInterface
 
     /**
      * 开始事务
+     *
+     * @throws \Swoft\Db\Exception\DbException
      */
     public function beginTransaction()
     {
@@ -261,6 +261,8 @@ class EntityManager implements EntityManagerInterface
 
     /**
      * 回滚事务
+     *
+     * @throws \Swoft\Db\Exception\DbException
      */
     public function rollback()
     {
@@ -270,6 +272,8 @@ class EntityManager implements EntityManagerInterface
 
     /**
      * 提交事务
+     *
+     * @throws \Swoft\Db\Exception\DbException
      */
     public function commit()
     {
@@ -294,7 +298,7 @@ class EntityManager implements EntityManagerInterface
     private function checkStatus()
     {
         if ($this->isClose) {
-            throw new DbException("entity manager已经关闭，不能再操作");
+            throw new DbException('entity manager已经关闭，不能再操作');
         }
     }
 
@@ -302,7 +306,6 @@ class EntityManager implements EntityManagerInterface
      * 获取连接池
      *
      * @param bool $isMaster 是否是主节点连接池
-     *
      * @return ConnectPoolInterface
      */
     private static function getPool(bool $isMaster): ConnectPoolInterface
@@ -320,11 +323,12 @@ class EntityManager implements EntityManagerInterface
      * 获取执行器
      *
      * @return Executor
+     * @throws \Swoft\Db\Exception\DbException
      */
-    private function getExecutor()
+    private function getExecutor(): Executor
     {
         // 初始化实体执行器
-        $query = self::createQuery();
+        $query = $this->createQuery();
         return new Executor($query);
     }
 
@@ -332,10 +336,9 @@ class EntityManager implements EntityManagerInterface
      * 获取查询器类名
      *
      * @param string $driver 驱动
-     *
      * @return string
      */
-    private static function getQueryClassName(string $driver)
+    private static function getQueryClassName(string $driver): string
     {
         return "Swoft\Db\\Drivers\\" . $driver . "\\QueryBuilder";
     }

@@ -42,7 +42,6 @@ class DataResult extends AbstractResult
      * 获取执行结果
      *
      * @param string $className 数据填充到实体的类名
-     *
      * @return array|bool 返回结果如果执行失败返回false，更新成功返回true,查询返回数据
      */
     public function getResult(string $className = '')
@@ -63,7 +62,7 @@ class DataResult extends AbstractResult
         App::debug("SQL语句执行结果(defer) sqlId=$sqlId result=" . json_encode($result));
 
         // 填充实体数据
-        if (is_array($result) && !empty($className)) {
+        if (\is_array($result) && ! empty($className)) {
             $result = ArrayHelper::resultToEntity($result, $className);
         }
 
@@ -98,7 +97,6 @@ class DataResult extends AbstractResult
      * 转换结果
      *
      * @param mixed $result 查询结果
-     *
      * @return mixed
      */
     private function transferResult($result)
@@ -107,7 +105,7 @@ class DataResult extends AbstractResult
             $result = $this->client->getInsertId();
         } elseif ($this->isUpdateOrDelete && $result !== false) {
             $result = $this->client->getAffectedRows();
-        } elseif ($this->isFindOne && $result != false) {
+        } elseif ($this->isFindOne && $result !== false) {
             $result = $result[0] ?? [];
         }
         return $result;

@@ -25,8 +25,8 @@ class Model
      * 插入数据
      *
      * @param bool $defer 是否延迟收包
-     *
      * @return DataResult|bool 返回数据结果对象，成功返回插入ID，如果ID传值，插入数据库返回0，错误返回false
+     * @throws \Swoft\Exception\ValidatorException
      */
     public function save($defer = false)
     {
@@ -38,8 +38,8 @@ class Model
      * 删除数据
      *
      * @param bool $defer 是否延迟收包
-     *
      * @return DataResult|bool|int 返回数据结果对象，成功返回影响行数，如果失败返回false
+     * @throws \Swoft\Exception\ValidatorException
      */
     public function delete($defer = false)
     {
@@ -79,8 +79,8 @@ class Model
      * 更新数据
      *
      * @param bool $defer 是否延迟收包
-     *
      * @return DataResult|bool|int 返回数据结果对象，成功返回影响行数，如果失败返回false
+     * @throws \Swoft\Exception\ValidatorException
      */
     public function update($defer = false)
     {
@@ -92,8 +92,8 @@ class Model
      * 实体查询
      *
      * @param bool $isMaster 是否主节点查询
-     *
      * @return QueryBuilder
+     * @throws \Swoft\Exception\ValidatorException
      */
     public function find($isMaster = false)
     {
@@ -136,7 +136,7 @@ class Model
      *
      * @return QueryBuilder
      */
-    public static function query($isMaster = false)
+    public static function query($isMaster = false): QueryBuilder
     {
         return EntityManager::getQuery(static::class, $isMaster, true);
     }
@@ -149,7 +149,7 @@ class Model
      *
      * @return Executor
      */
-    private static function getExecutor($isMaster = false)
+    private static function getExecutor($isMaster = false): Executor
     {
         $queryBuilder = EntityManager::getQuery(static::class, $isMaster, true);
         $executor = new Executor($queryBuilder, static::class);
