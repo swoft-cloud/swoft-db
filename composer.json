@@ -9,7 +9,7 @@
         "orm"
     ],
     "description": "microservice framework base on swoole",
-    "license": "apache2.0",
+    "license": "Apache-2.0",
     "require": {
         "swoft/framework": "dev-component"
     },
