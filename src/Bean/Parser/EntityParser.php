@@ -2,7 +2,7 @@
 
 namespace Swoft\Db\Bean\Parser;
 
-use Swoft\Bean\Parser\AbstractParserInterface;
+use Swoft\Bean\Parser\AbstractParser;
 use Swoft\Db\Bean\Annotation\Entity;
 use Swoft\Db\Bean\Collector\EntityCollector;
 
@@ -15,7 +15,7 @@ use Swoft\Db\Bean\Collector\EntityCollector;
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class EntityParser extends AbstractParserInterface
+class EntityParser extends AbstractParser
 {
     /**
      * Entity注解解析

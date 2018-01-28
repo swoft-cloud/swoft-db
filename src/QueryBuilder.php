@@ -6,7 +6,7 @@ use Swoft\App;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Exception\DbException;
 use Swoft\Helper\ArrayHelper;
-use Swoft\Pool\ConnectPoolInterface;
+use Swoft\Pool\ConnectPool;
 
 /**
  * 查询器
@@ -239,7 +239,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     protected $sql = '';
 
     /**
-     * @var ConnectPoolInterface
+     * @var ConnectPool
      */
     protected $pool;
 
@@ -258,12 +258,12 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * QueryBuilder constructor.
      *
-     * @param ConnectPoolInterface $connectPool
-     * @param AbstractDbConnect    $connect
-     * @param string               $sql
-     * @param bool                 $release
+     * @param ConnectPool       $connectPool
+     * @param AbstractDbConnect $connect
+     * @param string            $sql
+     * @param bool              $release
      */
-    public function __construct(ConnectPoolInterface $connectPool, AbstractDbConnect $connect, string $sql = '', bool $release = false)
+    public function __construct(ConnectPool $connectPool, AbstractDbConnect $connect, string $sql = '', bool $release = false)
     {
         $this->sql = $sql;
         $this->connect = $connect;

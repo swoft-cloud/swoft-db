@@ -2,7 +2,7 @@
 
 namespace Swoft\Db;
 
-use Swoft\Pool\AbstractConnectInterface;
+use Swoft\Pool\AbstractConnect;
 
 /**
  * 数据库抽象连接
@@ -13,7 +13,7 @@ use Swoft\Pool\AbstractConnectInterface;
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-abstract class AbstractDbConnect extends AbstractConnectInterface implements DbConnectInterface
+abstract class AbstractDbConnect extends AbstractConnect implements DbConnectInterface
 {
     /**
      * 收包
