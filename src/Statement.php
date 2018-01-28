@@ -228,7 +228,7 @@ trait Statement
         $statement .= $this->getFrom();
         $fromAlias = $this->getFromAlias();
 
-        if ($fromAlias !== null) {
+        if (!empty($fromAlias)) {
             $statement .= ' AS ' . $fromAlias;
         }
         // join语句
@@ -328,7 +328,7 @@ trait Statement
             // 查询
             $previousTable = $this->getFrom();
             $alias = $this->getFromAlias();
-            if ($alias !== null) {
+            if (!empty($alias)) {
                 $previousTable = $alias;
             }
         } elseif ($this->isUpdate()) {
@@ -715,7 +715,9 @@ trait Statement
      */
     protected function getFrom(): string
     {
-        return $this->from['table'];
+        $table = $this->from['table']??'';
+
+        return $table;
     }
 
     /**
@@ -725,6 +727,8 @@ trait Statement
      */
     protected function getFromAlias(): string
     {
-        return $this->from['alias'];
+        $alias = $this->from['alias']??'';
+
+        return $alias;
     }
 }
