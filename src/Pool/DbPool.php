@@ -5,11 +5,15 @@ namespace Swoft\Db\Pool;
 use Swoft\App;
 use Swoft\Bean\Annotation\Inject;
 use Swoft\Bean\Annotation\Pool;
+use Swoft\Db\Bean\Collector\ConnectCollector;
+use Swoft\Db\Driver\DriverType;
+use Swoft\Db\Exception\DbException;
 use Swoft\Db\Pool\Config\DbPoolConfig;
 use Swoft\Pool\ConnectPoolInterface;
+use Swoft\Db\AbstractDbConnectInterface;
 
 /**
- * 数据库连接池
+ * The pool of data
  *
  * @Pool()
  * @uses      DbPool
@@ -20,9 +24,9 @@ use Swoft\Pool\ConnectPoolInterface;
  */
 class DbPool extends ConnectPoolInterface
 {
-    const MYSQL = "Mysql";
-
     /**
+     * The config of pool
+     *
      * @Inject()
      *
      * @var DbPoolConfig
@@ -30,22 +34,21 @@ class DbPool extends ConnectPoolInterface
     protected $poolConfig;
 
     /**
-     * 数据库驱动
+     * Create connect by driver
      *
-     * @var string
+     * @return AbstractDbConnectInterface
      */
-    private $driver = self::MYSQL;
-
     public function createConnect()
     {
+        $driver    = $this->poolConfig->getDriver();
+        $collector = ConnectCollector::getCollector();
+
         if (App::isWorkerStatus()) {
-            $connectClassName = "Swoft\Db\\Drivers\\" . $this->driver . "\\" . $this->driver . "Connect";
+            $connectClassName = $this->getCorConnectClassName($collector, $driver);
         } else {
-            $connectClassName = "Swoft\Db\\Drivers\\" . $this->driver . "\\Sync" . $this->driver . "Connect";
+            $connectClassName = $this->getSyncConnectClassName($collector, $driver);
         }
-        if (!class_exists($connectClassName)) {
-            throw new \InvalidArgumentException("暂时不支持该驱动数据库，driver=" . $this->driver);
-        }
+
         return new $connectClassName($this);
     }
 
@@ -54,12 +57,34 @@ class DbPool extends ConnectPoolInterface
     }
 
     /**
-     * 返回数据库驱动
+     * @param array  $collector
+     * @param string $driver
      *
      * @return string
+     * @throws \Swoft\Db\Exception\DbException
      */
-    public function getDriver(): string
+    private function getCorConnectClassName(array $collector, string $driver): string
     {
-        return $this->driver;
+        if (!isset($collector[$driver][DriverType::COR])) {
+            throw new DbException('The coroutine driver of ' . $driver . ' is not exist!');
+        }
+
+        return $collector[$driver][DriverType::COR];
+    }
+
+    /**
+     * @param array  $collector
+     * @param string $driver
+     *
+     * @return string
+     * @throws \Swoft\Db\Exception\DbException
+     */
+    private function getSyncConnectClassName(array $collector, string $driver): string
+    {
+        if (!isset($collector[$driver][DriverType::SYNC])) {
+            throw new DbException('The synchronous driver of ' . $driver . ' is not exist!');
+        }
+
+        return $collector[$driver][DriverType::SYNC];
     }
 }

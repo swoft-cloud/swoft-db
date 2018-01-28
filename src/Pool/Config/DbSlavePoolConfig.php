@@ -4,8 +4,8 @@ namespace Swoft\Db\Pool\Config;
 
 use Swoft\Bean\Annotation\Bean;
 use Swoft\Bean\Annotation\Value;
+use Swoft\Db\Driver\Driver;
 use Swoft\Pool\BalancerSelector;
-use Swoft\Pool\PoolProperties;
 use Swoft\Pool\ProviderSelector;
 
 /**
@@ -18,7 +18,7 @@ use Swoft\Pool\ProviderSelector;
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class DbSlavePoolConfig extends PoolProperties
+class DbSlavePoolConfig extends DbPoolProperties
 {
     /**
      * the name of pool
@@ -98,4 +98,12 @@ class DbSlavePoolConfig extends PoolProperties
      * @var string
      */
     protected $provider = ProviderSelector::TYPE_CONSUL;
+
+    /**
+     * the default driver is mysql
+     *
+     * @Value(name="${config.db.driver.provider}", env="${DB_SLAVE_DRIVER}")
+     * @var string
+     */
+    protected $driver = Driver::MYSQL;
 }

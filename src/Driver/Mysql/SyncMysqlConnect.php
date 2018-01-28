@@ -1,13 +1,16 @@
 <?php
 
-namespace Swoft\Db\Drivers\Mysql;
+namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
 use Swoft\Db\AbstractDbConnectInterface;
+use Swoft\Db\Bean\Annotation\Connect;
+use Swoft\Db\Driver\DriverType;
 
 /**
  * 同步Mysql连接
  *
+ * @Connect(type=DriverType::SYNC)
  * @uses      SyncMysqlConnect
  * @version   2017年09月30日
  * @author    stelin <phpcrazy@126.com>
@@ -43,24 +46,24 @@ class SyncMysqlConnect extends AbstractDbConnectInterface
     public function createConnect()
     {
         // 配置信息初始化
-        $uri = $this->connectPool->getConnectAddress();
-        $options = $this->parseUri($uri);
+        $uri                = $this->connectPool->getConnectAddress();
+        $options            = $this->parseUri($uri);
         $options['timeout'] = $this->connectPool->getTimeout();
 
-        $user = $options['user'];
-        $passwd = $options['password'];
-        $host = $options['host'];
-        $port = $options['port'];
-        $dbName = $options['database'];
+        $user    = $options['user'];
+        $passwd  = $options['password'];
+        $host    = $options['host'];
+        $port    = $options['port'];
+        $dbName  = $options['database'];
         $charset = $options['charset'];
         $timeout = $options['timeout'];
 
         // 组拼$dsn串
-        $pdoOptions = [
+        $pdoOptions    = [
             \PDO::ATTR_TIMEOUT    => $timeout,
             \PDO::ATTR_PERSISTENT => true,
         ];
-        $dsn = "mysql:host=$host;port=$port;dbname=$dbName;charset=$charset";
+        $dsn           = "mysql:host=$host;port=$port;dbname=$dbName;charset=$charset";
         $this->connect = new \PDO($dsn, $user, $passwd, $pdoOptions);
     }
 
@@ -71,7 +74,7 @@ class SyncMysqlConnect extends AbstractDbConnectInterface
      */
     public function prepare(string $sql)
     {
-        $this->sql = $sql . " Params:";
+        $this->sql  = $sql . " Params:";
         $this->stmt = $this->connect->prepare($sql);
     }
 
@@ -94,6 +97,7 @@ class SyncMysqlConnect extends AbstractDbConnectInterface
             if (App::isWorkerStatus()) {
                 App::error("数据库执行错误，sql=" . $this->stmt->debugDumpParams());
             }
+
             return $result;
         }
 
@@ -172,7 +176,7 @@ class SyncMysqlConnect extends AbstractDbConnectInterface
      */
     public function destory()
     {
-        $this->sql = "";
+        $this->sql  = "";
         $this->stmt = null;
     }
 

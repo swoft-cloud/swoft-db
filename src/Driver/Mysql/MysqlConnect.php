@@ -1,14 +1,16 @@
 <?php
 
-namespace Swoft\Db\Drivers\Mysql;
+namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
 use Swoft\Db\AbstractDbConnectInterface;
+use Swoft\Db\Bean\Annotation\Connect;
 use Swoole\Coroutine\Mysql;
 
 /**
- * Mysql协程连接
+ * The connect of mysql
  *
+ * @Connect()
  * @uses      MysqlConnect
  * @version   2017年09月29日
  * @author    stelin <phpcrazy@126.com>

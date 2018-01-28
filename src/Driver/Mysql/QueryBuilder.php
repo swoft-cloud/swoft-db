@@ -1,6 +1,6 @@
 <?php
 
-namespace Swoft\Db\Drivers\Mysql;
+namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
 use Swoft\Db\DataResult;
