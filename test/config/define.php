@@ -20,6 +20,7 @@ $aliases = [
     '@configs'    => '@root/config',
     '@resources'  => '@root/resources',
     '@beans'      => '@configs/beans',
-    '@properties' => '@configs/properties'
+    '@properties' => '@configs/properties',
+    '@console'    => '@beans/console.php',
 ];
 App::setAliases($aliases);
