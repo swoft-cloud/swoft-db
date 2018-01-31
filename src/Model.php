@@ -1,15 +1,10 @@
 <?php
 
 namespace Swoft\Db;
+use Swoft\Core\ResultInterface;
 
 /**
- * 实体模型实现类似ActiveRecord操作
- *
- * @uses      Model
- * @version   2017年09月08日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * The model of activerecord
  */
 class Model
 {
@@ -24,68 +19,60 @@ class Model
     /**
      * 插入数据
      *
-     * @param bool $defer 是否延迟收包
-     *
-     * @return DataResult|bool 返回数据结果对象，成功返回插入ID，如果ID传值，插入数据库返回0，错误返回false
+     * @return ResultInterface
      */
-    public function save($defer = false)
+    public function save()
     {
-        $executor = self::getExecutor(true);
-        return $executor->save($this, $defer);
+        $executor = self::getExecutor();
+        return $executor->save($this);
     }
 
     /**
      * 删除数据
      *
-     * @param bool $defer 是否延迟收包
-     *
-     * @return DataResult|bool|int 返回数据结果对象，成功返回影响行数，如果失败返回false
+     * @return ResultInterface
      */
-    public function delete($defer = false)
+    public function delete()
     {
         $executor = self::getExecutor(true);
-        return $executor->delete($this, $defer);
+        return $executor->delete($this);
     }
 
     /**
      * 根据ID删除数据
      *
      * @param mixed $id    ID
-     * @param bool  $defer 是否延迟收包
      *
-     * @return DataResult|bool|int 返回数据结果对象，成功返回影响行数，如果失败返回false
+     * @return ResultInterface
      */
-    public static function deleteById($id, $defer = false)
+    public static function deleteById($id)
     {
         $executor = self::getExecutor(true);
-        return $executor->deleteById(static::class, $id, $defer);
+        return $executor->deleteById(static::class, $id);
     }
 
     /**
      * 删除IDS集合数据
      *
      * @param array $ids   ID集合
-     * @param bool  $defer 是否延迟收包
      *
-     * @return DataResult|bool|int 返回数据结果对象，成功返回影响行数，如果失败返回false
+     * @return ResultInterface
      */
-    public static function deleteByIds(array $ids, $defer = false)
+    public static function deleteByIds(array $ids)
     {
         $executor = self::getExecutor(true);
-        return $executor->deleteByIds(static::class, $ids, $defer);
+        return $executor->deleteByIds(static::class, $ids);
     }
 
     /**
      * 更新数据
      *
-     * @param bool $defer 是否延迟收包
-     *
-     * @return DataResult|bool|int 返回数据结果对象，成功返回影响行数，如果失败返回false
+     * @return ResultInterface
      */
-    public function update($defer = false)
+    public function update()
     {
         $executor = self::getExecutor(true);
-        return $executor->update($this, $defer);
+        return $executor->update($this);
     }
 
     /**
@@ -93,7 +80,7 @@ class Model
      *
      * @param bool $isMaster 是否主节点查询
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
     public function find($isMaster = false)
     {
@@ -107,7 +94,7 @@ class Model
      * @param mixed $id       id值
      * @param bool  $isMaster 是否是主节点，默认从节点
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
     public static function findById($id, $isMaster = false)
     {
@@ -121,7 +108,7 @@ class Model
      * @param array $ids      ID集合
      * @param bool  $isMaster 是否主节点查询
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
     public static function findByIds(array $ids, $isMaster = false)
     {

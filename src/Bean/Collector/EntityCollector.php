@@ -10,13 +10,7 @@ use Swoft\Db\Bean\Annotation\Table;
 use Swoft\Bean\CollectorInterface;
 
 /**
- * the collector of entity
- *
- * @uses      EntityCollector
- * @version   2018年01月14日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * The collector of entity
  */
 class EntityCollector implements CollectorInterface
 {

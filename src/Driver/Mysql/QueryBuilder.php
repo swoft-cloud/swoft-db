@@ -3,8 +3,11 @@
 namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
-use Swoft\Db\DataResult;
+use Swoft\Core\ResultInterface;
+use Swoft\Db\DbCorResult;
+use Swoft\Db\DbSyncResult;
 use Swoft\Helper\ArrayHelper;
+use Swoft\Helper\JsonHelper;
 
 /**
  * Mysql查询器
@@ -18,72 +21,85 @@ use Swoft\Helper\ArrayHelper;
 class QueryBuilder extends \Swoft\Db\QueryBuilder
 {
     /**
-     * 获取执行结果
-     *
-     * @param string $className 数据填充到实体的类名
-     *
-     * @return array|bool 返回结果如果执行失败返回false，更新成功返回true,查询返回数据
+     * @var string
      */
-    public function getResult(string $className = "")
+    private $profilePrefix = "mysql";
+
+    /**
+     * @return ResultInterface
+     */
+    public function getResult()
+    {
+        if(App::isCorContext()){
+            return $this->getCorResult();
+        }
+        return $this->getSyncResult();
+    }
+
+    /**
+     * @return DbSyncResult
+     */
+    private function getSyncResult()
     {
         $sql = $this->getStatement();
+        list($sqlId, $profileKey) = $this->getSqlIdAndProfileKey($sql);
 
-        // sqlId用于记录日志
-        $sqlId = md5($sql);
-        $profileKey = 'mysql.' . $sqlId;
         App::profileStart($profileKey);
 
-        // 执行SQL
         $this->connect->prepare($sql);
         $result = $this->connect->execute($this->parameters);
 
         App::profileEnd($profileKey);
-        App::debug("SQL语句执行结果 sqlId=$sqlId result=" . json_encode($result) . "sql=" . $sql);
+        App::debug(sprintf("sql execute sqlId=%s, result=%s, sql=%s", $sqlId, JsonHelper::encode($result, JSON_UNESCAPED_UNICODE), $sql));
 
-        // 插入成功返回插入ID,更新或删除成功，返回影响行数,查询一条数据，返回一维数组
         $result = $this->transferResult($result);
 
-        // 如果是数组，填充实体处理
         if (is_array($result) && !empty($className)) {
             $result = ArrayHelper::resultToEntity($result, $className);
         }
+        $this->pool->release($this->connect);
 
-        // 是否释放连接，类ActiveRecord操作需要释放连接
-        if ($this->release) {
-            $this->pool->release($this->connect);
-        }
-        return $result;
+        $syncData = new DbSyncResult($result);
+
+        return $syncData;
     }
 
     /**
-     * 返回数据结果对象
-     *
-     * @return DataResult 返回数据结果对象
+     * @return ResultInterface
      */
-    public function getDefer()
+    private function getCorResult()
     {
         $sql = $this->getStatement();
+        list($sqlId, $profileKey) = $this->getSqlIdAndProfileKey($sql);
 
-        // sqlId用于记录日志
-        $sqlId = md5($sql);
-        $profileKey = "mysql." . $sqlId;
-
-        // 执行SQL
         $this->connect->setDefer();
         $this->connect->prepare($sql);
         $result = $this->connect->execute($this->parameters);
-        App::debug("SQL语句执行(defer) sqlId=$sqlId sql=" . $sql);
 
+        App::debug(sprintf("sql execute sqlId=%s, sql=%s", $sqlId, $sql));
         $isUpdateOrDelete = $this->isDelete() || $this->isUpdate();
-        $isFindOne = $this->isSelect() && isset($this->limit['limit']) && $this->limit['limit'] == 1;
-        $dataResult = new DataResult($this->pool, $this->connect, $profileKey, $result, $this->release);
+        $isFindOne        = $this->isSelect() && isset($this->limit['limit']) && $this->limit['limit'] == 1;
+        $corResult        = new DbCorResult($this->connect, $profileKey, $this->pool);
 
         // 结果转换参数
-        $dataResult->setIsInsert($this->isInsert());
-        $dataResult->setIsUpdateOrDelete($isUpdateOrDelete);
-        $dataResult->setIsFindOne($isFindOne);
+        $corResult->setIsInsert($this->isInsert());
+        $corResult->setIsUpdateOrDelete($isUpdateOrDelete);
+        $corResult->setIsFindOne($isFindOne);
 
-        return $dataResult;
+        return $corResult;
+    }
+
+    /**
+     * @param string $sql
+     *
+     * @return array
+     */
+    private function getSqlIdAndProfileKey(string $sql)
+    {
+        $sqlId      = md5($sql);
+        $profileKey = sprintf('%s.%s', $this->profilePrefix);
+
+        return [$sqlId, $profileKey];
     }
 
     /**

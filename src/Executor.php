@@ -7,6 +7,7 @@ use Swoft\Bean\BeanFactory;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Validator\IValidator;
 use Swoft\Exception\ValidatorException;
+use Swoft\Core\ResultInterface;
 
 /**
  * 类AR模式，执行器
@@ -40,11 +41,10 @@ class Executor
      * insert实体数据
      *
      * @param object $entity 实体
-     * @param bool   $defer  是否延迟操作
      *
-     * @return bool 返回数据结果对象，成功返回插入ID，如果没有ID插入返回0，错误返回false
+     * @return ResultInterface
      */
-    public function save($entity, $defer)
+    public function save($entity)
     {
         // 实体映射信息处理
         list($table, , , $fields) = $this->getFields($entity, 1);
@@ -54,18 +54,17 @@ class Executor
         foreach ($fields as $column => $value) {
             $this->queryBuilder->set($column, $value);
         }
-        return $this->getResult($defer);
+        return $this->getResult();
     }
 
     /**
      * 按实体信息删除数据
      *
      * @param object $entity 实体
-     * @param bool   $defer  是否延迟操作
      *
-     * @return bool 成功返回true,错误返回false
+     * @return ResultInterface
      */
-    public function delete($entity, $defer)
+    public function delete($entity)
     {
         // 实体映射数据
         list($table, , , $fields) = $this->getFields($entity, 3);
@@ -76,7 +75,7 @@ class Executor
             $this->queryBuilder->where($column, $value);
         }
 
-        return $this->getResult($defer);
+        return $this->getResult();
     }
 
     /**
@@ -84,18 +83,17 @@ class Executor
      *
      * @param string $className 实体类名
      * @param mixed  $id        删除ID
-     * @param bool   $defer     是否延迟操作
      *
-     * @return bool 成功返回true,错误返回false
+     * @return ResultInterface
      */
-    public function deleteById($className, $id, $defer)
+    public function deleteById($className, $id)
     {
         // 实体映射数据
         list($table, , $idColumn) = $this->getTable($className);
 
         // 构建delete查询器
         $this->queryBuilder->delete()->from($table)->where($idColumn, $id);
-        return $this->getResult($defer);
+        return $this->getResult();
     }
 
     /**
@@ -103,43 +101,41 @@ class Executor
      *
      * @param string $className 实体类名
      * @param array  $ids       ID集合
-     * @param bool   $defer     是否延迟操作
      *
-     * @return bool 成功返回true,错误返回false
+     * @return ResultInterface
      */
-    public function deleteByIds($className, array $ids, $defer)
+    public function deleteByIds($className, array $ids)
     {
         // 实体映射数据
         list($table, , $idColumn) = $this->getTable($className);
 
         // 构建delete查询器
         $this->queryBuilder->delete()->from($table)->whereIn($idColumn, $ids);
-        return $this->getResult($defer);
+        return $this->getResult();
     }
 
     /**
      * 按实体更新信息(默认按照主键)
      *
      * @param object $entity 具体实体实例
-     * @param bool   $defer  是否延迟操作
      *
-     * @return bool 成功返回true,错误返回false, 0=没有数据变化
+     * @return ResultInterface
      */
-    public function update($entity, $defer)
+    public function update($entity)
     {
         // 实体映射数据
         list($table, $idColumn, $idValue, $fields) = $this->getFields($entity, 2);
 
         if (empty($fields)) {
             App::warning("更新的数据不能为空(没有数据发生改变 table=" . $table . " id=" . $idColumn . " value=" . $idValue);
-            return 0;
+            return new DbSyncResult(0);
         }
         // 构建update查询器
         $this->queryBuilder->update($table)->where($idColumn, $idValue);
         foreach ($fields as $column => $value) {
             $this->queryBuilder->set($column, $value);
         }
-        return $this->getResult($defer);
+        return $this->getResult();
     }
 
     /**
@@ -147,7 +143,7 @@ class Executor
      *
      * @param object $entity 实体实例
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
     public function find($entity)
     {
@@ -159,7 +155,7 @@ class Executor
         foreach ($fields as $column => $value) {
             $this->queryBuilder->where($column, $value);
         }
-        return $this->queryBuilder;
+        return $this->queryBuilder->getResult();
     }
 
     /**
@@ -168,7 +164,7 @@ class Executor
      * @param string $className 实体类名
      * @param mixed  $id        ID
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
     public function findById($className, $id)
     {
@@ -177,7 +173,7 @@ class Executor
 
         // 构建find查询器
         $query = $this->queryBuilder->select("*")->from($tableName)->where($columnId, $id)->limit(1);
-        return $query;
+        return $query->getResult();
     }
 
     /**
@@ -186,7 +182,7 @@ class Executor
      * @param string $className 类名
      * @param array  $ids
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
     public function findByIds($className, array $ids)
     {
@@ -195,7 +191,7 @@ class Executor
 
         // 构建find查询器
         $query = $this->queryBuilder->select("*")->from($tableName)->whereIn($columnId, $ids);
-        return $query;
+        return $query->getResult();
     }
 
     /**
@@ -369,15 +365,10 @@ class Executor
     /**
      * 获取执行结果
      *
-     * @param bool $defer 是否延迟收包
-     *
-     * @return DataResult|array|bool
+     * @return ResultInterface
      */
-    private function getResult($defer = false)
+    private function getResult()
     {
-        if ($defer) {
-            return $this->queryBuilder->getDefer();
-        }
         return $this->queryBuilder->getResult();
     }
 }

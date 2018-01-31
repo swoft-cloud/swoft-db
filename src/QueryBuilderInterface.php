@@ -14,18 +14,7 @@ namespace Swoft\Db;
 interface QueryBuilderInterface
 {
     /**
-     * 获取执行结果
-     *
-     * @param string $className 数据填充到实体的类名
-     *
-     * @return array|bool 返回结果如果执行失败返回false，更新成功返回true,查询返回数据
+     * @return mixed
      */
-    public function getResult(string $className = "");
-
-    /**
-     * 返回数据结果对象
-     *
-     * @return DataResult 返回数据结果对象
-     */
-    public function getDefer();
+    public function getResult();
 }
