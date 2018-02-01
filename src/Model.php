@@ -1,6 +1,7 @@
 <?php
 
 namespace Swoft\Db;
+
 use Swoft\Core\ResultInterface;
 
 /**
@@ -9,137 +10,153 @@ use Swoft\Core\ResultInterface;
 class Model
 {
     /**
-     * 记录旧数据，用于更新数据对比
+     * The data of old
      *
      * @var array
      */
     private $attrs = [];
 
-
     /**
-     * 插入数据
+     * Insert data to db
+     *
+     * @param string $poolId
      *
      * @return ResultInterface
      */
-    public function save()
+    public function save(string $poolId = Pool::MASTER)
     {
-        $executor = self::getExecutor();
+        $executor = self::getExecutor($poolId);
+
         return $executor->save($this);
     }
 
     /**
-     * 删除数据
+     * Delete data from db
+     *
+     * @param string $poolId
      *
      * @return ResultInterface
      */
-    public function delete()
+    public function delete(string $poolId = Pool::MASTER)
     {
-        $executor = self::getExecutor(true);
+        $executor = self::getExecutor($poolId);
+
         return $executor->delete($this);
     }
 
     /**
-     * 根据ID删除数据
+     * Delete data by id
      *
-     * @param mixed $id    ID
+     * @param mixed  $id ID
+     * @param string $poolId
      *
      * @return ResultInterface
      */
-    public static function deleteById($id)
+    public static function deleteById($id, string $poolId = Pool::MASTER)
     {
-        $executor = self::getExecutor(true);
+        $executor = self::getExecutor($poolId);
+
         return $executor->deleteById(static::class, $id);
     }
 
     /**
-     * 删除IDS集合数据
+     * Delete by ids
      *
-     * @param array $ids   ID集合
+     * @param array  $ids
+     * @param string $poolId
      *
      * @return ResultInterface
      */
-    public static function deleteByIds(array $ids)
+    public static function deleteByIds(array $ids, string $poolId = Pool::MASTER)
     {
-        $executor = self::getExecutor(true);
+        $executor = self::getExecutor($poolId);
+
         return $executor->deleteByIds(static::class, $ids);
     }
 
     /**
-     * 更新数据
+     * Update data
+     *
+     * @param string $poolId
      *
      * @return ResultInterface
      */
-    public function update()
+    public function update(string $poolId = Pool::MASTER)
     {
-        $executor = self::getExecutor(true);
+        $executor = self::getExecutor($poolId);
+
         return $executor->update($this);
     }
 
     /**
-     * 实体查询
+     * Find data from db
      *
-     * @param bool $isMaster 是否主节点查询
+     * @param string $poolId
      *
      * @return ResultInterface
      */
-    public function find($isMaster = false)
+    public function find(string $poolId = Pool::SLAVE)
     {
-        $executor = self::getExecutor($isMaster);
+        $executor = self::getExecutor($poolId);
+
         return $executor->find($this);
     }
 
     /**
-     * ID查找
+     * Find by id
      *
-     * @param mixed $id       id值
-     * @param bool  $isMaster 是否是主节点，默认从节点
+     * @param mixed  $id
+     * @param string $poolId
      *
      * @return ResultInterface
      */
-    public static function findById($id, $isMaster = false)
+    public static function findById($id, string $poolId = Pool::SLAVE)
     {
-        $executor = self::getExecutor($isMaster);
+        $executor = self::getExecutor($poolId);
+
         return $executor->findById(static::class, $id);
     }
 
     /**
-     * ID集合查询
+     * Find by ids
      *
-     * @param array $ids      ID集合
-     * @param bool  $isMaster 是否主节点查询
+     * @param array  $ids
+     * @param string $poolId
      *
      * @return ResultInterface
      */
-    public static function findByIds(array $ids, $isMaster = false)
+    public static function findByIds(array $ids, string $poolId = Pool::SLAVE)
     {
-        $executor = self::getExecutor($isMaster);
+        $executor = self::getExecutor($poolId);
+
         return $executor->findByIds(static::class, $ids);
     }
 
     /**
-     * 返回查询器，自定义查询
+     * Get the QueryBuilder
      *
-     * @param bool $isMaster 是否主节点
+     * @param string $poolId
      *
      * @return QueryBuilder
      */
-    public static function query($isMaster = false)
+    public static function query(string $poolId = Pool::SLAVE): QueryBuilder
     {
-        return EntityManager::getQuery(static::class, $isMaster, true);
+        return EntityManager::getQuery(static::class, $poolId, true);
     }
 
 
     /**
-     * 返回数据执行器
+     * Get the exeutor
      *
-     * @param bool $isMaster 是否主节点
+     * @param string $poolId
      *
      * @return Executor
      */
-    private static function getExecutor($isMaster = false)
+    private static function getExecutor(string $poolId = Pool::SLAVE): Executor
     {
-        $queryBuilder = EntityManager::getQuery(static::class, $isMaster, true);
-        $executor = new Executor($queryBuilder, static::class);
+        $queryBuilder = EntityManager::getQuery(static::class, $poolId);
+        $executor     = new Executor($queryBuilder, static::class);
+
         return $executor;
     }
 

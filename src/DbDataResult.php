@@ -2,12 +2,12 @@
 
 namespace Swoft\Db;
 
-use Swoft\Core\AbstractSyncResult;
+use Swoft\Core\AbstractDataResult;
 
 /**
  * The sync result of db
  */
-class DbSyncResult extends AbstractSyncResult
+class DbDataResult extends AbstractDataResult
 {
     /**
      * @param array ...$params

@@ -2,7 +2,7 @@
 Swoft Database Component
 
 # Install
-
+composer require
 # Document
 
 # LICENSE

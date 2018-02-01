@@ -4,8 +4,8 @@ namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
 use Swoft\Core\ResultInterface;
-use Swoft\Db\DbCorResult;
-use Swoft\Db\DbSyncResult;
+use Swoft\Db\DbCoResult;
+use Swoft\Db\DbDataResult;
 use Swoft\Helper\ArrayHelper;
 use Swoft\Helper\JsonHelper;
 
@@ -28,7 +28,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
     /**
      * @return ResultInterface
      */
-    public function getResult()
+    public function execute()
     {
         if(App::isCorContext()){
             return $this->getCorResult();
@@ -37,7 +37,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
     }
 
     /**
-     * @return DbSyncResult
+     * @return DbDataResult
      */
     private function getSyncResult()
     {
@@ -59,7 +59,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         }
         $this->pool->release($this->connect);
 
-        $syncData = new DbSyncResult($result);
+        $syncData = new DbDataResult($result);
 
         return $syncData;
     }
@@ -79,7 +79,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         App::debug(sprintf("sql execute sqlId=%s, sql=%s", $sqlId, $sql));
         $isUpdateOrDelete = $this->isDelete() || $this->isUpdate();
         $isFindOne        = $this->isSelect() && isset($this->limit['limit']) && $this->limit['limit'] == 1;
-        $corResult        = new DbCorResult($this->connect, $profileKey, $this->pool);
+        $corResult        = new DbCoResult($this->connect, $profileKey, $this->pool);
 
         // 结果转换参数
         $corResult->setIsInsert($this->isInsert());
@@ -97,7 +97,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
     private function getSqlIdAndProfileKey(string $sql)
     {
         $sqlId      = md5($sql);
-        $profileKey = sprintf('%s.%s', $this->profilePrefix);
+        $profileKey = sprintf('%s.%s', $sqlId, $this->profilePrefix);
 
         return [$sqlId, $profileKey];
     }
@@ -106,35 +106,33 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
      * 转换结果
      *
      * @param mixed $result 查询结果
-     *
      * @return mixed
      */
     private function transferResult($result)
     {
-        $isFindOne = isset($this->limit['limit']) && $this->limit['limit'] == 1;
+        $isFindOne = isset($this->limit['limit']) && $this->limit['limit'] === 1;
         $isUpdateOrDelete = $this->isDelete() || $this->isUpdate();
-        if ($this->isInsert() && $result !== false) {
+        if ($result !== false && $this->isInsert()) {
             $result = $this->connect->getInsertId();
-        } elseif ($isUpdateOrDelete && $result !== false) {
+        } elseif ($result !== false && $isUpdateOrDelete) {
             $result = $this->connect->getAffectedRows();
-        } elseif ($this->isSelect() && $result !== false && $isFindOne) {
-            $result = $result[0]?? [];
+        } elseif ($isFindOne && $result !== false && $this->isSelect()) {
+            $result = $result[0] ?? [];
         }
         return $result;
     }
 
     /**
      * @param mixed $key
-     *
      * @return string
      */
     protected function formatParamsKey($key): string
     {
-        if (is_string($key)) {
-            return ":" . $key;
+        if (\is_string($key)) {
+            return ':' . $key;
         }
         if (App::isWorkerStatus()) {
-            return "?" . $key;
+            return '?' . $key;
         }
 
         return $key;

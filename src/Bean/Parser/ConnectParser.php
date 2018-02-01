@@ -2,8 +2,7 @@
 
 namespace Swoft\Db\Bean\Parser;
 
-use Swoft\Bean\Annotation\Scope;
-use Swoft\Bean\Parser\AbstractParserInterface;
+use Swoft\Bean\Parser\AbstractParser;
 use Swoft\Db\Bean\Annotation\Connect;
 use Swoft\Db\Bean\Collector\ConnectCollector;
 
@@ -16,7 +15,7 @@ use Swoft\Db\Bean\Collector\ConnectCollector;
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class ConnectParser extends AbstractParserInterface
+class ConnectParser extends AbstractParser
 {
     /**
      * Do parser

@@ -2,7 +2,7 @@
 
 namespace Swoft\Db\Bean\Parser;
 
-use Swoft\Bean\Parser\AbstractParserInterface;
+use Swoft\Bean\Parser\AbstractParser;
 use Swoft\Db\Bean\Annotation\Table;
 use Swoft\Db\Bean\Collector\EntityCollector;
 
@@ -15,21 +15,26 @@ use Swoft\Db\Bean\Collector\EntityCollector;
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class TableParser extends AbstractParserInterface
+class TableParser extends AbstractParser
 {
 
     /**
      * Table注解解析
      *
      * @param string $className
-     * @param Table $objectAnnotation
+     * @param Table  $objectAnnotation
      * @param string $propertyName
      * @param string $methodName
-     * @param null $propertyValue
+     * @param null   $propertyValue
      * @return mixed
      */
-    public function parser(string $className, $objectAnnotation = null, string $propertyName = "", string $methodName = "", $propertyValue = null)
-    {
+    public function parser(
+        string $className,
+        $objectAnnotation = null,
+        string $propertyName = 'F',
+        string $methodName = '',
+        $propertyValue = null
+    ) {
         EntityCollector::collect($className, $objectAnnotation, $propertyName, $methodName, $propertyValue);
         return null;
     }

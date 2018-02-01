@@ -26,7 +26,7 @@ class DbPoolConfig extends DbPoolProperties
      * @Value(name="${config.db.master.name}", env="${DB_NAME}")
      * @var string
      */
-    protected $name = "";
+    protected $name = '';
 
     /**
      * the maximum number of idle connections

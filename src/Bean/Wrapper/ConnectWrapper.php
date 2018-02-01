@@ -3,7 +3,7 @@
 namespace Swoft\Db\Bean\Wrapper;
 
 use Swoft\Bean\Annotation\Inject;
-use Swoft\Bean\Wrapper\AbstractWrapperInterface;
+use Swoft\Bean\Wrapper\AbstractWrapper;
 use Swoft\Db\Bean\Annotation\Connect;
 
 /**
@@ -15,7 +15,7 @@ use Swoft\Db\Bean\Annotation\Connect;
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class ConnectWrapper extends AbstractWrapperInterface
+class ConnectWrapper extends AbstractWrapper
 {
     /**
      * 类注解
@@ -28,23 +28,13 @@ class ConnectWrapper extends AbstractWrapperInterface
         ];
 
     /**
-     * 属性注解
-     *
-     * @var array
-     */
-    protected $propertyAnnotations
-        = [
-            Inject::class,
-        ];
-
-    /**
      * 是否解析类注解
      *
      * @param array $annotations
      *
      * @return bool
      */
-    public function isParseClassAnnotations(array $annotations)
+    public function isParseClassAnnotations(array $annotations): bool
     {
         return isset($annotations[Connect::class]);
     }
@@ -56,9 +46,9 @@ class ConnectWrapper extends AbstractWrapperInterface
      *
      * @return bool
      */
-    public function isParsePropertyAnnotations(array $annotations)
+    public function isParsePropertyAnnotations(array $annotations): bool
     {
-        return isset($annotations[Inject::class]);
+        return false;
     }
 
     /**
@@ -68,7 +58,7 @@ class ConnectWrapper extends AbstractWrapperInterface
      *
      * @return bool
      */
-    public function isParseMethodAnnotations(array $annotations)
+    public function isParseMethodAnnotations(array $annotations): bool
     {
         return false;
     }

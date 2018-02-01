@@ -4,19 +4,13 @@ namespace Swoft\Db;
 
 use Swoft\App;
 use Swoft\Bean\BeanFactory;
-use Swoft\Db\Bean\Collector\EntityCollector;
-use Swoft\Db\Validator\IValidator;
-use Swoft\Exception\ValidatorException;
 use Swoft\Core\ResultInterface;
+use Swoft\Db\Bean\Collector\EntityCollector;
+use Swoft\Db\Validator\ValidatorInterface;
+use Swoft\Exception\ValidatorException;
 
 /**
- * 类AR模式，执行器
- *
- * @uses      Executor
- * @version   2017年09月08日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * The executor of db
  */
 class Executor
 {
@@ -44,14 +38,14 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function save($entity)
+    public function save($entity):ResultInterface
     {
         // 实体映射信息处理
         list($table, , , $fields) = $this->getFields($entity, 1);
 
         // 构建insert查询器
         $this->queryBuilder->insert($table);
-        foreach ($fields as $column => $value) {
+        foreach ($fields ?? [] as $column => $value) {
             $this->queryBuilder->set($column, $value);
         }
         return $this->getResult();
@@ -64,14 +58,14 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function delete($entity)
+    public function delete($entity):ResultInterface
     {
         // 实体映射数据
         list($table, , , $fields) = $this->getFields($entity, 3);
 
         // 构建delete查询器
         $this->queryBuilder->delete()->from($table);
-        foreach ($fields as $column => $value) {
+        foreach ($fields ?? [] as $column => $value) {
             $this->queryBuilder->where($column, $value);
         }
 
@@ -86,7 +80,7 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function deleteById($className, $id)
+    public function deleteById($className, $id):ResultInterface
     {
         // 实体映射数据
         list($table, , $idColumn) = $this->getTable($className);
@@ -104,7 +98,7 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function deleteByIds($className, array $ids)
+    public function deleteByIds($className, array $ids):ResultInterface
     {
         // 实体映射数据
         list($table, , $idColumn) = $this->getTable($className);
@@ -121,18 +115,18 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function update($entity)
+    public function update($entity):ResultInterface
     {
         // 实体映射数据
         list($table, $idColumn, $idValue, $fields) = $this->getFields($entity, 2);
 
         if (empty($fields)) {
             App::warning("更新的数据不能为空(没有数据发生改变 table=" . $table . " id=" . $idColumn . " value=" . $idValue);
-            return new DbSyncResult(0);
+            return new DbDataResult(0);
         }
         // 构建update查询器
         $this->queryBuilder->update($table)->where($idColumn, $idValue);
-        foreach ($fields as $column => $value) {
+        foreach ($fields ?? [] as $column => $value) {
             $this->queryBuilder->set($column, $value);
         }
         return $this->getResult();
@@ -145,17 +139,17 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function find($entity)
+    public function find($entity): ResultInterface
     {
         // 实体映射数据
         list($tableName, , , $fields) = $this->getFields($entity, 3);
 
         // 构建find查询器
         $this->queryBuilder->select('*')->from($tableName);
-        foreach ($fields as $column => $value) {
+        foreach ($fields ?? [] as $column => $value) {
             $this->queryBuilder->where($column, $value);
         }
-        return $this->queryBuilder->getResult();
+        return $this->queryBuilder->execute();
     }
 
     /**
@@ -166,14 +160,14 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function findById($className, $id)
+    public function findById($className, $id): ResultInterface
     {
         // 实体映射数据
         list($tableName, , $columnId) = $this->getTable($className);
 
         // 构建find查询器
         $query = $this->queryBuilder->select("*")->from($tableName)->where($columnId, $id)->limit(1);
-        return $query->getResult();
+        return $query->execute();
     }
 
     /**
@@ -184,14 +178,14 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function findByIds($className, array $ids)
+    public function findByIds($className, array $ids): ResultInterface
     {
         // 实体映射数据
         list($tableName, , $columnId) = $this->getTable($className);
 
         // 构建find查询器
         $query = $this->queryBuilder->select("*")->from($tableName)->whereIn($columnId, $ids);
-        return $query->getResult();
+        return $query->execute();
     }
 
     /**
@@ -199,10 +193,10 @@ class Executor
      *
      * @param object $entity 实体对象
      * @param int    $type   类型，1=insert 3=delete|find 2=update
-     *
      * @return array
+     * @throws \Swoft\Exception\ValidatorException
      */
-    private function getFields($entity, $type = 1)
+    private function getFields($entity, $type = 1): array
     {
         $changeFields = [];
 
@@ -219,17 +213,17 @@ class Executor
             $proValue = $this->getEntityProValue($entity, $proName);
 
             // insert逻辑
-            if ($type == 1 && $id == $proName && $default == $proValue) {
+            if ($type === 1 && $id === $proName && $default === $proValue) {
                 continue;
             }
 
             // update逻辑
-            if ($type == 2 && null === $proValue) {
+            if ($type === 2 && null === $proValue) {
                 continue;
             }
 
             // delete和find逻辑
-            if ($type == 3 && $default == $proValue) {
+            if ($type === 3 && $default === $proValue) {
                 continue;
             }
 
@@ -237,7 +231,7 @@ class Executor
             $this->validate($proAry, $proValue);
 
             // id值赋值
-            if ($idColumn == $column) {
+            if ($idColumn === $column) {
                 $idValue = $proValue;
             }
 
@@ -245,7 +239,7 @@ class Executor
         }
 
         // 如果是更新找到变化的字段
-        if ($type == 2) {
+        if ($type === 2) {
             $oldFields = $entity->getAttrs();
             $changeFields = array_diff($changeFields, $oldFields);
         }
@@ -258,21 +252,20 @@ class Executor
      *
      * @param array $columnAry     属性字段验证规则
      * @param mixed $propertyValue 数组字段值
-     *
      * @throws ValidatorException
      */
     private function validate(array $columnAry, $propertyValue)
     {
         // 验证信息
         $column = $columnAry['column'];
-        $length = $columnAry['length']?? -1;
-        $validates = $columnAry['validates']?? [];
-        $type = $columnAry['type']?? Types::STRING;
-        $required = $columnAry['required']?? false;
+        $length = $columnAry['length'] ?? -1;
+        $validates = $columnAry['validates'] ?? [];
+        $type = $columnAry['type'] ?? Types::STRING;
+        $required = $columnAry['required'] ?? false;
 
         // 必须传值验证
         if ($propertyValue === null && $required) {
-            throw new ValidatorException("数据字段验证失败，column=" . $column . "字段必须设置值");
+            throw new ValidatorException('数据字段验证失败，column=' . $column . '字段必须设置值');
         }
 
         // 类型验证器
@@ -291,12 +284,12 @@ class Executor
             $beanName = 'Validator' . $name;
 
             // 验证器未定义
-            if (!BeanFactory::hasBean($beanName)) {
-                App::warning("验证器不存在，beanName=" . $beanName);
+            if (! BeanFactory::hasBean($beanName)) {
+                App::warning('验证器不存在，beanName=' . $beanName);
                 continue;
             }
 
-            /* @var IValidator $objValidator */
+            /* @var ValidatorInterface $objValidator */
             $objValidator = App::getBean($beanName);
             $objValidator->validate($column, $propertyValue, $params);
         }
@@ -307,14 +300,14 @@ class Executor
      *
      * @param object $entity  实体对象
      * @param string $proName 属性名称
-     *
      * @return mixed
+     * @throws \InvalidArgumentException
      */
     private function getEntityProValue($entity, string $proName)
     {
-        $getterMethod = "get" . ucfirst($proName);
-        if (!method_exists($entity, $getterMethod)) {
-            throw new \InvalidArgumentException("实体对象属性getter方法不存在，properName=" . $proName);
+        $getterMethod = 'get' . ucfirst($proName);
+        if (! method_exists($entity, $getterMethod)) {
+            throw new \InvalidArgumentException('实体对象属性getter方法不存在，properName=' . $proName);
         }
         $proValue = $entity->$getterMethod();
 
@@ -325,21 +318,21 @@ class Executor
      * 实例映射信息
      *
      * @param object $entity
-     *
      * @return array
+     * @throws \InvalidArgumentException
      */
     private function getClassMetaData($entity): array
     {
         // 不是对象
-        if (!is_object($entity) && !class_exists($entity)) {
-            throw new \InvalidArgumentException("实体不是对象");
+        if (! \is_object($entity) && ! class_exists($entity)) {
+            throw new \InvalidArgumentException('实体不是对象');
         }
 
         // 对象实例不是实体
         $entities = EntityCollector::getCollector();
-        $className = is_string($entity) ? $entity : get_class($entity);
-        if (!isset($entities[$className]['table']['name'])) {
-            throw new \InvalidArgumentException("对象不是实体对象，className=" . $className);
+        $className = \is_string($entity) ? $entity : \get_class($entity);
+        if (! isset($entities[$className]['table']['name'])) {
+            throw new \InvalidArgumentException('对象不是实体对象，className=' . $className);
         }
 
         return $this->getTable($className);
@@ -349,7 +342,6 @@ class Executor
      * 实体表映射结构
      *
      * @param string $className
-     *
      * @return array
      */
     private function getTable(string $className): array
@@ -369,6 +361,6 @@ class Executor
      */
     private function getResult()
     {
-        return $this->queryBuilder->getResult();
+        return $this->queryBuilder->execute();
     }
 }

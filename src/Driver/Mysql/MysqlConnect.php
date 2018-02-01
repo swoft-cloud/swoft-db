@@ -3,8 +3,8 @@
 namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
-use Swoft\Db\AbstractDbConnectInterface;
 use Swoft\Db\Bean\Annotation\Connect;
+use Swoft\Db\AbstractDbConnect;
 use Swoole\Coroutine\Mysql;
 
 /**
@@ -17,7 +17,7 @@ use Swoole\Coroutine\Mysql;
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class MysqlConnect extends AbstractDbConnectInterface
+class MysqlConnect extends AbstractDbConnect
 {
     /**
      * 协程Mysql连接
@@ -31,7 +31,7 @@ class MysqlConnect extends AbstractDbConnectInterface
      *
      * @var string
      */
-    private $sql = "";
+    private $sql = '';
 
 
     /**
@@ -48,7 +48,6 @@ class MysqlConnect extends AbstractDbConnectInterface
      * 执行语句
      *
      * @param array|null $params
-     *
      * @return array|bool
      */
     public function execute(array $params = null)
@@ -56,7 +55,7 @@ class MysqlConnect extends AbstractDbConnectInterface
         $this->formatSqlByParams($params);
         $result = $this->connect->query($this->sql);
         if ($result === false) {
-            App::error("mysql执行出错，connectError=" . $this->connect->connect_error . " error=" . $this->connect->error);
+            App::error('mysql执行出错，connectError=' . $this->connect->connect_error . ' error=' . $this->connect->error);
         }
         return $result;
     }
@@ -86,7 +85,7 @@ class MysqlConnect extends AbstractDbConnectInterface
      *
      * @return int
      */
-    public function getAffectedRows()
+    public function getAffectedRows(): int
     {
         return $this->connect->affected_rows;
     }
@@ -96,7 +95,7 @@ class MysqlConnect extends AbstractDbConnectInterface
      */
     public function beginTransaction()
     {
-        $this->connect->query("begin;");
+        $this->connect->query('begin;');
     }
 
     /**
@@ -104,7 +103,7 @@ class MysqlConnect extends AbstractDbConnectInterface
      */
     public function rollback()
     {
-        $this->connect->query("rollback;");
+        $this->connect->query('rollback;');
     }
 
     /**
@@ -112,7 +111,7 @@ class MysqlConnect extends AbstractDbConnectInterface
      */
     public function commit()
     {
-        $this->connect->query("commit;");
+        $this->connect->query('commit;');
     }
 
     /**
@@ -128,6 +127,7 @@ class MysqlConnect extends AbstractDbConnectInterface
     /**
      * 创建连接
      *
+     * @throws \InvalidArgumentException
      */
     public function createConnect()
     {
@@ -148,8 +148,8 @@ class MysqlConnect extends AbstractDbConnectInterface
         ]);
 
         // 连接失败处理
-        if ($mysql->connected == false) {
-            throw new \InvalidArgumentException("mysql数据库连接出错，error=" . $mysql->connect_error);
+        if ($mysql->connected === false) {
+            throw new \InvalidArgumentException('mysql数据库连接出错，error=' . $mysql->connect_error);
         }
         $this->connect = $mysql;
     }
@@ -166,7 +166,7 @@ class MysqlConnect extends AbstractDbConnectInterface
      *
      * @return string
      */
-    public function getSql()
+    public function getSql(): string
     {
         return $this->sql;
     }
@@ -176,7 +176,7 @@ class MysqlConnect extends AbstractDbConnectInterface
      */
     public function destory()
     {
-        $this->sql = "";
+        $this->sql = '';
     }
 
     /**
@@ -205,13 +205,13 @@ class MysqlConnect extends AbstractDbConnectInterface
     {
         $sqlAry = explode('?', $this->sql);
 
-        $sql = "";
-        $maxBlock = count($sqlAry);
+        $sql = '';
+        $maxBlock = \count($sqlAry);
         for ($i = 0; $i < $maxBlock; $i++) {
             $n = $i + 1;
             $sql .= $sqlAry[$i];
             if ($maxBlock > $i + 1) {
-                $sql .= "?" . $n . " ";
+                $sql .= '?' . $n . ' ';
             }
         }
 

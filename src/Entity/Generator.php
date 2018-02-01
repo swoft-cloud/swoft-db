@@ -11,7 +11,7 @@ namespace Swoft\Db\Entity;
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class Generator extends AbstractGenerator implements IGenerator
+class Generator extends AbstractGenerator implements GeneratorInterface
 {
     /**
      * @var string $db 数据库
@@ -47,6 +47,7 @@ class Generator extends AbstractGenerator implements IGenerator
      * 开始执行生成实体
      *
      * @param Schema $schema schema对象
+     * @return void
      */
     public function execute(Schema $schema)
     {
@@ -68,34 +69,33 @@ class Generator extends AbstractGenerator implements IGenerator
             return [];
         }
         $schemaTable = self::SCHEMA_TABLES;
-        $where[]     = "TABLE_TYPE = 'BASE TABLE'";
-        $where[]     = "TABLE_SCHEMA = '{$this->db}'";
-        if (!empty($this->tablesEnabled)) {
+        $where[] = "TABLE_TYPE = 'BASE TABLE'";
+        $where[] = "TABLE_SCHEMA = '{$this->db}'";
+        if (! empty($this->tablesEnabled)) {
             $tablesEnabled = array_map(function ($item) {
                 return "'{$item}'";
             }, $this->tablesEnabled);
-            $where[]       = 'TABLE_NAME IN (' . implode(',', $tablesEnabled) . ')';
+            $where[] = 'TABLE_NAME IN (' . implode(',', $tablesEnabled) . ')';
         }
-        if (!empty($this->tablesDisabled)) {
+        if (! empty($this->tablesDisabled)) {
             $tablesDisabled = array_map(function ($item) {
                 return "'{$item}'";
             }, $this->tablesDisabled);
-            $where[]        = 'TABLE_NAME NOT IN (' . implode(',', $tablesDisabled) . ')';
+            $where[] = 'TABLE_NAME NOT IN (' . implode(',', $tablesDisabled) . ')';
         }
-        $where = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : null;
+        $where = ! empty($where) ? ' WHERE ' . implode(' AND ', $where) : null;
 
         $querySql = "SELECT `TABLE_NAME` AS `name`,`TABLE_COMMENT` as `comment` FROM {$schemaTable} {$where}";
         $this->dbHandler->prepare($querySql);
         $this->tables = $this->dbHandler->execute([]);
 
-        return !empty($this->tables) ? $this->tables : [];
+        return ! empty($this->tables) ? $this->tables : [];
     }
 
     /**
      * 获取表列名
      *
      * @param string $table 表名
-     *
      * @return array
      */
     public function getTableColumns(string $table): array
@@ -104,20 +104,19 @@ class Generator extends AbstractGenerator implements IGenerator
 
         $where[] = "TABLE_NAME = '{$table}'";
         $where[] = "TABLE_SCHEMA = '{$this->db}'";
-        $where = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : null;
+        $where = ! empty($where) ? ' WHERE ' . implode(' AND ', $where) : null;
 
         $querySql = "SELECT `COLUMN_NAME` as `name`,`DATA_TYPE` as `type`,`CHARACTER_MAXIMUM_LENGTH` as `length`,`COLUMN_DEFAULT` as `default` ,`COLUMN_KEY` as `key`,`IS_NULLABLE` as `nullable`,`COLUMN_TYPE` as `column_type`,`COLUMN_COMMENT` as `column_comment` FROM {$schemaTable} {$where}";
         $this->dbHandler->prepare($querySql);
         $columns = $this->dbHandler->execute([]);
 
-        return !empty($columns) ? $columns : [];
+        return ! empty($columns) ? $columns : [];
     }
 
     /**
      * 设置数据库
      *
      * @param string $value 数据库
-     *
      * @return $this
      */
     public function setDb(string $value): self
@@ -141,7 +140,6 @@ class Generator extends AbstractGenerator implements IGenerator
      * 设置扫描的表
      *
      * @param array $value 需要扫描的表
-     *
      * @return $this;
      */
     public function settablesEnabled(array $value): self
@@ -165,7 +163,6 @@ class Generator extends AbstractGenerator implements IGenerator
      * 设置不需要扫描的表
      *
      * @param array $value 不需要扫描的表
-     *
      * @return $this;
      */
     public function settablesDisabled(array $value): self
@@ -187,11 +184,11 @@ class Generator extends AbstractGenerator implements IGenerator
 
     /**
      * __get()
+     *
      * @override
-     *
      * @param string $name 参数名
-     *
      * @return mixed
+     * @throws \RuntimeException
      */
     public function __get($name)
     {
@@ -207,15 +204,16 @@ class Generator extends AbstractGenerator implements IGenerator
 
     /**
      * __set()
-     * @override
      *
+     * @override
      * @param string $name  参数名
      * @param mixed  $value 参数值
-     *
      * @return self
+     * @throws \RuntimeException
      */
     public function __set($name, $value): self
     {
+        // TODO add pair method __isset()
         $method = 'set' . ucfirst($name);
         if (method_exists($this, $method)) {
             return $this->$method($value);

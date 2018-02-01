@@ -7,7 +7,6 @@ namespace Swoft\Db\Bean\Annotation;
  *
  * @Annotation
  * @Target({"PROPERTY"})
- *
  * @uses      Column
  * @version   2017年08月31日
  * @author    stelin <phpcrazy@126.com>
@@ -28,7 +27,7 @@ class Column
      *
      * @var string
      */
-    private $type = "string";
+    private $type = 'string';
 
     /**
      * 长度

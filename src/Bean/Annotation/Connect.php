@@ -42,8 +42,8 @@ class Connect
         if (isset($values['name'])) {
             $this->driver = $values['name'];
         }
-        if (isset($values['coroutine'])) {
-            $this->type = $values['coroutine'];
+        if (isset($values['type'])) {
+            $this->type = $values['type'];
         }
     }
 

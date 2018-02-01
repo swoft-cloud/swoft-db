@@ -6,32 +6,30 @@ use Swoft\Bean\Annotation\Bean;
 use Swoft\Exception\ValidatorException;
 
 /**
- * 枚举类型验证器
+ * datetime时间类型验证器
+ * @Bean("ValidatorDatetime")
  *
- * @Bean("ValidatorEnum")
- * @uses      ValidatorEnum
- * @version   2017年09月14日
+ * @uses      ValidatorInterfaceDatetime
+ * @version   2017年09月12日
  * @author    stelin <phpcrazy@126.com>
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class ValidatorEnum implements IValidator
+class ValidatorInterfaceDatetime implements ValidatorInterface
 {
     /**
-     * 枚举类型验证
+     * 验证结果
      *
      * @param string $cloum     字段名称
      * @param mixed  $value     字段传入值
      * @param array  ...$params 其它参数数组传入
-     *
      * @throws ValidatorException
-     *
      * @return bool 成功返回true,失败抛异常
      */
-    public function validate(string $cloum, $value, ...$params)
+    public function validate(string $cloum, $value, ...$params): bool
     {
-        if (!isset($params[0][0]) || !in_array($value, $params[0][0])) {
-            throw new ValidatorException("数据库字段值验证失败，不是在枚举集合的里面，column=" . $cloum." enum=".json_encode($params[0][0]));
+        if (strtotime($value) === false) {
+            throw new ValidatorException('数据库字段值验证失败，不是dateTime类型，column=' . $cloum);
         }
         return true;
     }

@@ -2,8 +2,7 @@
 
 namespace Swoft\Db\Driver\Mysql;
 
-use Swoft\App;
-use Swoft\Db\AbstractDbConnectInterface;
+use Swoft\Db\AbstractDbConnect;
 use Swoft\Db\Bean\Annotation\Connect;
 use Swoft\Db\Driver\DriverType;
 
@@ -17,7 +16,7 @@ use Swoft\Db\Driver\DriverType;
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class SyncMysqlConnect extends AbstractDbConnectInterface
+class SyncMysqlConnect extends AbstractDbConnect
 {
     /**
      * Mysql连接
@@ -82,7 +81,6 @@ class SyncMysqlConnect extends AbstractDbConnectInterface
      * 执行SQL
      *
      * @param array|null $params
-     *
      * @return array|bool
      */
     public function execute(array $params = null)
@@ -95,7 +93,7 @@ class SyncMysqlConnect extends AbstractDbConnectInterface
         }
         if ($result !== true) {
             if (App::isWorkerStatus()) {
-                App::error("数据库执行错误，sql=" . $this->stmt->debugDumpParams());
+                App::error('数据库执行错误，sql=' . $this->stmt->debugDumpParams());
             }
 
             return $result;
@@ -150,7 +148,7 @@ class SyncMysqlConnect extends AbstractDbConnectInterface
      *
      * @return int
      */
-    public function getAffectedRows()
+    public function getAffectedRows(): int
     {
         return $this->stmt->rowCount();
     }
@@ -176,7 +174,7 @@ class SyncMysqlConnect extends AbstractDbConnectInterface
      */
     public function destory()
     {
-        $this->sql  = "";
+        $this->sql = '';
         $this->stmt = null;
     }
 

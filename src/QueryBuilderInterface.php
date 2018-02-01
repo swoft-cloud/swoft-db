@@ -14,7 +14,7 @@ namespace Swoft\Db;
 interface QueryBuilderInterface
 {
     /**
-     * @return mixed
+     * @return \Swoft\Core\ResultInterface
      */
-    public function getResult();
+    public function execute();
 }

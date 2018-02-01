@@ -5,20 +5,19 @@ namespace Swoft\Db\Entity;
 /**
  * 生成实体操作接口
  *
- * @uses      IGenerator
+ * @uses      GeneratorInterface
  * @version   2017年11月06日
  * @author    caiwh <471113744@qq.com>
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-interface IGenerator
+interface GeneratorInterface
 {
     /**
      * 执行入口
      *
      * @param Schema $schema schema对象
-     *
-     * @return mixed
+     * @return void
      */
     public function execute(Schema $schema);
 
@@ -27,14 +26,13 @@ interface IGenerator
      *
      * @return array
      */
-    public function getSchemaTables();
+    public function getSchemaTables(): array;
 
     /**
      * 获取当前表的所有字段信息
      *
      * @param string $table 表名
-     *
      * @return array
      */
-    public function getTableColumns(string $table);
+    public function getTableColumns(string $table): array;
 }
