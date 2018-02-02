@@ -2,6 +2,7 @@
 
 namespace Swoft\Db\Driver\Mysql;
 
+use Swoft\App;
 use Swoft\Db\AbstractDbConnect;
 use Swoft\Db\Bean\Annotation\Connect;
 use Swoft\Db\Driver\DriverType;

@@ -21,11 +21,6 @@ use Swoft\Db\Pool\DbSlavePool;
 class EntityCommand
 {
     /**
-     * @var array $drivers 数据库驱动列表
-     */
-    private $drivers = ['Mysql'];
-
-    /**
      * @var \Swoft\Db\Entity\Schema $schema schema对象
      */
     private $schema;
@@ -90,14 +85,9 @@ class EntityCommand
     {
         App::setAlias('@entityPath', $this->filePath);
         $pool = App::getBean(DbSlavePool::class);
-        $driver = $pool->getDriver();
-        if (in_array($driver, $this->drivers)) {
-            $schema = new Schema();
-            $schema->setDriver($driver);
-            $this->schema = $schema;
-        } else {
-            throw new \RuntimeException('There is no corresponding driver matching schema');
-        }
+        $schema = new Schema();
+        $schema->setDriver('MYSQL');
+        $this->schema = $schema;
         $syncDbConnect = $pool->createConnect();
         $this->generatorEntity = new Generator($syncDbConnect);
 
