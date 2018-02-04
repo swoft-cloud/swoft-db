@@ -16,6 +16,6 @@ class DbDataResult extends AbstractDataResult
      */
     public function getResult(...$params)
     {
-        return $this->getResult();
+        return $this->data;
     }
 }
