@@ -17,6 +17,7 @@ interface GeneratorInterface
      * 执行入口
      *
      * @param Schema $schema schema对象
+     *
      * @return void
      */
     public function execute(Schema $schema);
@@ -32,6 +33,7 @@ interface GeneratorInterface
      * 获取当前表的所有字段信息
      *
      * @param string $table 表名
+     *
      * @return array
      */
     public function getTableColumns(string $table): array;
