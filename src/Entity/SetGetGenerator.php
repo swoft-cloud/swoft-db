@@ -156,7 +156,7 @@ class SetGetGenerator
         $aliasProperty = $property;
         $primaryKey    = $fieldInfo['key'] === 'PRI';
         $required      = $primaryKey ? false : ($fieldInfo['nullable'] === 'NO');
-        $default       = !empty($fieldInfo['default']) ? $fieldInfo['default'] : false;
+        $default       = strtolower($fieldInfo['default']) !== 'null' ? $fieldInfo['default'] : false;
         $dbType        = $this->schema->dbSchema[$fieldInfo['type']] ?? '';
         $phpType       = $this->schema->phpSchema[$fieldInfo['type']] ?? 'mixed';
         $length        = $fieldInfo['length'];
@@ -194,7 +194,7 @@ class SetGetGenerator
                 !empty($dbType) ? $dbType : ($isEnum ? '"feature-enum"' : (\is_int($default) ? '"int"' : '"string"')),
                 $length !== null ? ", length={$length}" : '',
                 $required ? "     * @Required()\n" : '',
-                $default !== false ? (\is_int($default) ? " = {$default};" : " = '{$default}';") : ($required ? ' = \'\';' : ';')
+                $default !== false ? (\is_int($default) ? " = {$default};" : (trim($default) === '' ? ' = \'\';' : " = '{$default}';")) : ($required ? ' = \'\';' : ';')
             ], $propertyStub);
     }
 
@@ -210,7 +210,12 @@ class SetGetGenerator
         $property      = $fieldInfo['name'];
         $aliasProperty = $property;
         $this->checkAliasProperty($aliasProperty);
-        $function         = 'set' . ucfirst($aliasProperty);
+        $function         = explode('_', $aliasProperty);
+        $function         = array_map(function ($word) {
+            return ucfirst($word);
+        }, $function);
+        $function         = implode('', $function);
+        $function         = 'set' . $function;
         $primaryKey       = $fieldInfo['key'] === 'PRI';
         $type             = $this->schema->phpSchema[$fieldInfo['type']] ?? 'mixed';
         $this->setterStub .= PHP_EOL . str_replace([
@@ -238,7 +243,12 @@ class SetGetGenerator
         $property      = $fieldInfo['name'];
         $aliasProperty = $property;
         $this->checkAliasProperty($aliasProperty);
-        $function         = 'get' . ucfirst($aliasProperty);
+        $function         = explode('_', $aliasProperty);
+        $function         = array_map(function ($word) {
+            return ucfirst($word);
+        }, $function);
+        $function         = implode('', $function);
+        $function         = 'get' . $function;
         $default          = !empty($fieldInfo['default']) ? $fieldInfo['default'] : false;
         $primaryKey       = $fieldInfo['key'] === 'PRI';
         $returnType       = $this->schema->phpSchema[$fieldInfo['type']] ?? 'mixed';
