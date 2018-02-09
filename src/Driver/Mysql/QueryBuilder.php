@@ -30,7 +30,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
      */
     public function execute()
     {
-        if(App::isCorContext()){
+        if(App::isCoContext()){
             return $this->getCorResult();
         }
         return $this->getSyncResult();

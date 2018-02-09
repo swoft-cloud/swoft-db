@@ -37,7 +37,7 @@ class DbPool extends ConnectPool
         $driver    = $this->poolConfig->getDriver();
         $collector = ConnectCollector::getCollector();
 
-        if (App::isCorContext()) {
+        if (App::isCoContext()) {
             $connectClassName = $this->getCorConnectClassName($collector, $driver);
         } else {
             $connectClassName = $this->getSyncConnectClassName($collector, $driver);
