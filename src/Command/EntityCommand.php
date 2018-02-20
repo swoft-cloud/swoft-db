@@ -6,6 +6,7 @@ use Swoft\App;
 use Swoft\Console\Bean\Annotation\Command;
 use Swoft\Db\Entity\Generator;
 use Swoft\Db\Entity\Mysql\Schema;
+use Swoft\Db\Pool\DbPool;
 use Swoft\Db\Pool\DbSlavePool;
 
 /**
@@ -79,7 +80,7 @@ class EntityCommand
     private function initDatabase(): bool
     {
         App::setAlias('@entityPath', $this->filePath);
-        $pool = App::getBean(DbSlavePool::class);
+        $pool = App::getBean(DbPool::class);
         $schema = new Schema();
         $schema->setDriver('MYSQL');
         $this->schema = $schema;

@@ -6,6 +6,7 @@ use Swoft\App;
 use Swoft\Core\ResultInterface;
 use Swoft\Db\DbCoResult;
 use Swoft\Db\DbDataResult;
+use Swoft\Db\Helper\EntityHelper;
 use Swoft\Helper\ArrayHelper;
 use Swoft\Helper\JsonHelper;
 
@@ -55,7 +56,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         $result = $this->transferResult($result);
 
         if (is_array($result) && !empty($className)) {
-            $result = ArrayHelper::resultToEntity($result, $className);
+            $result = EntityHelper::resultToEntity($result, $className);
         }
         $this->pool->release($this->connect);
 

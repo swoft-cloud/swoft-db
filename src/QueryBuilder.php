@@ -5,6 +5,7 @@ namespace Swoft\Db;
 use Swoft\App;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Exception\DbException;
+use Swoft\Db\Helper\EntityHelper;
 use Swoft\Helper\ArrayHelper;
 use Swoft\Pool\ConnectPool;
 
@@ -911,7 +912,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
 
         // 参数值类型转换
         if ($type !== null) {
-            $value = ArrayHelper::trasferTypes($type, $value);
+            $value = EntityHelper::trasferTypes($type, $value);
         }
 
         if ($type == null && \is_string($value) || $type == Types::STRING) {
