@@ -5,8 +5,8 @@ namespace Swoft\Db\Pool\Config;
 use Swoft\Bean\Annotation\Bean;
 use Swoft\Bean\Annotation\Value;
 use Swoft\Db\Driver\Driver;
-use Swoft\Pool\BalancerSelector;
-use Swoft\Pool\ProviderSelector;
+use Swoft\Sg\BalancerSelector;
+use Swoft\Sg\ProviderSelector;
 
 /**
  * the slave config of database
