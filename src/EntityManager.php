@@ -276,10 +276,30 @@ class EntityManager implements EntityManagerInterface
      */
     private static function getPool(string $poolId): ConnectPool
     {
+        if($poolId == Pool::SLAVE && self::hasSalvePool() == false){
+            $poolId = Pool::MASTER;
+        }
+
         /* @var DbPool $dbPool */
         $pool = App::getBean($poolId);
 
         return $pool;
+    }
+
+    /**
+     * @return bool
+     */
+    private static function hasSalvePool()
+    {
+        $properties = App::getProperties();
+        $hasConfig  = isset($properties['db']['slave']['uri']) && !empty($properties['db']['slave']['uri']);
+        $hasEnv     = !empty(env('DB_SLAVE_URI'));
+
+        if ($hasConfig || $hasEnv) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
