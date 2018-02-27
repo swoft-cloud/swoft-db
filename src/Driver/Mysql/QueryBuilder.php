@@ -6,8 +6,8 @@ use Swoft\App;
 use Swoft\Core\ResultInterface;
 use Swoft\Db\DbCoResult;
 use Swoft\Db\DbDataResult;
+use Swoft\Db\Helper\DbHelper;
 use Swoft\Db\Helper\EntityHelper;
-use Swoft\Helper\ArrayHelper;
 use Swoft\Helper\JsonHelper;
 
 /**
@@ -38,6 +38,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
     }
 
     /**
+     *
      * @return DbDataResult
      */
     private function getSyncResult()
@@ -58,7 +59,10 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         if (is_array($result) && !empty($className)) {
             $result = EntityHelper::resultToEntity($result, $className);
         }
-        $this->pool->release($this->connect);
+
+        if (!DbHelper::isContextTransaction($this->poolId)) {
+            $this->pool->release($this->connect);
+        }
 
         $syncData = new DbDataResult($result);
 
@@ -83,6 +87,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         $corResult        = new DbCoResult($this->connect, $profileKey, $this->pool);
 
         // 结果转换参数
+        $corResult->setPoolId($this->poolId);
         $corResult->setIsInsert($this->isInsert());
         $corResult->setIsUpdateOrDelete($isUpdateOrDelete);
         $corResult->setIsFindOne($isFindOne);

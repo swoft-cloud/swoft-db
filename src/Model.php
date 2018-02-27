@@ -155,7 +155,7 @@ class Model
     private static function getExecutor(string $poolId = Pool::SLAVE): Executor
     {
         $queryBuilder = EntityManager::getQuery(static::class, $poolId);
-        $executor     = new Executor($queryBuilder, static::class);
+        $executor     = new Executor($queryBuilder, $poolId);
 
         return $executor;
     }

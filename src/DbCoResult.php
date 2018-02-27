@@ -4,6 +4,7 @@ namespace Swoft\Db;
 
 use Swoft\App;
 use Swoft\Core\AbstractCoResult;
+use Swoft\Db\Helper\DbHelper;
 use Swoft\Db\Helper\EntityHelper;
 
 /**
@@ -33,6 +34,11 @@ class DbCoResult extends AbstractCoResult
     private $isFindOne = false;
 
     /**
+     * @var string
+     */
+    private $poolId;
+
+    /**
      * @param array ...$params
      *
      * @return mixed
@@ -60,6 +66,28 @@ class DbCoResult extends AbstractCoResult
     }
 
     /**
+     * @param bool $defer
+     *
+     * @return mixed
+     */
+    public function recv($defer = false)
+    {
+        $result = $this->client->recv();
+
+        // 重置延迟设置
+        if ($defer) {
+            $this->client->setDefer(false);
+        }
+
+        $isSqlSession = DbHelper::isContextTransaction($this->poolId);
+        if ($this->connectPool !== null && $isSqlSession == false) {
+            $this->connectPool->release($this->client);
+        }
+
+        return $result;
+    }
+
+    /**
      * @param bool $isInsert
      */
     public function setIsInsert(bool $isInsert)
@@ -81,6 +109,14 @@ class DbCoResult extends AbstractCoResult
     public function setIsFindOne(bool $isFindOne)
     {
         $this->isFindOne = $isFindOne;
+    }
+
+    /**
+     * @param string $poolId
+     */
+    public function setPoolId(string $poolId)
+    {
+        $this->poolId = $poolId;
     }
 
     /**
