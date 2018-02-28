@@ -12,53 +12,49 @@ use Swoft\Sg\ProviderSelector;
  * the slave config of database
  *
  * @Bean()
- * @uses      DbSlavePoolConfig
- * @version   2017年12月17日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
 class DbSlavePoolConfig extends DbPoolProperties
 {
     /**
-     * the name of pool
-     *
      * @Value(name="${config.db.slave.name}", env="${DB_SLAVE_NAME}")
      * @var string
      */
     protected $name = '';
 
     /**
-     * the maximum number of idle connections
-     *
-     * @Value(name="${config.db.slave.maxIdel}", env="${DB_SLAVE_MAX_IDEL}")
+     * @Value(name="${config.db.slave.minActive}", env="${DB_SLAVE_MIN_ACTIVE}")
      * @var int
      */
-    protected $maxIdel = 6;
-
+    protected $minActive = 5;
     /**
-     * the maximum number of active connections
-     *
      * @Value(name="${config.db.slave.maxActive}", env="${DB_SLAVE_MAX_ACTIVE}")
      * @var int
      */
-    protected $maxActive = 50;
+    protected $maxActive = 10;
 
     /**
-     * the maximum number of wait connections
-     *
      * @Value(name="${config.db.slave.maxWait}", env="${DB_SLAVE_MAX_WAIT}")
      * @var int
      */
-    protected $maxWait = 100;
+    protected $maxWait = 20;
 
     /**
-     * the time of connect timeout
-     *
+     * @Value(name="${config.db.slave.maxWaitTime}", env="${DB_SLAVE_MAX_WAIT_TIME}")
+     * @var int
+     */
+    protected $maxWaitTime = 3;
+
+    /**
+     * @Value(name="${config.db.slave.maxIdleTime}", env="${DB_SLAVE_MAX_IDLE_TIME}")
+     * @var int
+     */
+    protected $maxIdleTime = 60;
+
+    /**
      * @Value(name="${config.db.slave.timeout}", env="${DB_SLAVE_TIMEOUT}")
      * @var int
      */
-    protected $timeout = 200;
+    protected $timeout = 3;
 
     /**
      * the addresses of connection

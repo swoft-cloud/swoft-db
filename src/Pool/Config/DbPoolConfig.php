@@ -9,56 +9,53 @@ use Swoft\Sg\BalancerSelector;
 use Swoft\Sg\ProviderSelector;
 
 /**
- * the master config of database
+ * Master pool
  *
  * @Bean()
- * @uses      DbPoolConfig
- * @version   2017年12月17日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
 class DbPoolConfig extends DbPoolProperties
 {
     /**
-     * the name of pool
-     *
      * @Value(name="${config.db.master.name}", env="${DB_NAME}")
      * @var string
      */
     protected $name = '';
 
     /**
-     * the maximum number of idle connections
-     *
-     * @Value(name="${config.db.master.maxIdel}", env="${DB_MAX_IDEL}")
+     * @Value(name="${config.db.master.minActive}", env="${DB_MIN_ACTIVE}")
      * @var int
      */
-    protected $maxIdel = 6;
+    protected $minActive = 5;
 
     /**
-     * the maximum number of active connections
-     *
      * @Value(name="${config.db.master.maxActive}", env="${DB_MAX_ACTIVE}")
      * @var int
      */
-    protected $maxActive = 50;
+    protected $maxActive = 10;
 
     /**
-     * the maximum number of wait connections
-     *
      * @Value(name="${config.db.master.maxWait}", env="${DB_MAX_WAIT}")
      * @var int
      */
-    protected $maxWait = 100;
+    protected $maxWait = 20;
 
     /**
-     * the time of connect timeout
-     *
+     * @Value(name="${config.db.master.maxIdleTime}", env="${DB_MAX_IDLE_TIME}")
+     * @var int
+     */
+    protected $maxIdleTime = 60;
+
+    /**
+     * @Value(name="${config.db.master.maxWaitTime}", env="${DB_MAX_WAIT_TIME}")
+     * @var int
+     */
+    protected $maxWaitTime = 3;
+
+    /**
      * @Value(name="${config.db.master.timeout}", env="${DB_TIMEOUT}")
      * @var int
      */
-    protected $timeout = 200;
+    protected $timeout = 3;
 
     /**
      * the addresses of connection
