@@ -89,7 +89,7 @@ class EntityManager implements EntityManagerInterface
         $this->checkStatus();
         $className = self::getQueryClassName($this->connect);
 
-        return new $className($this->pool, $this->connect, $sql);
+        return new $className($this->pool, $this->connect, $this->poolId, $sql);
     }
 
     /**
