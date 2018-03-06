@@ -5,8 +5,6 @@ namespace Swoft\Db\Pool\Config;
 use Swoft\Bean\Annotation\Bean;
 use Swoft\Bean\Annotation\Value;
 use Swoft\Db\Driver\Driver;
-use Swoft\Sg\BalancerSelector;
-use Swoft\Sg\ProviderSelector;
 
 /**
  * Master pool
@@ -86,7 +84,7 @@ class DbPoolConfig extends DbPoolProperties
      * @Value(name="${config.db.master.balancer}", env="${DB_BALANCER}")
      * @var string
      */
-    protected $balancer = BalancerSelector::TYPE_RANDOM;
+    protected $balancer = "";
 
     /**
      * the default provider is consul provider
@@ -94,7 +92,7 @@ class DbPoolConfig extends DbPoolProperties
      * @Value(name="${config.db.master.provider}", env="${DB_PROVIDER}")
      * @var string
      */
-    protected $provider = ProviderSelector::TYPE_CONSUL;
+    protected $provider = "";
 
     /**
      * the default driver is consul mysql
