@@ -8,30 +8,32 @@ use Swoft\Db\Helper\DbHelper;
 use Swoft\Db\Helper\EntityHelper;
 
 /**
- * The cor result of db
+ * Class DbCoResult
+ *
+ * @package Swoft\Db
  */
 class DbCoResult extends AbstractCoResult
 {
     /**
-     * 是否是插入操作
+     * Is insert operation
      *
      * @var bool
      */
-    private $isInsert = false;
+    private $insert = false;
 
     /**
-     * 是否是更新或删除操作
+     * Is update or delete operation
      *
      * @var bool
      */
-    private $isUpdateOrDelete = false;
+    private $updateOrDelete = false;
 
     /**
-     * 是否查找一条数据
+     * Is find one entity operation
      *
      * @var bool
      */
-    private $isFindOne = false;
+    private $findOne = false;
 
     /**
      * @var string
@@ -40,25 +42,24 @@ class DbCoResult extends AbstractCoResult
 
     /**
      * @param array ...$params
-     *
      * @return mixed
      */
     public function getResult(...$params)
     {
-        $className = "";
-        if (!empty($params)) {
+        $className = '';
+        if (! empty($params)) {
             list($className) = $params;
         }
 
         $result = $this->recv(true);
         $result = $this->transferResult($result);
 
-        // 日志记录处理
+        // Logger
         list(, $sqlId) = explode('.', $this->profileKey);
         App::debug("SQL语句执行结果(defer) sqlId=$sqlId result=" . json_encode($result));
 
-        // fill data to entity
-        if (is_array($result) && !empty($className)) {
+        // Fill data to Entity
+        if (\is_array($result) && ! empty($className)) {
             $result = EntityHelper::resultToEntity($result, $className);
         }
 
@@ -67,20 +68,17 @@ class DbCoResult extends AbstractCoResult
 
     /**
      * @param bool $defer
-     *
      * @return mixed
      */
     public function recv($defer = false)
     {
         $result = $this->client->recv();
 
-        // 重置延迟设置
-        if ($defer) {
-            $this->client->setDefer(false);
-        }
+        // Reset defer status
+        $defer && $this->client->setDefer(false);
 
         $isSqlSession = DbHelper::isContextTransaction($this->poolId);
-        if ($this->connectPool !== null && $isSqlSession == false) {
+        if ($this->connectPool !== null && ! $isSqlSession) {
             $this->connectPool->release($this->client);
         }
 
@@ -88,27 +86,27 @@ class DbCoResult extends AbstractCoResult
     }
 
     /**
-     * @param bool $isInsert
+     * @param bool $insert
      */
-    public function setIsInsert(bool $isInsert)
+    public function setInsert(bool $insert)
     {
-        $this->isInsert = $isInsert;
+        $this->insert = $insert;
     }
 
     /**
-     * @param bool $isUpdateOrDelete
+     * @param bool $updateOrDelete
      */
-    public function setIsUpdateOrDelete(bool $isUpdateOrDelete)
+    public function setUpdateOrDelete(bool $updateOrDelete)
     {
-        $this->isUpdateOrDelete = $isUpdateOrDelete;
+        $this->updateOrDelete = $updateOrDelete;
     }
 
     /**
-     * @param bool $isFindOne
+     * @param bool $findOne
      */
-    public function setIsFindOne(bool $isFindOne)
+    public function setFindOne(bool $findOne)
     {
-        $this->isFindOne = $isFindOne;
+        $this->findOne = $findOne;
     }
 
     /**
@@ -123,16 +121,15 @@ class DbCoResult extends AbstractCoResult
      * 转换结果
      *
      * @param mixed $result 查询结果
-     *
      * @return mixed
      */
     private function transferResult($result)
     {
-        if ($this->isInsert && $result !== false) {
+        if ($this->insert && $result !== false) {
             $result = $this->client->getInsertId();
-        } elseif ($this->isUpdateOrDelete && $result !== false) {
+        } elseif ($this->updateOrDelete && $result !== false) {
             $result = $this->client->getAffectedRows();
-        } elseif ($this->isFindOne && $result != false) {
+        } elseif ($this->findOne && $result !== false) {
             $result = $result[0] ?? [];
         }
         return $result;

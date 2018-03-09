@@ -23,7 +23,7 @@ class ResourceReleaseListener implements EventHandlerInterface
     public function handle(EventInterface $event)
     {
         $contextConnects = RequestContext::getContextDataByKey(EntityManager::CONTEXT_CONNECTS, []);
-        foreach ($contextConnects as $key => $contextConnect) {
+        foreach ($contextConnects ?? [] as $key => $contextConnect) {
             if (!($contextConnect instanceof \SplStack) || $contextConnect->isEmpty()) {
                 continue;
             }
@@ -33,7 +33,7 @@ class ResourceReleaseListener implements EventHandlerInterface
             /* @var \Swoft\Pool\PoolInterface $pool */
             $pool = App::getPool($poolId);
 
-            foreach ($contextConnect as $connect) {
+            foreach ($contextConnect ?? [] as $connect) {
                 $pool->release($connect);
             }
         }

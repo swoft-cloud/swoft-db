@@ -13,17 +13,16 @@ class EntityHelper
     /**
      * @param array  $result
      * @param string $className
-     *
      * @return array
      */
-    public static function resultToEntity(array $result, string $className)
+    public static function resultToEntity(array $result, string $className): array
     {
-        if (!isset($result[0])) {
+        if (! isset($result[0])) {
             return self::arrayToEntity($result, $className);
         }
         $entities = [];
         foreach ($result as $entityData) {
-            if (!is_array($entityData)) {
+            if (! \is_array($entityData)) {
                 continue;
             }
             $entities[] = self::arrayToEntity($entityData, $className);
@@ -35,27 +34,26 @@ class EntityHelper
     /**
      * @param array  $array
      * @param string $className
-     *
      * @return array
      */
-    public static function arrayToEntity(array $array, string $className)
+    public static function arrayToEntity(array $array, string $className): array
     {
 
         $entities = EntityCollector::getCollector();
-        if (!isset($className)) {
+        if (! isset($className)) {
             return $array;
         }
-        $attrs  = [];
+        $attrs = [];
         $object = new $className();
         foreach ($array as $col => $value) {
-            if (!isset($entities[$className]['column'][$col])) {
+            if (! isset($entities[$className]['column'][$col])) {
                 continue;
             }
 
-            $field        = $entities[$className]['column'][$col];
-            $setterMethod = "set" . ucfirst($field);
+            $field = $entities[$className]['column'][$col];
+            $setterMethod = 'set' . ucfirst($field);
 
-            $type  = $entities[$className]['field'][$field]['type'];
+            $type = $entities[$className]['field'][$field]['type'];
             $value = self::trasferTypes($type, $value);
 
             if (method_exists($object, $setterMethod)) {
@@ -73,18 +71,17 @@ class EntityHelper
     /**
      * @param $type
      * @param $value
-     *
      * @return bool|float|int|string
      */
     public static function trasferTypes($type, $value)
     {
-        if ($type == Types::INT || $type == Types::NUMBER) {
+        if ($type === Types::INT || $type === Types::NUMBER) {
             $value = (int)$value;
-        } elseif ($type == Types::STRING) {
+        } elseif ($type === Types::STRING) {
             $value = (string)$value;
-        } elseif ($type == Types::BOOLEAN) {
+        } elseif ($type === Types::BOOLEAN) {
             $value = (bool)$value;
-        } elseif ($type == Types::FLOAT) {
+        } elseif ($type === Types::FLOAT) {
             $value = (float)$value;
         }
 

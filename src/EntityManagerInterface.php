@@ -3,18 +3,14 @@
 namespace Swoft\Db;
 
 /**
- * 实体管理器接口
+ * Interface EntityManagerInterface
  *
- * @uses      EntityManagerInterface
- * @version   2017年09月01日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * @package Swoft\Db
  */
 interface EntityManagerInterface
 {
     /**
-     * 实例化一个实体管理器
+     * Create a EntityManager instance
      *
      * @param string $poolId
      * @return EntityManager
@@ -23,25 +19,25 @@ interface EntityManagerInterface
 
 
     /**
-     * 回滚事务
+     * Rollback transaction
      */
     public function rollback();
 
     /**
-     * 开始事务
+     * Begin transaction
      */
     public function beginTransaction();
 
     /**
-     * 提交事务
+     * Commit transaction
      */
     public function commit();
 
 
     /**
-     * 创建一个查询器
+     * Create a Query Builder
      *
-     * @param string $sql sql语句，默认为空
+     * @param string $sql
      * @return QueryBuilder
      */
     public function createQuery(string $sql = ''): QueryBuilder;
