@@ -5,8 +5,6 @@ namespace Swoft\Db\Pool\Config;
 use Swoft\Bean\Annotation\Bean;
 use Swoft\Bean\Annotation\Value;
 use Swoft\Db\Driver\Driver;
-use Swoft\Sg\BalancerSelector;
-use Swoft\Sg\ProviderSelector;
 
 /**
  * the slave config of database
@@ -85,7 +83,7 @@ class DbSlavePoolConfig extends DbPoolProperties
      * @Value(name="${config.db.slave.balancer}", env="${DB_SLAVE_BALANCER}")
      * @var string
      */
-    protected $balancer = BalancerSelector::TYPE_RANDOM;
+    protected $balancer = 'random';
 
     /**
      * the default provider is consul provider
@@ -93,7 +91,7 @@ class DbSlavePoolConfig extends DbPoolProperties
      * @Value(name="${config.db.slave.provider}", env="${DB_SLAVE_PROVIDER}")
      * @var string
      */
-    protected $provider = ProviderSelector::TYPE_CONSUL;
+    protected $provider = 'consul';
 
     /**
      * the default driver is mysql
