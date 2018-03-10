@@ -72,14 +72,14 @@ class DbCoResult extends AbstractCoResult
      */
     public function recv($defer = false)
     {
-        $result = $this->client->recv();
+        $result = $this->connection->recv();
 
         // Reset defer status
-        $defer && $this->client->setDefer(false);
+        $defer && $this->connection->setDefer(false);
 
         $isSqlSession = DbHelper::isContextTransaction($this->poolId);
-        if ($this->connectPool !== null && ! $isSqlSession) {
-            $this->connectPool->release($this->client);
+        if ($this->pool !== null && ! $isSqlSession) {
+            $this->pool->release($this->connection);
         }
 
         return $result;
@@ -126,9 +126,9 @@ class DbCoResult extends AbstractCoResult
     private function transferResult($result)
     {
         if ($this->insert && $result !== false) {
-            $result = $this->client->getInsertId();
+            $result = $this->connection->getInsertId();
         } elseif ($this->updateOrDelete && $result !== false) {
-            $result = $this->client->getAffectedRows();
+            $result = $this->connection->getAffectedRows();
         } elseif ($this->findOne && $result !== false) {
             $result = $result[0] ?? [];
         }

@@ -3,52 +3,40 @@
 namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
-use Swoft\Db\AbstractDbConnect;
+use Swoft\Db\AbstractDbConnection;
 use Swoft\Db\Bean\Annotation\Connect;
 use Swoft\Db\Driver\DriverType;
 
 /**
- * 同步Mysql连接
+ * Mysql sync connection
  *
  * @Connect(type=DriverType::SYNC)
- * @uses      SyncMysqlConnect
- * @version   2017年09月30日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class SyncMysqlConnect extends AbstractDbConnect
+class SyncMysqlConnection extends AbstractDbConnection
 {
     /**
-     * Mysql连接
-     *
      * @var \PDO
      */
-    private $connect;
+    private $connection;
 
     /**
-     * 预处理
-     *
      * @var \PDOStatement
      */
     private $stmt;
 
     /**
-     * SQL语句
-     *
      * @var string
      */
     private $sql;
 
     /**
-     * 创建连接
+     * Create connection
      */
-    public function createConnect()
+    public function createConnection()
     {
-        // 配置信息初始化
-        $uri                = $this->connectPool->getConnectAddress();
+        $uri                = $this->pool->getConnectionAddress();
         $options            = $this->parseUri($uri);
-        $options['timeout'] = $this->connectPool->getTimeout();
+        $options['timeout'] = $this->pool->getTimeout();
 
         $user    = $options['user'];
         $passwd  = $options['password'];
@@ -58,30 +46,28 @@ class SyncMysqlConnect extends AbstractDbConnect
         $charset = $options['charset'];
         $timeout = $options['timeout'];
 
-        // 组拼$dsn串
-        $pdoOptions    = [
+        // connect
+        $pdoOptions       = [
             \PDO::ATTR_TIMEOUT    => $timeout,
             \PDO::ATTR_PERSISTENT => true,
         ];
-        $dsn           = "mysql:host=$host;port=$port;dbname=$dbName;charset=$charset";
-        $this->connect = new \PDO($dsn, $user, $passwd, $pdoOptions);
+        $dsn              = "mysql:host=$host;port=$port;dbname=$dbName;charset=$charset";
+        $this->connection = new \PDO($dsn, $user, $passwd, $pdoOptions);
+        $this->connection->setAttribute(\PDO::ATTR_ERRMODE,\PDO::ERRMODE_EXCEPTION);
     }
 
     /**
-     * 预处理
-     *
      * @param string $sql
      */
     public function prepare(string $sql)
     {
         $this->sql  = $sql . " Params:";
-        $this->stmt = $this->connect->prepare($sql);
+        $this->stmt = $this->connection->prepare($sql);
     }
 
     /**
-     * 执行SQL
-     *
      * @param array|null $params
+     *
      * @return array|bool
      */
     public function execute(array $params = null)
@@ -93,9 +79,7 @@ class SyncMysqlConnect extends AbstractDbConnect
             App::info($this->sql);
         }
         if ($result !== true) {
-            if (App::isWorkerStatus()) {
-                App::error('数据库执行错误，sql=' . $this->stmt->debugDumpParams());
-            }
+            App::error('Sync mysql execute error，sql=' . $this->stmt->debugDumpParams());
 
             return $result;
         }
@@ -104,8 +88,6 @@ class SyncMysqlConnect extends AbstractDbConnect
     }
 
     /**
-     * 绑定参数
-     *
      * @param array|null $params
      */
     private function bindParams(array $params = null)
@@ -120,33 +102,46 @@ class SyncMysqlConnect extends AbstractDbConnect
     }
 
     /**
-     * 重连接
+     * @return void
      */
-    public function reConnect()
+    public function reconnect()
     {
+        $this->createConnection();
     }
 
     /**
-     * 开始事务
+     * @return bool
+     */
+    public function check(): bool
+    {
+        try {
+            $this->connection->getAttribute(\PDO::ATTR_SERVER_INFO);
+        } catch (\Throwable $e) {
+            if ($e->getCode() == 'HY000') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Begin transaction
      */
     public function beginTransaction()
     {
-        $this->connect->beginTransaction();
+        $this->connection->beginTransaction();
     }
 
     /**
-     * 获取插入ID
-     *
      * @return mixed
      */
     public function getInsertId()
     {
-        return $this->connect->lastInsertId();
+        return $this->connection->lastInsertId();
     }
 
     /**
-     * 获取更新影响的行数
-     *
      * @return int
      */
     public function getAffectedRows(): int
@@ -155,33 +150,31 @@ class SyncMysqlConnect extends AbstractDbConnect
     }
 
     /**
-     * 回滚事务
+     * Rollback transaction
      */
     public function rollback()
     {
-        $this->connect->rollBack();
+        $this->connection->rollBack();
     }
 
     /**
-     * 提交事务
+     * Commit transaction
      */
     public function commit()
     {
-        $this->connect->commit();
+        $this->connection->commit();
     }
 
     /**
-     * 销毁SQL
+     * Destory sql
      */
     public function destory()
     {
-        $this->sql = '';
+        $this->sql  = '';
         $this->stmt = null;
     }
 
     /**
-     * SQL语句
-     *
      * @return string
      */
     public function getSql()
@@ -190,7 +183,7 @@ class SyncMysqlConnect extends AbstractDbConnect
     }
 
     /**
-     * 格式化参数
+     * Format
      *
      * @param array $params
      */

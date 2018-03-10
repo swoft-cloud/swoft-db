@@ -13,16 +13,17 @@ class EntityHelper
     /**
      * @param array  $result
      * @param string $className
-     * @return array
+     *
+     * @return mixed
      */
-    public static function resultToEntity(array $result, string $className): array
+    public static function resultToEntity(array $result, string $className)
     {
-        if (! isset($result[0])) {
+        if (!isset($result[0])) {
             return self::arrayToEntity($result, $className);
         }
         $entities = [];
         foreach ($result as $entityData) {
-            if (! \is_array($entityData)) {
+            if (!\is_array($entityData)) {
                 continue;
             }
             $entities[] = self::arrayToEntity($entityData, $className);
@@ -32,28 +33,29 @@ class EntityHelper
     }
 
     /**
-     * @param array  $array
+     * @param array  $data
      * @param string $className
-     * @return array
+     *
+     * @return mixed
      */
-    public static function arrayToEntity(array $array, string $className): array
+    public static function arrayToEntity(array $data, string $className)
     {
 
         $entities = EntityCollector::getCollector();
-        if (! isset($className)) {
-            return $array;
+        if (!isset($className)) {
+            return $data;
         }
-        $attrs = [];
+        $attrs  = [];
         $object = new $className();
-        foreach ($array as $col => $value) {
-            if (! isset($entities[$className]['column'][$col])) {
+        foreach ($data as $col => $value) {
+            if (!isset($entities[$className]['column'][$col])) {
                 continue;
             }
 
-            $field = $entities[$className]['column'][$col];
+            $field        = $entities[$className]['column'][$col];
             $setterMethod = 'set' . ucfirst($field);
 
-            $type = $entities[$className]['field'][$field]['type'];
+            $type  = $entities[$className]['field'][$field]['type'];
             $value = self::trasferTypes($type, $value);
 
             if (method_exists($object, $setterMethod)) {
@@ -71,6 +73,7 @@ class EntityHelper
     /**
      * @param $type
      * @param $value
+     *
      * @return bool|float|int|string
      */
     public static function trasferTypes($type, $value)

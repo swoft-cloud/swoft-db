@@ -41,8 +41,8 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
 
         App::profileStart($profileKey);
 
-        $this->connect->prepare($sql);
-        $result = $this->connect->execute($this->parameters);
+        $this->connection->prepare($sql);
+        $result = $this->connection->execute($this->parameters);
 
         App::profileEnd($profileKey);
         App::debug(sprintf('sql execute sqlId=%s, result=%s, sql=%s', $sqlId, JsonHelper::encode($result, JSON_UNESCAPED_UNICODE), $sql));
@@ -54,10 +54,10 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         }
 
         if (! DbHelper::isContextTransaction($this->poolId)) {
-            $this->pool->release($this->connect);
+            $this->pool->release($this->connection);
         }
 
-        $syncData = new DbDataResult($result);
+        $syncData = new DbDataResult($result, $this->connection, $this->pool);
 
         return $syncData;
     }
@@ -70,14 +70,14 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         $sql = $this->getStatement();
         list($sqlId, $profileKey) = $this->getSqlIdAndProfileKey($sql);
 
-        $this->connect->setDefer();
-        $this->connect->prepare($sql);
-        $result = $this->connect->execute($this->parameters);
+        $this->connection->setDefer();
+        $this->connection->prepare($sql);
+        $result = $this->connection->execute($this->parameters);
 
         App::debug(sprintf('sql execute sqlId=%s, sql=%s', $sqlId, $sql));
         $isUpdateOrDelete = $this->isDelete() || $this->isUpdate();
         $isFindOne = $this->isSelect() && isset($this->limit['limit']) && $this->limit['limit'] === 1;
-        $corResult = new DbCoResult($this->connect, $profileKey, $this->pool);
+        $corResult = new DbCoResult($this->connection, $profileKey, $this->pool);
 
         // 结果转换参数
         $corResult->setPoolId($this->poolId);
@@ -111,9 +111,9 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         $isFindOne = isset($this->limit['limit']) && $this->limit['limit'] === 1;
         $isUpdateOrDelete = $this->isDelete() || $this->isUpdate();
         if ($result !== false && $this->isInsert()) {
-            $result = $this->connect->getInsertId();
+            $result = $this->connection->getInsertId();
         } elseif ($result !== false && $isUpdateOrDelete) {
-            $result = $this->connect->getAffectedRows();
+            $result = $this->connection->getAffectedRows();
         } elseif ($isFindOne && $result !== false && $this->isSelect()) {
             $result = $result[0] ?? [];
         }

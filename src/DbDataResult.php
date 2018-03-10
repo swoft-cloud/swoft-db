@@ -29,6 +29,10 @@ class DbDataResult extends AbstractDataResult
             $result = EntityHelper::resultToEntity($result, $className);
         }
 
+        if($this->pool !== null && $this->connection !== null){
+            $this->pool->release($this->connection);
+        }
+
         return $result;
     }
 }

@@ -9,8 +9,8 @@ use Swoft\Core\ResultInterface;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Exception\DbException;
 use Swoft\Db\Helper\DbHelper;
-use Swoft\Pool\ConnectInterface;
-use Swoft\Pool\ConnectPool;
+use Swoft\Pool\ConnectionInterface;
+use Swoft\Pool\PoolInterface;
 
 /**
  * Class EntityManager
@@ -27,14 +27,14 @@ class EntityManager implements EntityManagerInterface
     /**
      * Db connection
      *
-     * @var \Swoft\Pool\AbstractConnect
+     * @var \Swoft\Pool\AbstractConnection
      */
     private $connect;
 
     /**
      * Connection pool
      *
-     * @var ConnectPool
+     * @var PoolInterface
      */
     private $pool = null;
 
@@ -53,20 +53,21 @@ class EntityManager implements EntityManagerInterface
     /**
      * EntityManager constructor.
      *
-     * @param ConnectPool $pool
-     * @param string      $poolId
+     * @param PoolInterface $pool
+     * @param string        $poolId
      */
-    private function __construct(ConnectPool $pool, string $poolId)
+    private function __construct(PoolInterface $pool, string $poolId)
     {
-        $this->pool = $pool;
-        $this->poolId = $poolId;
-        $this->connect = $pool->getConnect();
+        $this->pool    = $pool;
+        $this->poolId  = $poolId;
+        $this->connect = $pool->getConnection();
     }
 
     /**
      * Create a EntityManager
      *
      * @param string $poolId
+     *
      * @return EntityManager
      */
     public static function create(string $poolId = Pool::MASTER): EntityManager
@@ -80,6 +81,7 @@ class EntityManager implements EntityManagerInterface
      * Create a Query Builder
      *
      * @param string $sql
+     *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
      */
@@ -96,6 +98,7 @@ class EntityManager implements EntityManagerInterface
      *
      * @param string $className Entity class name
      * @param string $poolId    Pool id, master node will be used as defaults
+     *
      * @return QueryBuilder
      */
     public static function getQuery(string $className, $poolId): QueryBuilder
@@ -103,8 +106,8 @@ class EntityManager implements EntityManagerInterface
 
         $connect = self::getConnect($poolId);
 
-        $entities = EntityCollector::getCollector();
-        $tableName = $entities[$className]['table']['name'];
+        $entities       = EntityCollector::getCollector();
+        $tableName      = $entities[$className]['table']['name'];
         $queryClassName = self::getQueryClassName($connect);
 
         // Get connection pool
@@ -121,26 +124,28 @@ class EntityManager implements EntityManagerInterface
      * Get a connection
      *
      * @param string $poolId
-     * @return \Swoft\Pool\ConnectInterface
+     *
+     * @return \Swoft\Pool\ConnectionInterface
      */
-    private static function getConnect(string $poolId): ConnectInterface
+    private static function getConnect(string $poolId): ConnectionInterface
     {
-        $cid = Coroutine::id();
+        $cid                   = Coroutine::id();
         $contextTransactionKey = DbHelper::getContextTransactionKey((int)$cid, $poolId);
-        $connectKey = DbHelper::getContextConnectKey((int)$cid, $poolId);
+        $connectKey            = DbHelper::getContextConnectKey((int)$cid, $poolId);
 
-        $contextTransaction = RequestContext::getContextDataByKey($contextTransactionKey, new \SplStack());
-        $contextConnects = RequestContext::getContextDataByKey(self::CONTEXT_CONNECTS, []);
-        $contextConnect = $contextConnects[$connectKey] ?? new \SplStack();
-        $isContextTransaction = $contextTransaction instanceof \SplStack && ! $contextTransaction->isEmpty();
-        $isContextConnect = $contextConnect instanceof \SplStack && ! $contextConnect->isEmpty();
+        $contextTransaction   = RequestContext::getContextDataByKey($contextTransactionKey, new \SplStack());
+        $contextConnects      = RequestContext::getContextDataByKey(self::CONTEXT_CONNECTS, []);
+        $contextConnect       = $contextConnects[$connectKey] ?? new \SplStack();
+        $isContextTransaction = $contextTransaction instanceof \SplStack && !$contextTransaction->isEmpty();
+        $isContextConnect     = $contextConnect instanceof \SplStack && !$contextConnect->isEmpty();
         if ($isContextTransaction && $isContextConnect) {
             return $contextConnect->offsetGet(0);
         }
 
         // Get a connection from pool
-        $pool = self::getPool($poolId);
-        $connect = $pool->getConnect();
+        $pool    = self::getPool($poolId);
+        $connect = $pool->getConnection();
+
         return $connect;
     }
 
@@ -148,6 +153,7 @@ class EntityManager implements EntityManagerInterface
      * Save Entity
      *
      * @param object $entity
+     *
      * @return ResultInterface
      * @throws \Swoft\Db\Exception\DbException
      */
@@ -163,6 +169,7 @@ class EntityManager implements EntityManagerInterface
      * Delete Entity
      *
      * @param object $entity
+     *
      * @return ResultInterface
      */
     public function delete($entity)
@@ -178,6 +185,7 @@ class EntityManager implements EntityManagerInterface
      *
      * @param string $className Entity class nane
      * @param mixed  $id
+     *
      * @return ResultInterface
      */
     public function deleteById($className, $id)
@@ -193,6 +201,7 @@ class EntityManager implements EntityManagerInterface
      *
      * @param string $className Entity class name
      * @param array  $ids       ID collection
+     *
      * @return ResultInterface
      */
     public function deleteByIds($className, array $ids)
@@ -207,6 +216,7 @@ class EntityManager implements EntityManagerInterface
      * Find by Entity
      *
      * @param object $entity
+     *
      * @return ResultInterface
      */
     public function find($entity): ResultInterface
@@ -222,6 +232,7 @@ class EntityManager implements EntityManagerInterface
      *
      * @param string $className Entity class name
      * @param mixed  $id
+     *
      * @return ResultInterface
      */
     public function findById($className, $id): ResultInterface
@@ -237,6 +248,7 @@ class EntityManager implements EntityManagerInterface
      *
      * @param string $className transaction
      * @param array  $ids
+     *
      * @return ResultInterface
      */
     public function findByIds($className, array $ids): ResultInterface
@@ -308,9 +320,10 @@ class EntityManager implements EntityManagerInterface
      * Get connetion pool by pool ID
      *
      * @param string $poolId
-     * @return ConnectPool
+     *
+     * @return PoolInterface
      */
-    private static function getPool(string $poolId): ConnectPool
+    private static function getPool(string $poolId): PoolInterface
     {
         if ($poolId === Pool::SLAVE && self::hasSalvePool() === false) {
             $poolId = Pool::MASTER;
@@ -327,8 +340,8 @@ class EntityManager implements EntityManagerInterface
     private static function hasSalvePool()
     {
         $properties = App::getProperties();
-        $hasConfig = isset($properties['db']['slave']['uri']) && ! empty($properties['db']['slave']['uri']);
-        $hasEnv = ! empty(env('DB_SLAVE_URI'));
+        $hasConfig  = isset($properties['db']['slave']['uri']) && !empty($properties['db']['slave']['uri']);
+        $hasEnv     = !empty(env('DB_SLAVE_URI'));
 
         if ($hasConfig || $hasEnv) {
             return true;
@@ -355,13 +368,13 @@ class EntityManager implements EntityManagerInterface
      */
     private function beginTransactionContext()
     {
-        $cid = Coroutine::id();
+        $cid                   = Coroutine::id();
         $contextTransactionKey = DbHelper::getContextTransactionKey((int)$cid, $this->poolId);
-        $connectKey = DbHelper::getContextConnectKey((int)$cid, $this->poolId);
+        $connectKey            = DbHelper::getContextConnectKey((int)$cid, $this->poolId);
 
         $contextTransaction = RequestContext::getContextDataByKey($contextTransactionKey, new \SplStack());
-        $contextConnects = RequestContext::getContextDataByKey(self::CONTEXT_CONNECTS, []);
-        $contextConnect = $contextConnects[$connectKey] ?? new \SplStack();
+        $contextConnects    = RequestContext::getContextDataByKey(self::CONTEXT_CONNECTS, []);
+        $contextConnect     = $contextConnects[$connectKey] ?? new \SplStack();
 
         if ($contextTransaction instanceof \SplStack) {
             $contextTransaction->push(true);
@@ -379,13 +392,13 @@ class EntityManager implements EntityManagerInterface
      */
     private function closetTransactionContext()
     {
-        $cid = Coroutine::id();
+        $cid                   = Coroutine::id();
         $contextTransactionKey = DbHelper::getContextTransactionKey((int)$cid, $this->poolId);
-        $connectKey = DbHelper::getContextConnectKey((int)$cid, $this->poolId);
+        $connectKey            = DbHelper::getContextConnectKey((int)$cid, $this->poolId);
 
         $contextTransaction = RequestContext::getContextDataByKey($contextTransactionKey, new \SplStack());
-        $contextConnects = RequestContext::getContextDataByKey(self::CONTEXT_CONNECTS, []);
-        $contextConnect = $contextConnects[$connectKey] ?? new \SplStack();
+        $contextConnects    = RequestContext::getContextDataByKey(self::CONTEXT_CONNECTS, []);
+        $contextConnect     = $contextConnects[$connectKey] ?? new \SplStack();
 
         if ($contextTransaction instanceof \SplStack) {
             $contextTransaction->pop();
@@ -403,16 +416,17 @@ class EntityManager implements EntityManagerInterface
     /**
      * Get the class name of QueryBuilder
      *
-     * @param ConnectInterface $connect
+     * @param ConnectionInterface $connect
+     *
      * @return string
      */
-    private static function getQueryClassName(ConnectInterface $connect): string
+    private static function getQueryClassName(ConnectionInterface $connect): string
     {
         $connectClassName = \get_class($connect);
-        $classNameTmp = str_replace('\\', '/', $connectClassName);
-        $namespaceDir = \dirname($classNameTmp);
-        $namespace = str_replace('/', '\\', $namespaceDir);
-        $namespace = sprintf('%s\\QueryBuilder', $namespace);
+        $classNameTmp     = str_replace('\\', '/', $connectClassName);
+        $namespaceDir     = \dirname($classNameTmp);
+        $namespace        = str_replace('/', '\\', $namespaceDir);
+        $namespace        = sprintf('%s\\QueryBuilder', $namespace);
 
         return $namespace;
     }

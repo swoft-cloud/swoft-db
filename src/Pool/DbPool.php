@@ -9,14 +9,15 @@ use Swoft\Db\Bean\Collector\ConnectCollector;
 use Swoft\Db\Driver\DriverType;
 use Swoft\Db\Exception\DbException;
 use Swoft\Db\Pool\Config\DbPoolConfig;
-use Swoft\Pool\ConnectPool;
+use Swoft\Pool\ConnectionInterface;
+use Swoft\Pool\ConnectionPool;
 
 /**
  * Db pool
  *
  * @Pool()
  */
-class DbPool extends ConnectPool
+class DbPool extends ConnectionPool
 {
     /**
      * The config of pool
@@ -27,7 +28,12 @@ class DbPool extends ConnectPool
      */
     protected $poolConfig;
 
-    public function createConnect()
+    /**
+     * Create connection
+     *
+     * @return ConnectionInterface
+     */
+    public function createConnection(): ConnectionInterface
     {
         $driver    = $this->poolConfig->getDriver();
         $collector = ConnectCollector::getCollector();
@@ -37,11 +43,8 @@ class DbPool extends ConnectPool
         } else {
             $connectClassName = $this->getSyncConnectClassName($collector, $driver);
         }
-        return new $connectClassName($this);
-    }
 
-    public function reConnect($client)
-    {
+        return new $connectClassName($this);
     }
 
     /**

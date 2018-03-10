@@ -121,8 +121,9 @@ class Executor
         list($table, $idColumn, $idValue, $fields) = $this->getFields($entity, 2);
 
         if (empty($fields)) {
-            App::warning("更新的数据不能为空(没有数据发生改变 table=" . $table . " id=" . $idColumn . " value=" . $idValue);
-            return new DbDataResult(0);
+            $pool = $this->queryBuilder->getConnection();
+            $connection = $this->queryBuilder->getConnection();
+            return new DbDataResult(0, $connection, $pool);
         }
         // 构建update查询器
         $this->queryBuilder->update($table)->where($idColumn, $idValue);

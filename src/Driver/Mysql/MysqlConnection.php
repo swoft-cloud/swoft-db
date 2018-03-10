@@ -4,138 +4,125 @@ namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
 use Swoft\Db\Bean\Annotation\Connect;
-use Swoft\Db\AbstractDbConnect;
+use Swoft\Db\AbstractDbConnection;
+use Swoft\Db\Exception\MysqlException;
 use Swoole\Coroutine\Mysql;
 
 /**
- * The connect of mysql
+ * Mysql connection
  *
  * @Connect()
- * @uses      MysqlConnect
- * @version   2017年09月29日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class MysqlConnect extends AbstractDbConnect
+class MysqlConnection extends AbstractDbConnection
 {
     /**
-     * 协程Mysql连接
-     *
      * @var Mysql
      */
-    private $connect = null;
+    private $connection = null;
 
     /**
-     * SQL语句
-     *
      * @var string
      */
     private $sql = '';
 
-
     /**
-     * 预处理语句
+     * Prepare
      *
      * @param string $sql
      */
     public function prepare(string $sql)
     {
-        $this->sql = $sql;
+        $this->sql  = $sql;
     }
 
     /**
-     * 执行语句
+     * Execute
      *
      * @param array|null $params
+     *
      * @return array|bool
      */
-    public function execute(array $params = null)
+    public function execute(array $params = [])
     {
         $this->formatSqlByParams($params);
-        $result = $this->connect->query($this->sql);
+        $result = $this->connection->query($this->sql);
         if ($result === false) {
-            App::error('mysql执行出错，connectError=' . $this->connect->connect_error . ' error=' . $this->connect->error);
+            App::error('Mysql execute error，connectError=' . $this->connection->connect_error . ' error=' . $this->connection->error);
         }
+
         return $result;
     }
 
     /**
-     * 延迟收取数据包
-     *
      * @return array|bool
      */
     public function recv()
     {
-        return $this->connect->recv();
+        return $this->connection->recv();
     }
 
     /**
-     * 获取插入ID
-     *
      * @return mixed
      */
     public function getInsertId()
     {
-        return $this->connect->insert_id;
+        return $this->connection->insert_id;
     }
 
     /**
-     * 获取更新影响的行数
-     *
      * @return int
      */
     public function getAffectedRows(): int
     {
-        return $this->connect->affected_rows;
+        return $this->connection->affected_rows;
     }
 
     /**
-     * 开始事务
+     * Begin transaction
      */
     public function beginTransaction()
     {
-        $this->connect->query('begin;');
+        $this->connection->query('begin;');
     }
 
     /**
-     * 回滚事务
+     * Rollback transaction
      */
     public function rollback()
     {
-        $this->connect->query('rollback;');
+        $this->connection->query('rollback;');
     }
 
     /**
-     * 提交事务
+     * Commit transaction
      */
     public function commit()
     {
-        $this->connect->query('commit;');
+        $this->connection->query('commit;');
     }
 
     /**
-     * 设置是否延迟收包
+     * Set defer
      *
      * @param bool $defer
      */
     public function setDefer($defer = true)
     {
-        $this->connect->setDefer($defer);
+        $this->connection->setDefer($defer);
     }
 
     /**
-     * 创建连接
+     * Create connection
      *
      * @throws \InvalidArgumentException
      */
-    public function createConnect()
+    public function createConnection()
     {
-        $uri = $this->connectPool->getConnectAddress();
-        $options = $this->parseUri($uri);
-        $options['timeout'] = $this->connectPool->getTimeout();
+        $uri                = $this->pool->getConnectionAddress();
+        $options            = $this->parseUri($uri);
+        $options['timeout'] = $this->pool->getTimeout();
 
-        // 连接mysql
+        // init
         $mysql = new MySQL();
         $mysql->connect([
             'host'     => $options['host'],
@@ -144,26 +131,34 @@ class MysqlConnect extends AbstractDbConnect
             'password' => $options['password'],
             'database' => $options['database'],
             'timeout'  => $options['timeout'],
-            'charset'  => $options['charset']
+            'charset'  => $options['charset'],
         ]);
 
-        // 连接失败处理
+        // error
         if ($mysql->connected === false) {
-            throw new \InvalidArgumentException('mysql数据库连接出错，error=' . $mysql->connect_error);
+            throw new MysqlException('Database connection error，error=' . $mysql->connect_error);
         }
-        $this->connect = $mysql;
+        $this->connection = $mysql;
     }
 
+
     /**
-     * 重新连接
+     * @return void
      */
-    public function reConnect()
+    public function reconnect()
     {
+        $this->createConnection();
     }
 
     /**
-     * Sql语句
-     *
+     * @return bool
+     */
+    public function check(): bool
+    {
+        return $this->connection->connected;
+    }
+
+    /**
      * @return string
      */
     public function getSql(): string
@@ -172,7 +167,7 @@ class MysqlConnect extends AbstractDbConnect
     }
 
     /**
-     * 销毁SQL
+     * Destory sql
      */
     public function destory()
     {
@@ -189,22 +184,18 @@ class MysqlConnect extends AbstractDbConnect
         if (empty($params)) {
             return;
         }
-
         // ?方式传递参数
         if (strpos($this->sql, '?') !== false) {
             $this->transferQuestionMark();
         }
-
         $this->sql = strtr($this->sql, $params);
     }
-
     /**
      * 格式化?标记
      */
     private function transferQuestionMark()
     {
         $sqlAry = explode('?', $this->sql);
-
         $sql = '';
         $maxBlock = \count($sqlAry);
         for ($i = 0; $i < $maxBlock; $i++) {
@@ -214,7 +205,6 @@ class MysqlConnect extends AbstractDbConnect
                 $sql .= '?' . $n . ' ';
             }
         }
-
         $this->sql = $sql;
     }
 }
