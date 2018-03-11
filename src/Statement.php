@@ -397,7 +397,7 @@ trait Statement
 
             // 没有括号
             $useConnector = true;
-            $value = $this->getCriteriaWithoutBracket($criterion['operator'], $criterion['value']);
+            $value = $this->getCriteriaWithoutBracket($criterion['operator'], $criterion['value'], $criterion['column']);
             $statement .= $criterion['column'] . ' ' . $criterion['operator'] . ' ' . $value;
         }
         return $statement;
@@ -410,7 +410,7 @@ trait Statement
      * @param  mixed $criterionVaue
      * @return bool|string
      */
-    protected function getCriteriaWithoutBracket(string $operator, $criterionVaue)
+    protected function getCriteriaWithoutBracket(string $operator, $criterionVaue, $columnName)
     {
         switch ($operator) {
             case self::BETWEEN:
@@ -622,10 +622,25 @@ trait Statement
      */
     protected function getQuoteValue($value): string
     {
-        if (\is_string($value)) {
-            $value = '"' . $value . '"';
-        }
-        return $value;
+        $key = uniqid();
+        $this->setParameter($key, $value);
+
+        return ":{$key}";
+
+//        if (\is_string($value)) {
+//            $value = '"' . $value . '"';
+//        }
+//        return $value;
+    }
+
+    /**
+     * @param mixed $key
+     *
+     * @return bool
+     */
+    protected function hasParameter($key): bool
+    {
+        return array_key_exists($key, $this->parameters);
     }
 
     /**

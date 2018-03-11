@@ -35,6 +35,11 @@ interface DbConnectInterface
     public function getAffectedRows();
 
     /**
+     * @return mixed
+     */
+    public function fetch();
+
+    /**
      * Rollback transaction
      */
     public function rollback();

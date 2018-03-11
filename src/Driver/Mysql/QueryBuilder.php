@@ -47,6 +47,15 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         App::profileEnd($profileKey);
         App::debug(sprintf('sql execute sqlId=%s, result=%s, sql=%s', $sqlId, JsonHelper::encode($result, JSON_UNESCAPED_UNICODE), $sql));
 
+        $isFindOne = isset($this->limit['limit']) && $this->limit['limit'] === 1;
+        if($this->isInsert()){
+            $result = $this->connection->getInsertId();
+        }elseif($this->isUpdate() || $this->isDelete()){
+            $result = $this->connection->getAffectedRows();
+        }else{
+            $result = $this->connection->fetch();
+        }
+
         $result = $this->transferResult($result);
 
         if (is_array($result) && ! empty($className)) {
@@ -56,6 +65,8 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         if (! DbHelper::isContextTransaction($this->poolId)) {
             $this->pool->release($this->connection);
         }
+
+
 
         $syncData = new DbDataResult($result, $this->connection, $this->pool);
 
@@ -126,10 +137,10 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
      */
     protected function formatParamsKey($key): string
     {
-        if (\is_string($key)) {
+        if (\is_string($key) && strpos($key, ':') === false) {
             return ':' . $key;
         }
-        if (App::isWorkerStatus()) {
+        if (is_int($key) && App::isCoContext()) {
             return '?' . $key;
         }
 

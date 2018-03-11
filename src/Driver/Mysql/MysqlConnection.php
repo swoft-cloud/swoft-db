@@ -184,6 +184,11 @@ class MysqlConnection extends AbstractDbConnection
         if (empty($params)) {
             return;
         }
+
+        foreach ($params as $key => &$value){
+            $value = "'{$value}'";
+        }
+
         // ?方式传递参数
         if (strpos($this->sql, '?') !== false) {
             $this->transferQuestionMark();
@@ -199,7 +204,7 @@ class MysqlConnection extends AbstractDbConnection
         $sql = '';
         $maxBlock = \count($sqlAry);
         for ($i = 0; $i < $maxBlock; $i++) {
-            $n = $i + 1;
+            $n = $i;
             $sql .= $sqlAry[$i];
             if ($maxBlock > $i + 1) {
                 $sql .= '?' . $n . ' ';

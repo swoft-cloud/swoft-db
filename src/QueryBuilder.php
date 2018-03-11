@@ -796,21 +796,29 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * 设置多个参数
      *
-     * @param array $parameters     数组设置参数，如果类型不传，默认按照value传值的类型
-     *                              <pre>
-     *                              [
-     *                              [key,value, type],
-     *                              [key,value]
-     *                              ...
-     *                              ]
-     *                              </pre>
+     * @param array $parameters
+     * $parameters = [
+     *    'key1' => 'value1',
+     *    'key2' => 'value2',
+     * ]
+     * $parameters = [
+     *    'value1',
+     *    'value12',
+     * ]
+     * $parameters = [
+     *   ['key', 'value', 'type'],
+     *   ['key', 'value'],
+     *   ['key', 'value', 'type'],
+     * ]
+     *
      *
      * @throws \Swoft\Db\Exception\DbException
+     * @return $this
      */
     public function setParameters(array $parameters)
     {
         // 循环设置每个参数
-        foreach ($parameters as $parameter) {
+        foreach ($parameters as $index => $parameter) {
             $key   = null;
             $type  = null;
             $value = null;
@@ -819,6 +827,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
                 list($key, $value, $type) = $parameter;
             } elseif (\count($parameter) == 2) {
                 list($key, $value) = $parameter;
+            } elseif (!is_array($parameter)) {
+                $key   = $index;
+                $value = $parameter;
             }
 
             if ($key === null || $value === null) {
@@ -827,6 +838,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
             }
             $this->setParameter($key, $value, $type);
         }
+        return $this;
     }
 
     /**
@@ -975,10 +987,6 @@ abstract class QueryBuilder implements QueryBuilderInterface
         // 参数值类型转换
         if ($type !== null) {
             $value = EntityHelper::trasferTypes($type, $value);
-        }
-
-        if ($type == null && \is_string($value) || $type == Types::STRING) {
-            $value = '"' . $value . '"';
         }
 
         return [$key, $value];

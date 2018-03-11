@@ -68,23 +68,21 @@ class SyncMysqlConnection extends AbstractDbConnection
     /**
      * @param array|null $params
      *
-     * @return array|bool
+     * @return bool
      */
     public function execute(array $params = null)
     {
         $this->bindParams($params);
         $this->formatSqlByParams($params);
         $result = $this->stmt->execute();
-        if (App::isWorkerStatus()) {
+        if (App::isCoContext()) {
             App::info($this->sql);
         }
         if ($result !== true) {
             App::error('Sync mysql execute error，sql=' . $this->stmt->debugDumpParams());
-
-            return $result;
         }
 
-        return $this->stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
     }
 
     /**
@@ -97,6 +95,9 @@ class SyncMysqlConnection extends AbstractDbConnection
         }
 
         foreach ($params as $key => $value) {
+            if (is_int($key)) {
+                $key = $key + 1;
+            }
             $this->stmt->bindValue($key, $value);
         }
     }
@@ -147,6 +148,14 @@ class SyncMysqlConnection extends AbstractDbConnection
     public function getAffectedRows(): int
     {
         return $this->stmt->rowCount();
+    }
+
+    /**
+     * @return array
+     */
+    public function fetch()
+    {
+        return $this->stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**

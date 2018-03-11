@@ -25,6 +25,13 @@ abstract class AbstractDbConnection extends AbstractConnection implements DbConn
     }
 
     /**
+     *
+     */
+    public function fetch()
+    {
+    }
+
+    /**
      * @return string
      */
     public function getDriver(): string

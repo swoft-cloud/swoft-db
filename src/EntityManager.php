@@ -181,6 +181,19 @@ class EntityManager implements EntityManagerInterface
     }
 
     /**
+     * @param $entity
+     *
+     * @return ResultInterface
+     */
+    public function update($entity): ResultInterface
+    {
+        $this->checkStatus();
+        $executor = $this->getExecutor();
+
+        return $executor->update($entity);
+    }
+
+    /**
      * Delete Entity by ID
      *
      * @param string $className Entity class nane

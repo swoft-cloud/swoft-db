@@ -10,13 +10,7 @@ use Swoft\Db\Test\Testing\Pool\DbSlaveEnvPoolConfig;
 use Swoft\Db\Test\Testing\Pool\DbSlavePptConfig;
 
 /**
- *
- *
- * @uses      PoolTest
- * @version   2018年01月25日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * PoolTest
  */
 class PoolTest extends TestCase
 {
@@ -46,13 +40,12 @@ class PoolTest extends TestCase
         $this->assertEquals($pConfig->getProvider(), 'consul2');
         $this->assertEquals($pConfig->getTimeout(), 2);
         $this->assertEquals($pConfig->getUri(), [
-            '127.0.0.1:3302',
-            '127.0.0.1:3302',
+            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
+            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
         ]);
-        $this->assertEquals($pConfig->getBalancer(), 'random2');
+        $this->assertEquals($pConfig->getBalancer(), 'random');
         $this->assertEquals($pConfig->getMaxActive(), 2);
-        $this->assertEquals($pConfig->getMaxIdel(), 2);
-        $this->assertEquals($pConfig->isUseProvider(), true);
+        $this->assertEquals($pConfig->isUseProvider(), false);
         $this->assertEquals($pConfig->getMaxWait(), 2);
     }
 
@@ -80,14 +73,13 @@ class PoolTest extends TestCase
         $pConfig = App::getBean(DbSlaveEnvPoolConfig::class);
         $this->assertEquals($pConfig->getName(), 'slave2');
         $this->assertEquals($pConfig->getProvider(), 'consul2');
-        $this->assertEquals($pConfig->getTimeout(), 2);
+        $this->assertEquals($pConfig->getTimeout(), 3);
         $this->assertEquals($pConfig->getUri(), [
-            '127.0.0.1:3306/test?user=root&password=&charset=utf8',
-            '127.0.0.1:3306/test?user=root&password=&charset=utf8',
+            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
+            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
         ]);
         $this->assertEquals($pConfig->getBalancer(), 'random');
         $this->assertEquals($pConfig->getMaxActive(), 2);
-        $this->assertEquals($pConfig->getMaxIdel(), 2);
         $this->assertEquals($pConfig->isUseProvider(), false);
         $this->assertEquals($pConfig->getMaxWait(), 2);
     }
