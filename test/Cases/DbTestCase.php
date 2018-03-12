@@ -132,7 +132,7 @@ class DbTestCase extends TestCase
     public function arQuery(array $ids, string $poolId = Pool::MASTER)
     {
         $result = User::query($poolId)->select('*')->orderBy('id', QueryBuilder::ORDER_BY_DESC)->limit(2)->execute()->getResult();
-        $this->assertEquals(2, count($result));
+        $this->assertCount(2, $result);
     }
 
     public function emSave(string $poolId = Pool::MASTER)
@@ -252,7 +252,7 @@ class DbTestCase extends TestCase
         $result = $em->createQuery()->select('*')->from(User::class)->orderBy('id', QueryBuilder::ORDER_BY_DESC)->limit(2)->execute()->getResult();
         $em->close();
 
-        $this->assertEquals(2, count($result));
+        $this->assertCount(2, $result);
     }
 
     public function emSql(array $ids, string $poolId = Pool::MASTER){
@@ -307,12 +307,12 @@ class DbTestCase extends TestCase
             ->execute()->getResult();
         $em->close();
 
-        $this->assertEquals(2, count($result));
-        $this->assertEquals(2, count($result2));
-        $this->assertEquals(2, count($result3));
-        $this->assertEquals(2, count($result4));
-        $this->assertEquals(2, count($result5));
-        $this->assertEquals(2, count($result6));
+        $this->assertCount(2, $result);
+        $this->assertCount(2, $result2);
+        $this->assertCount(2, $result3);
+        $this->assertCount(2, $result4);
+        $this->assertCount(2, $result5);
+        $this->assertCount(2, $result6);
     }
 
     public function addUsers(string $poolId = Pool::MASTER)
