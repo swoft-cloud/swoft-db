@@ -9,6 +9,7 @@ services:
 
 before_install:
     - mysql -e 'CREATE DATABASE IF NOT EXISTS test;
+    use test;
     CREATE TABLE IF NOT EXISTS `user` (
       `id` int(11) NOT NULL AUTO_INCREMENT,
       `name` varchar(20) DEFAULT NULL,
@@ -16,7 +17,7 @@ before_install:
       `age` int(1) NOT NULL DEFAULT '0',
       `description` varchar(240) DEFAULT NULL,
       PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB AUTO_INCREMENT=12082 DEFAULT CHARSET=utf8
+    ) ENGINE=InnoDB AUTO_INCREMENT=12082 DEFAULT CHARSET=utf8;
     '
 
 install:
