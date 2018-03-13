@@ -54,12 +54,17 @@ class MysqlConnection extends AbstractDbConnection
     }
 
     /**
-     * @return array|bool
+     * @return mixed
      */
-    public function recv()
+    public function receive()
     {
-        return $this->connection->recv();
+        $result = $this->connection->recv();
+        $this->connection->setDefer(false);
+        $this->recv = true;
+
+        return $result;
     }
+
 
     /**
      * @return mixed
@@ -90,6 +95,9 @@ class MysqlConnection extends AbstractDbConnection
      */
     public function rollback()
     {
+        if (!$this->recv) {
+            throw new MysqlException('You forget to getResult() before rollback !');
+        }
         $this->connection->query('rollback;');
     }
 
@@ -98,17 +106,10 @@ class MysqlConnection extends AbstractDbConnection
      */
     public function commit()
     {
+        if (!$this->recv) {
+            throw new MysqlException('You forget to getResult() before commit !');
+        }
         $this->connection->query('commit;');
-    }
-
-    /**
-     * Set defer
-     *
-     * @param bool $defer
-     */
-    public function setDefer($defer = true)
-    {
-        $this->connection->setDefer($defer);
     }
 
     /**
@@ -139,6 +140,15 @@ class MysqlConnection extends AbstractDbConnection
             throw new MysqlException('Database connection error，error=' . $mysql->connect_error);
         }
         $this->connection = $mysql;
+    }
+
+    /**
+     * @param bool $defer
+     */
+    public function setDefer($defer = true)
+    {
+        $this->recv = false;
+        $this->connection->setDefer($defer);
     }
 
 

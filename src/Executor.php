@@ -123,7 +123,7 @@ class Executor
         if (empty($fields)) {
             $pool = $this->queryBuilder->getConnection();
             $connection = $this->queryBuilder->getConnection();
-            return new DbDataResult(0, $connection, $pool);
+            return new DbDataResult(0, $connection);
         }
         // 构建update查询器
         $this->queryBuilder->update($table)->where($idColumn, $idValue);

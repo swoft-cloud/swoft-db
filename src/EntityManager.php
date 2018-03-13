@@ -8,7 +8,7 @@ use Swoft\Core\RequestContext;
 use Swoft\Core\ResultInterface;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Exception\DbException;
-use Swoft\Db\Helper\DbHelper;
+use Swoft\Helper\PoolHelper;
 use Swoft\Pool\ConnectionInterface;
 use Swoft\Pool\PoolInterface;
 
@@ -27,9 +27,9 @@ class EntityManager implements EntityManagerInterface
     /**
      * Db connection
      *
-     * @var \Swoft\Pool\AbstractConnection
+     * @var \Swoft\Db\AbstractDbConnection
      */
-    private $connect;
+    private $connection;
 
     /**
      * Connection pool
@@ -46,6 +46,11 @@ class EntityManager implements EntityManagerInterface
     private $isClose = false;
 
     /**
+     * @var bool
+     */
+    private $isTransaction = false;
+
+    /**
      * @var string
      */
     private $poolId;
@@ -58,9 +63,11 @@ class EntityManager implements EntityManagerInterface
      */
     private function __construct(PoolInterface $pool, string $poolId)
     {
-        $this->pool    = $pool;
-        $this->poolId  = $poolId;
-        $this->connect = $pool->getConnection();
+        $this->pool       = $pool;
+        $this->poolId     = $poolId;
+        $this->connection = $pool->getConnection();
+
+        $this->connection->setAutoRelease(false);
     }
 
     /**
@@ -88,9 +95,9 @@ class EntityManager implements EntityManagerInterface
     public function createQuery(string $sql = ''): QueryBuilder
     {
         $this->checkStatus();
-        $className = self::getQueryClassName($this->connect);
+        $className = self::getQueryClassName($this->connection);
 
-        return new $className($this->pool, $this->connect, $this->poolId, $sql);
+        return new $className($this->pool, $this->connection, $this->poolId, $sql);
     }
 
     /**
@@ -129,24 +136,24 @@ class EntityManager implements EntityManagerInterface
      */
     private static function getConnect(string $poolId): ConnectionInterface
     {
-        $cid                   = Coroutine::id();
-        $contextTransactionKey = DbHelper::getContextTransactionKey((int)$cid, $poolId);
-        $connectKey            = DbHelper::getContextConnectKey((int)$cid, $poolId);
+        $contextTsKey  = PoolHelper::getContextTsKey();
+        $contextCntKey = PoolHelper::getContextCntKey();
+        $cidPoolId     = PoolHelper::getCidPoolId($poolId);
 
-        $contextTransaction   = RequestContext::getContextDataByKey($contextTransactionKey, new \SplStack());
-        $contextConnects      = RequestContext::getContextDataByKey(self::CONTEXT_CONNECTS, []);
-        $contextConnect       = $contextConnects[$connectKey] ?? new \SplStack();
-        $isContextTransaction = $contextTransaction instanceof \SplStack && !$contextTransaction->isEmpty();
-        $isContextConnect     = $contextConnect instanceof \SplStack && !$contextConnect->isEmpty();
-        if ($isContextTransaction && $isContextConnect) {
-            return $contextConnect->offsetGet(0);
+        /* @var \SplStack $tsStack */
+        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $cidPoolId, new \SplStack());
+        if (!$tsStack->isEmpty()) {
+            $cntId      = $tsStack->offsetGet(0);
+            $connection = RequestContext::getContextDataByChildKey($contextCntKey, $cntId, null);
+
+            return $connection;
         }
 
         // Get a connection from pool
-        $pool    = self::getPool($poolId);
-        $connect = $pool->getConnection();
+        $pool       = self::getPool($poolId);
+        $connection = $pool->getConnection();
 
-        return $connect;
+        return $connection;
     }
 
     /**
@@ -280,8 +287,9 @@ class EntityManager implements EntityManagerInterface
     public function beginTransaction()
     {
         $this->checkStatus();
-        $this->connect->beginTransaction();
+        $this->connection->beginTransaction();
         $this->beginTransactionContext();
+        $this->isTransaction = true;
     }
 
     /**
@@ -292,7 +300,8 @@ class EntityManager implements EntityManagerInterface
     public function rollback()
     {
         $this->checkStatus();
-        $this->connect->rollback();
+        $this->connection->rollback();
+        $this->isTransaction = false;
         $this->closetTransactionContext();
     }
 
@@ -304,7 +313,8 @@ class EntityManager implements EntityManagerInterface
     public function commit()
     {
         $this->checkStatus();
-        $this->connect->commit();
+        $this->connection->commit();
+        $this->isTransaction = false;
         $this->closetTransactionContext();
     }
 
@@ -313,8 +323,14 @@ class EntityManager implements EntityManagerInterface
      */
     public function close()
     {
+        if($this->isTransaction){
+            $this->rollback();
+        }
+        if(!$this->connection->isRecv()){
+            $this->connection->receive();
+        }
         $this->isClose = true;
-        $this->pool->release($this->connect);
+        $this->pool->release($this->connection);
     }
 
     /**
@@ -381,23 +397,15 @@ class EntityManager implements EntityManagerInterface
      */
     private function beginTransactionContext()
     {
-        $cid                   = Coroutine::id();
-        $contextTransactionKey = DbHelper::getContextTransactionKey((int)$cid, $this->poolId);
-        $connectKey            = DbHelper::getContextConnectKey((int)$cid, $this->poolId);
+        $cntId        = $this->connection->getConnectionId();
+        $contextTsKey = PoolHelper::getContextTsKey();
+        $cidPoolId    = PoolHelper::getCidPoolId($this->poolId);
 
-        $contextTransaction = RequestContext::getContextDataByKey($contextTransactionKey, new \SplStack());
-        $contextConnects    = RequestContext::getContextDataByKey(self::CONTEXT_CONNECTS, []);
-        $contextConnect     = $contextConnects[$connectKey] ?? new \SplStack();
+        /* @var \SplStack $tsStack */
+        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $cidPoolId, new \SplStack());
+        $tsStack->push($cntId);
 
-        if ($contextTransaction instanceof \SplStack) {
-            $contextTransaction->push(true);
-        }
-        if ($contextConnect instanceof \SplStack) {
-            $contextConnect->push($this->connect);
-            $contextConnects[$connectKey] = $contextConnect;
-        }
-        RequestContext::setContextDataByKey($contextTransactionKey, $contextTransaction);
-        RequestContext::setContextDataByKey(self::CONTEXT_CONNECTS, $contextConnects);
+        RequestContext::setContextDataByChildKey($contextTsKey, $cidPoolId, $tsStack);
     }
 
     /**
@@ -405,25 +413,15 @@ class EntityManager implements EntityManagerInterface
      */
     private function closetTransactionContext()
     {
-        $cid                   = Coroutine::id();
-        $contextTransactionKey = DbHelper::getContextTransactionKey((int)$cid, $this->poolId);
-        $connectKey            = DbHelper::getContextConnectKey((int)$cid, $this->poolId);
+        $cid          = Coroutine::id();
+        $contextTsKey = PoolHelper::getContextTsKey();
+        $cidPoolId    = PoolHelper::getCidPoolId($this->poolId);
 
-        $contextTransaction = RequestContext::getContextDataByKey($contextTransactionKey, new \SplStack());
-        $contextConnects    = RequestContext::getContextDataByKey(self::CONTEXT_CONNECTS, []);
-        $contextConnect     = $contextConnects[$connectKey] ?? new \SplStack();
+        /* @var \SplStack $tsStack */
+        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $cidPoolId, new \SplStack());
+        $tsStack->pop();
 
-        if ($contextTransaction instanceof \SplStack) {
-            $contextTransaction->pop();
-        }
-
-        if ($contextConnect instanceof \SplStack) {
-            $contextConnect->pop();
-            $contextConnects[$connectKey] = $contextConnect;
-        };
-
-        RequestContext::setContextDataByKey($contextTransactionKey, $contextTransaction);
-        RequestContext::setContextDataByKey(self::CONTEXT_CONNECTS, $contextConnects);
+        RequestContext::setContextDataByChildKey($contextTsKey, $cidPoolId, $tsStack);
     }
 
     /**

@@ -67,25 +67,6 @@ class DbCoResult extends AbstractCoResult
     }
 
     /**
-     * @param bool $defer
-     * @return mixed
-     */
-    public function recv($defer = false)
-    {
-        $result = $this->connection->recv();
-
-        // Reset defer status
-        $defer && $this->connection->setDefer(false);
-
-        $isSqlSession = DbHelper::isContextTransaction($this->poolId);
-        if ($this->pool !== null && ! $isSqlSession) {
-            $this->pool->release($this->connection);
-        }
-
-        return $result;
-    }
-
-    /**
      * @param bool $insert
      */
     public function setInsert(bool $insert)

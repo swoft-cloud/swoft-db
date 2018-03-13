@@ -61,14 +61,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         if (is_array($result) && ! empty($className)) {
             $result = EntityHelper::resultToEntity($result, $className);
         }
-
-        if (! DbHelper::isContextTransaction($this->poolId)) {
-            $this->pool->release($this->connection);
-        }
-
-
-
-        $syncData = new DbDataResult($result, $this->connection, $this->pool);
+        $syncData = new DbDataResult($result, $this->connection);
 
         return $syncData;
     }
@@ -88,7 +81,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         App::debug(sprintf('sql execute sqlId=%s, sql=%s', $sqlId, $sql));
         $isUpdateOrDelete = $this->isDelete() || $this->isUpdate();
         $isFindOne = $this->isSelect() && isset($this->limit['limit']) && $this->limit['limit'] === 1;
-        $corResult = new DbCoResult($this->connection, $profileKey, $this->pool);
+        $corResult = new DbCoResult($this->connection, $profileKey);
 
         // 结果转换参数
         $corResult->setPoolId($this->poolId);

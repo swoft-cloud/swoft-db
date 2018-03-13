@@ -10,19 +10,6 @@ use Swoft\Pool\AbstractConnection;
  */
 abstract class AbstractDbConnection extends AbstractConnection implements DbConnectInterface
 {
-    /**
-     * Recv
-     */
-    public function recv()
-    {
-    }
-
-    /**
-     * @param bool $defer
-     */
-    public function setDefer($defer = true)
-    {
-    }
 
     /**
      *
