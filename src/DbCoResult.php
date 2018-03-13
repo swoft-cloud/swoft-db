@@ -4,7 +4,6 @@ namespace Swoft\Db;
 
 use Swoft\App;
 use Swoft\Core\AbstractCoResult;
-use Swoft\Db\Helper\DbHelper;
 use Swoft\Db\Helper\EntityHelper;
 
 /**

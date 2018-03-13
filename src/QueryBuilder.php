@@ -858,16 +858,6 @@ abstract class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * 返回执行的SQL
-     *
-     * @return string
-     */
-    public function getSql(): string
-    {
-        return $this->connection->getSql();
-    }
-
-    /**
      * 括号条件组拼
      *
      * @param array  $criteria

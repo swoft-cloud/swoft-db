@@ -54,9 +54,4 @@ interface DbConnectInterface
      */
     public function destory();
 
-    /**
-     * @return string
-     */
-    public function getSql();
-
 }

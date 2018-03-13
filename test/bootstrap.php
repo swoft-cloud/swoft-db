@@ -14,4 +14,3 @@ $bootstrap->bootstrap();
 $initApplicationContext = new \Swoft\Core\InitApplicationContext();
 $initApplicationContext->init();
 \Swoft\App::$isInTest = true;
-

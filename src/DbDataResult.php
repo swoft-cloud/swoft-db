@@ -3,7 +3,6 @@
 namespace Swoft\Db;
 
 use Swoft\Core\AbstractDataResult;
-use Swoft\Db\Helper\DbHelper;
 use Swoft\Db\Helper\EntityHelper;
 
 /**

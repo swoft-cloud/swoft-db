@@ -6,7 +6,6 @@ use Swoft\App;
 use Swoft\Core\ResultInterface;
 use Swoft\Db\DbCoResult;
 use Swoft\Db\DbDataResult;
-use Swoft\Db\Helper\DbHelper;
 use Swoft\Db\Helper\EntityHelper;
 use Swoft\Helper\JsonHelper;
 

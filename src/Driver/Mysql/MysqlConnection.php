@@ -50,6 +50,7 @@ class MysqlConnection extends AbstractDbConnection
             App::error('Mysql execute error，connectError=' . $this->connection->connect_error . ' error=' . $this->connection->error);
         }
 
+        $this->pushSqlToStack($this->sql);
         return $result;
     }
 

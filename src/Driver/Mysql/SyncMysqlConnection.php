@@ -81,6 +81,7 @@ class SyncMysqlConnection extends AbstractDbConnection
         if ($result !== true) {
             App::error('Sync mysql execute error，sql=' . $this->stmt->debugDumpParams());
         }
+        $this->pushSqlToStack($this->sql);
 
         return $result;
     }

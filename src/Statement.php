@@ -624,13 +624,7 @@ trait Statement
     {
         $key = uniqid();
         $this->setParameter($key, $value);
-
         return ":{$key}";
-
-//        if (\is_string($value)) {
-//            $value = '"' . $value . '"';
-//        }
-//        return $value;
     }
 
     /**
