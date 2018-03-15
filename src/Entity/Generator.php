@@ -88,7 +88,8 @@ class Generator extends AbstractGenerator implements GeneratorInterface
 
         $querySql = "SELECT `TABLE_NAME` AS `name`,`TABLE_COMMENT` as `comment` FROM {$schemaTable} {$where}";
         $this->dbHandler->prepare($querySql);
-        $this->tables = $this->dbHandler->execute([]);
+        $this->dbHandler->execute([]);
+        $this->tables = $this->dbHandler->fetch();
 
         return !empty($this->tables) ? $this->tables : [];
     }
@@ -110,7 +111,8 @@ class Generator extends AbstractGenerator implements GeneratorInterface
 
         $querySql = "SELECT `COLUMN_NAME` as `name`,`DATA_TYPE` as `type`,`CHARACTER_MAXIMUM_LENGTH` as `length`,`COLUMN_DEFAULT` as `default` ,`COLUMN_KEY` as `key`,`IS_NULLABLE` as `nullable`,`COLUMN_TYPE` as `column_type`,`COLUMN_COMMENT` as `column_comment` FROM {$schemaTable} {$where}";
         $this->dbHandler->prepare($querySql);
-        $columns = $this->dbHandler->execute([]);
+        $this->dbHandler->execute([]);
+        $columns = $this->dbHandler->fetch();
 
         return !empty($columns) ? $columns : [];
     }
