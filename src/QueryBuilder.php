@@ -5,8 +5,8 @@ namespace Swoft\Db;
 use Swoft\App;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Exception\DbException;
-use Swoft\Helper\ArrayHelper;
-use Swoft\Pool\ConnectPool;
+use Swoft\Db\Helper\EntityHelper;
+use Swoft\Pool\PoolInterface;
 
 /**
  * 查询器
@@ -239,41 +239,53 @@ abstract class QueryBuilder implements QueryBuilderInterface
     protected $sql = '';
 
     /**
-     * @var ConnectPool
+     * @var PoolInterface
      */
     protected $pool;
 
     /**
-     * @var AbstractDbConnect
+     * @var AbstractDbConnection
      */
-    protected $connect;
+    protected $connection;
 
+    /**
+     * @var string
+     */
     protected $lastSql;
+
+    /**
+     * @var string
+     */
+    protected $poolId;
 
     /**
      * QueryBuilder constructor.
      *
-     * @param ConnectPool                $connectPool
-     * @param \Swoft\Db\AbstractDbConnect $connect
-     * @param string                     $sql
+     * @param PoolInterface        $pool
+     * @param AbstractDbConnection $connection
+     * @param string               $poolId
+     * @param string               $sql
      */
-    public function __construct(ConnectPool $connectPool, AbstractDbConnect $connect, string $sql = "")
+    public function __construct(PoolInterface $pool, AbstractDbConnection $connection, string $poolId, string $sql = "")
     {
-        $this->sql     = $sql;
-        $this->connect = $connect;
-        $this->pool    = $connectPool;
+        $this->sql        = $sql;
+        $this->poolId     = $poolId;
+        $this->connection = $connection;
+        $this->pool       = $pool;
     }
 
     /**
      * insert语句
      *
      * @param string $tableName
+     *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
      */
     public function insert(string $tableName): QueryBuilder
     {
         $this->insert = $this->getTableNameByClassName($tableName);
+
         return $this;
     }
 
@@ -281,12 +293,14 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * update语句
      *
      * @param string $tableName
+     *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
      */
     public function update(string $tableName): QueryBuilder
     {
         $this->update = $this->getTableNameByClassName($tableName);
+
         return $this;
     }
 
@@ -298,6 +312,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function delete(): QueryBuilder
     {
         $this->delete = true;
+
         return $this;
     }
 
@@ -312,6 +327,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function select(string $column, string $alias = null): QueryBuilder
     {
         $this->select[$column] = $alias;
+
         return $this;
     }
 
@@ -331,6 +347,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
             }
             $this->select[$key] = $column;
         }
+
         return $this;
     }
 
@@ -340,6 +357,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      *
      * @param string      $table
      * @param string|null $alias
+     *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
      */
@@ -347,6 +365,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     {
         $this->from['table'] = $this->getTableNameByClassName($table);
         $this->from['alias'] = $alias;
+
         return $this;
     }
 
@@ -356,6 +375,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * @param string       $table
      * @param string|array $criteria
      * @param string       $alias
+     *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
      */
@@ -363,6 +383,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     {
         $table = $this->getTableNameByClassName($table);
         $this->join($table, $criteria, self::INNER_JOIN, $alias);
+
         return $this;
     }
 
@@ -372,6 +393,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * @param string       $table
      * @param string|array $criteria
      * @param string       $alias
+     *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
      */
@@ -379,6 +401,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     {
         $table = $this->getTableNameByClassName($table);
         $this->join($table, $criteria, self::LEFT_JOIN, $alias);
+
         return $this;
     }
 
@@ -388,6 +411,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * @param string       $table
      * @param string|array $criteria
      * @param string       $alias
+     *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
      */
@@ -395,6 +419,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     {
         $table = $this->getTableNameByClassName($table);
         $this->join($table, $criteria, self::RIGHT_JOIN, $alias);
+
         return $this;
     }
 
@@ -411,6 +436,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function where(string $column, $value, $operator = self::OPERATOR_EQ, $connector = self::LOGICAL_AND): QueryBuilder
     {
         $this->criteria($this->where, $column, $value, $operator, $connector);
+
         return $this;
     }
 
@@ -426,6 +452,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function andWhere(string $column, $value, $operator = self::OPERATOR_EQ): QueryBuilder
     {
         $this->criteria($this->where, $column, $value, $operator, self::LOGICAL_AND);
+
         return $this;
     }
 
@@ -463,6 +490,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function orWhere($column, $value, $operator = self::OPERATOR_EQ): QueryBuilder
     {
         $this->criteria($this->where, $column, $value, $operator, self::LOGICAL_OR);
+
         return $this;
     }
 
@@ -478,6 +506,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function whereIn(string $column, array $values, string $connector = self::LOGICAL_AND): QueryBuilder
     {
         $this->criteria($this->where, $column, $values, self::IN, $connector);
+
         return $this;
     }
 
@@ -493,6 +522,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function whereNotIn(string $column, array $values, string $connector = self::LOGICAL_AND): QueryBuilder
     {
         $this->criteria($this->where, $column, $values, self::NOT_IN, $connector);
+
         return $this;
     }
 
@@ -509,6 +539,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function whereBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
         $this->criteria($this->where, $column, array($min, $max), self::BETWEEN, $connector);
+
         return $this;
     }
 
@@ -525,6 +556,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function whereNotBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
         $this->criteria($this->where, $column, array($min, $max), self::NOT_BETWEEN, $connector);
+
         return $this;
     }
 
@@ -541,6 +573,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function having(string $column, $value, string $operator = self::OPERATOR_EQ, string $connector = self::LOGICAL_AND): QueryBuilder
     {
         $this->criteria($this->having, $column, $value, $operator, $connector);
+
         return $this;
     }
 
@@ -556,6 +589,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function andHaving(string $column, $value, string $operator = self::OPERATOR_EQ): QueryBuilder
     {
         $this->criteria($this->having, $column, $value, $operator, self::LOGICAL_AND);
+
         return $this;
     }
 
@@ -571,6 +605,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function orHaving(string $column, $value, string $operator = self::OPERATOR_EQ): QueryBuilder
     {
         $this->criteria($this->having, $column, $value, $operator, self::LOGICAL_OR);
+
         return $this;
     }
 
@@ -586,6 +621,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function havingIn(string $column, array $values, string $connector = self::LOGICAL_AND): QueryBuilder
     {
         $this->criteria($this->having, $column, $values, self::IN, $connector);
+
         return $this;
     }
 
@@ -601,6 +637,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function havingNotIn(string $column, array $values, string $connector = self::LOGICAL_AND): QueryBuilder
     {
         $this->criteria($this->having, $column, $values, self::NOT_IN, $connector);
+
         return $this;
     }
 
@@ -617,6 +654,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function havingBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
         $this->criteria($this->having, $column, array($min, $max), self::BETWEEN, $connector);
+
         return $this;
     }
 
@@ -633,6 +671,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     public function havingNotBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
         $this->criteria($this->having, $column, array($min, $max), self::NOT_BETWEEN, $connector);
+
         return $this;
     }
 
@@ -670,8 +709,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
     {
         $this->groupBy[] = array(
             'column' => $column,
-            'order'  => $order
+            'order'  => $order,
         );
+
         return $this;
     }
 
@@ -687,7 +727,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     {
         $this->orderBy[] = array(
             'column' => $column,
-            'order'  => $order
+            'order'  => $order,
         );
 
         return $this;
@@ -703,8 +743,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
      */
     public function limit(int $limit, $offset = 0): QueryBuilder
     {
-        $this->limit['limit'] = $limit;
+        $this->limit['limit']  = $limit;
         $this->limit['offset'] = $offset;
+
         return $this;
     }
 
@@ -718,11 +759,12 @@ abstract class QueryBuilder implements QueryBuilderInterface
      */
     public function set($column, $value = null): QueryBuilder
     {
-        if (! \is_array($column)) {
+        if (!\is_array($column)) {
             $this->set[] = array(
                 'column' => $column,
-                'value'  => $value
+                'value'  => $value,
             );
+
             return $this;
         }
 
@@ -739,6 +781,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * @param mixed  $key   参数名称整数和字符串，(?n|:name)
      * @param mixed  $value 值
      * @param string $type  类型，默认按照$value传值的类型
+     *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
      */
@@ -753,28 +796,40 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * 设置多个参数
      *
-     * @param array $parameters     数组设置参数，如果类型不传，默认按照value传值的类型
-     *                              <pre>
-     *                              [
-     *                              [key,value, type],
-     *                              [key,value]
-     *                              ...
-     *                              ]
-     *                              </pre>
+     * @param array $parameters
+     * $parameters = [
+     *    'key1' => 'value1',
+     *    'key2' => 'value2',
+     * ]
+     * $parameters = [
+     *    'value1',
+     *    'value12',
+     * ]
+     * $parameters = [
+     *   ['key', 'value', 'type'],
+     *   ['key', 'value'],
+     *   ['key', 'value', 'type'],
+     * ]
+     *
+     *
      * @throws \Swoft\Db\Exception\DbException
+     * @return $this
      */
     public function setParameters(array $parameters)
     {
         // 循环设置每个参数
-        foreach ($parameters as $parameter) {
-            $key = null;
-            $type = null;
+        foreach ($parameters as $index => $parameter) {
+            $key   = null;
+            $type  = null;
             $value = null;
 
             if (\count($parameter) >= 3) {
                 list($key, $value, $type) = $parameter;
             } elseif (\count($parameter) == 2) {
                 list($key, $value) = $parameter;
+            } elseif (!is_array($parameter)) {
+                $key   = $index;
+                $value = $parameter;
             }
 
             if ($key === null || $value === null) {
@@ -783,16 +838,23 @@ abstract class QueryBuilder implements QueryBuilderInterface
             }
             $this->setParameter($key, $value, $type);
         }
+        return $this;
     }
 
     /**
-     * 返回执行的SQL
-     *
-     * @return string
+     * @return \Swoft\Pool\PoolInterface
      */
-    public function getSql(): string
+    public function getPool(): \Swoft\Pool\PoolInterface
     {
-        return $this->connect->getSql();
+        return $this->pool;
+    }
+
+    /**
+     * @return \Swoft\Db\AbstractDbConnection
+     */
+    public function getConnection(): \Swoft\Db\AbstractDbConnection
+    {
+        return $this->connection;
     }
 
     /**
@@ -808,7 +870,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     {
         $criteria[] = array(
             'bracket'   => $bracket,
-            'connector' => $connector
+            'connector' => $connector,
         );
 
         return $this;
@@ -836,8 +898,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
             'table'    => $table,
             'criteria' => $criteria,
             'type'     => $type,
-            'alias'    => $alias
+            'alias'    => $alias,
         );
+
         return $this;
     }
 
@@ -865,6 +928,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
             'operator'  => $operator,
             'connector' => $connector,
         );
+
         return $this;
     }
 
@@ -888,6 +952,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
             throw new DbException('类不是实体，className=' . $tableName);
         }
         $name = $entities[$tableName]['table']['name'];
+
         return $name;
     }
 
@@ -904,18 +969,14 @@ abstract class QueryBuilder implements QueryBuilderInterface
      */
     private function transferParameter($key, $value, $type): array
     {
-        if (! \is_int($key) && ! \is_string($key)) {
+        if (!\is_int($key) && !\is_string($key)) {
             throw new DbException('参数key,只能是字符串和整数');
         }
         $key = $this->formatParamsKey($key);
 
         // 参数值类型转换
         if ($type !== null) {
-            $value = ArrayHelper::trasferTypes($type, $value);
-        }
-
-        if ($type == null && \is_string($value) || $type == Types::STRING) {
-            $value = '"' . $value . '"';
+            $value = EntityHelper::trasferTypes($type, $value);
         }
 
         return [$key, $value];

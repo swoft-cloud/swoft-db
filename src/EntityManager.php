@@ -3,53 +3,75 @@
 namespace Swoft\Db;
 
 use Swoft\App;
+use Swoft\Core\Coroutine;
+use Swoft\Core\RequestContext;
+use Swoft\Core\ResultInterface;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Exception\DbException;
-use Swoft\Db\Pool\DbPool;
-use Swoft\Pool\ConnectInterface;
-use Swoft\Pool\ConnectPool;
-use Swoft\Core\ResultInterface;
+use Swoft\Helper\PoolHelper;
+use Swoft\Pool\ConnectionInterface;
+use Swoft\Pool\PoolInterface;
 
 /**
- * The entity manager of db
+ * Class EntityManager
+ *
+ * @package Swoft\Db
  */
 class EntityManager implements EntityManagerInterface
 {
     /**
-     * 数据库连接
-     *
-     * @var \Swoft\Pool\AbstractConnect
+     * Context connect
      */
-    private $connect;
+    const CONTEXT_CONNECTS = 'contextConnects';
 
     /**
-     * 连接池
+     * Db connection
      *
-     * @var ConnectPool
+     * @var \Swoft\Db\AbstractDbConnection
+     */
+    private $connection;
+
+    /**
+     * Connection pool
+     *
+     * @var PoolInterface
      */
     private $pool = null;
 
     /**
-     * 当前EM是否关闭
+     * Is this EntityManager closed ?
      *
      * @var bool
      */
     private $isClose = false;
 
     /**
+     * @var bool
+     */
+    private $isTransaction = false;
+
+    /**
+     * @var string
+     */
+    private $poolId;
+
+    /**
      * EntityManager constructor.
      *
-     * @param ConnectPool $pool
+     * @param PoolInterface $pool
+     * @param string        $poolId
      */
-    private function __construct(ConnectPool $pool)
+    private function __construct(PoolInterface $pool, string $poolId)
     {
-        // 初始化连接信息
-        $this->pool    = $pool;
-        $this->connect = $pool->getConnect();
+        $this->pool       = $pool;
+        $this->poolId     = $poolId;
+        $this->connection = $pool->getConnection();
+
+        $this->connection->setAutoRelease(false);
     }
 
     /**
-     * 实例化一个实体管理器
+     * Create a EntityManager
      *
      * @param string $poolId
      *
@@ -59,13 +81,13 @@ class EntityManager implements EntityManagerInterface
     {
         $pool = self::getPool($poolId);
 
-        return new EntityManager($pool);
+        return new EntityManager($pool, $poolId);
     }
 
     /**
-     * 创建一个查询器
+     * Create a Query Builder
      *
-     * @param string $sql sql语句，默认为空
+     * @param string $sql
      *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
@@ -73,29 +95,30 @@ class EntityManager implements EntityManagerInterface
     public function createQuery(string $sql = ''): QueryBuilder
     {
         $this->checkStatus();
-        $className = self::getQueryClassName($this->connect);
+        $className = self::getQueryClassName($this->connection);
 
-        return new $className($this->pool, $this->connect, $sql);
+        return new $className($this->pool, $this->connection, $this->poolId, $sql);
     }
 
     /**
-     * 创建一个查询器用于ActiveRecord操作
+     * Create a QueryBuild for ActiveRecord
      *
-     * @param string $className 实体类名称
-     * @param string $poolId    是否主节点，默认从节点
+     * @param string $className Entity class name
+     * @param string $poolId    Pool id, master node will be used as defaults
      *
      * @return QueryBuilder
      */
     public static function getQuery(string $className, $poolId): QueryBuilder
     {
-        // 获取连接
-        $pool    = self::getPool($poolId);
-        $connect = $pool->getConnect();
 
-        // 驱动查询器
+        $connect = self::getConnect($poolId);
+
         $entities       = EntityCollector::getCollector();
         $tableName      = $entities[$className]['table']['name'];
         $queryClassName = self::getQueryClassName($connect);
+
+        // Get connection pool
+        $pool = self::getPool($poolId);
 
         /* @var QueryBuilder $query */
         $query = new $queryClassName($pool, $connect, '');
@@ -105,11 +128,41 @@ class EntityManager implements EntityManagerInterface
     }
 
     /**
-     * insert实体数据
+     * Get a connection
      *
-     * @param object $entity 实体
+     * @param string $poolId
+     *
+     * @return \Swoft\Pool\ConnectionInterface
+     */
+    private static function getConnect(string $poolId): ConnectionInterface
+    {
+        $contextTsKey  = PoolHelper::getContextTsKey();
+        $contextCntKey = PoolHelper::getContextCntKey();
+        $cidPoolId     = PoolHelper::getCidPoolId($poolId);
+
+        /* @var \SplStack $tsStack */
+        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $cidPoolId, new \SplStack());
+        if (!$tsStack->isEmpty()) {
+            $cntId      = $tsStack->offsetGet(0);
+            $connection = RequestContext::getContextDataByChildKey($contextCntKey, $cntId, null);
+
+            return $connection;
+        }
+
+        // Get a connection from pool
+        $pool       = self::getPool($poolId);
+        $connection = $pool->getConnection();
+
+        return $connection;
+    }
+
+    /**
+     * Save Entity
+     *
+     * @param object $entity
      *
      * @return ResultInterface
+     * @throws \Swoft\Db\Exception\DbException
      */
     public function save($entity)
     {
@@ -120,9 +173,9 @@ class EntityManager implements EntityManagerInterface
     }
 
     /**
-     * 按实体信息删除数据
+     * Delete Entity
      *
-     * @param object $entity 实体
+     * @param object $entity
      *
      * @return ResultInterface
      */
@@ -135,10 +188,23 @@ class EntityManager implements EntityManagerInterface
     }
 
     /**
-     * 根据ID删除数据
+     * @param $entity
      *
-     * @param string $className 实体类名
-     * @param mixed  $id        删除ID
+     * @return ResultInterface
+     */
+    public function update($entity): ResultInterface
+    {
+        $this->checkStatus();
+        $executor = $this->getExecutor();
+
+        return $executor->update($entity);
+    }
+
+    /**
+     * Delete Entity by ID
+     *
+     * @param string $className Entity class nane
+     * @param mixed  $id
      *
      * @return ResultInterface
      */
@@ -151,10 +217,10 @@ class EntityManager implements EntityManagerInterface
     }
 
     /**
-     * 根据ID删除数据
+     * Delete Entities by Ids
      *
-     * @param string $className 实体类名
-     * @param array  $ids       ID集合
+     * @param string $className Entity class name
+     * @param array  $ids       ID collection
      *
      * @return ResultInterface
      */
@@ -167,9 +233,9 @@ class EntityManager implements EntityManagerInterface
     }
 
     /**
-     * 按实体信息查找
+     * Find by Entity
      *
-     * @param object $entity 实体实例
+     * @param object $entity
      *
      * @return ResultInterface
      */
@@ -182,10 +248,10 @@ class EntityManager implements EntityManagerInterface
     }
 
     /**
-     * 根据ID查找
+     * Find Entity by ID
      *
-     * @param string $className 实体类名
-     * @param mixed  $id        ID
+     * @param string $className Entity class name
+     * @param mixed  $id
      *
      * @return ResultInterface
      */
@@ -198,9 +264,9 @@ class EntityManager implements EntityManagerInterface
     }
 
     /**
-     * 根据ids查找
+     * Find Entites by IDs
      *
-     * @param string $className 类名
+     * @param string $className transaction
      * @param array  $ids
      *
      * @return ResultInterface
@@ -214,100 +280,162 @@ class EntityManager implements EntityManagerInterface
     }
 
     /**
-     * 开始事务
+     * Begin transaction
      *
      * @throws \Swoft\Db\Exception\DbException
      */
     public function beginTransaction()
     {
         $this->checkStatus();
-        $this->connect->beginTransaction();
+        $this->connection->beginTransaction();
+        $this->beginTransactionContext();
+        $this->isTransaction = true;
     }
 
     /**
-     * 回滚事务
+     * Rollback transaction
      *
      * @throws \Swoft\Db\Exception\DbException
      */
     public function rollback()
     {
         $this->checkStatus();
-        $this->connect->rollback();
+        $this->connection->rollback();
+        $this->isTransaction = false;
+        $this->closetTransactionContext();
     }
 
     /**
-     * 提交事务
+     * Commit transaction
      *
      * @throws \Swoft\Db\Exception\DbException
      */
     public function commit()
     {
         $this->checkStatus();
-        $this->connect->commit();
+        $this->connection->commit();
+        $this->isTransaction = false;
+        $this->closetTransactionContext();
     }
 
     /**
-     * 关闭当前实体管理器
+     * Close current EntityManager, and release the connection
      */
     public function close()
     {
+        if($this->isTransaction){
+            $this->rollback();
+        }
+        if(!$this->connection->isRecv()){
+            $this->connection->receive();
+        }
         $this->isClose = true;
-        $this->pool->release($this->connect);
+        $this->pool->release($this->connection);
     }
 
     /**
-     * 检查当前实体管理器状态是否正取
+     * Check the EntityManager status
      *
      * @throws DbException
      */
     private function checkStatus()
     {
         if ($this->isClose) {
-            throw new DbException('entity manager已经关闭，不能再操作');
+            throw new DbException('EntityManager was closed, no operation anymore');
         }
     }
 
     /**
-     * 获取连接池
+     * Get connetion pool by pool ID
      *
      * @param string $poolId
      *
-     * @return ConnectPool
+     * @return PoolInterface
      */
-    private static function getPool(string $poolId): ConnectPool
+    private static function getPool(string $poolId): PoolInterface
     {
-        /* @var DbPool $dbPool */
-        $pool = App::getBean($poolId);
+        if ($poolId === Pool::SLAVE && self::hasSalvePool() === false) {
+            $poolId = Pool::MASTER;
+        }
+
+        $pool = App::getPool($poolId);
 
         return $pool;
     }
 
     /**
-     * 获取执行器
+     * @return bool
+     */
+    private static function hasSalvePool()
+    {
+        $properties = App::getProperties();
+        $hasConfig  = isset($properties['db']['slave']['uri']) && !empty($properties['db']['slave']['uri']);
+        $hasEnv     = !empty(env('DB_SLAVE_URI'));
+
+        if ($hasConfig || $hasEnv) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get an Executor
      *
      * @return Executor
      * @throws \Swoft\Db\Exception\DbException
      */
     private function getExecutor(): Executor
     {
-        // 初始化实体执行器
         $query = $this->createQuery();
 
-        return new Executor($query);
+        return new Executor($query, $this->poolId);
     }
 
     /**
-     * Get the class of queryBuilder
+     * Begin transaction context
+     */
+    private function beginTransactionContext()
+    {
+        $cntId        = $this->connection->getConnectionId();
+        $contextTsKey = PoolHelper::getContextTsKey();
+        $cidPoolId    = PoolHelper::getCidPoolId($this->poolId);
+
+        /* @var \SplStack $tsStack */
+        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $cidPoolId, new \SplStack());
+        $tsStack->push($cntId);
+
+        RequestContext::setContextDataByChildKey($contextTsKey, $cidPoolId, $tsStack);
+    }
+
+    /**
+     * Close transaction context
+     */
+    private function closetTransactionContext()
+    {
+        $cid          = Coroutine::id();
+        $contextTsKey = PoolHelper::getContextTsKey();
+        $cidPoolId    = PoolHelper::getCidPoolId($this->poolId);
+
+        /* @var \SplStack $tsStack */
+        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $cidPoolId, new \SplStack());
+        $tsStack->pop();
+
+        RequestContext::setContextDataByChildKey($contextTsKey, $cidPoolId, $tsStack);
+    }
+
+    /**
+     * Get the class name of QueryBuilder
      *
-     * @param ConnectInterface $connect
+     * @param ConnectionInterface $connect
      *
      * @return string
      */
-    private static function getQueryClassName(ConnectInterface $connect): string
+    private static function getQueryClassName(ConnectionInterface $connect): string
     {
-        $connectClassName = get_class($connect);
+        $connectClassName = \get_class($connect);
         $classNameTmp     = str_replace('\\', '/', $connectClassName);
-        $namespaceDir     = dirname($classNameTmp);
+        $namespaceDir     = \dirname($classNameTmp);
         $namespace        = str_replace('/', '\\', $namespaceDir);
         $namespace        = sprintf('%s\\QueryBuilder', $namespace);
 

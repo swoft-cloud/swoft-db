@@ -14,7 +14,7 @@ class EntityHelper
      * @param array  $result
      * @param string $className
      *
-     * @return array
+     * @return mixed
      */
     public static function resultToEntity(array $result, string $className)
     {
@@ -23,7 +23,7 @@ class EntityHelper
         }
         $entities = [];
         foreach ($result as $entityData) {
-            if (!is_array($entityData)) {
+            if (!\is_array($entityData)) {
                 continue;
             }
             $entities[] = self::arrayToEntity($entityData, $className);
@@ -33,27 +33,27 @@ class EntityHelper
     }
 
     /**
-     * @param array  $array
+     * @param array  $data
      * @param string $className
      *
-     * @return array
+     * @return mixed
      */
-    public static function arrayToEntity(array $array, string $className)
+    public static function arrayToEntity(array $data, string $className)
     {
 
         $entities = EntityCollector::getCollector();
         if (!isset($className)) {
-            return $array;
+            return $data;
         }
         $attrs  = [];
         $object = new $className();
-        foreach ($array as $col => $value) {
+        foreach ($data as $col => $value) {
             if (!isset($entities[$className]['column'][$col])) {
                 continue;
             }
 
             $field        = $entities[$className]['column'][$col];
-            $setterMethod = "set" . ucfirst($field);
+            $setterMethod = 'set' . ucfirst($field);
 
             $type  = $entities[$className]['field'][$field]['type'];
             $value = self::trasferTypes($type, $value);
@@ -78,13 +78,13 @@ class EntityHelper
      */
     public static function trasferTypes($type, $value)
     {
-        if ($type == Types::INT || $type == Types::NUMBER) {
+        if ($type === Types::INT || $type === Types::NUMBER) {
             $value = (int)$value;
-        } elseif ($type == Types::STRING) {
+        } elseif ($type === Types::STRING) {
             $value = (string)$value;
-        } elseif ($type == Types::BOOLEAN) {
+        } elseif ($type === Types::BOOLEAN) {
             $value = (bool)$value;
-        } elseif ($type == Types::FLOAT) {
+        } elseif ($type === Types::FLOAT) {
             $value = (float)$value;
         }
 

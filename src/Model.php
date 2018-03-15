@@ -155,7 +155,7 @@ class Model
     private static function getExecutor(string $poolId = Pool::SLAVE): Executor
     {
         $queryBuilder = EntityManager::getQuery(static::class, $poolId);
-        $executor     = new Executor($queryBuilder, static::class);
+        $executor     = new Executor($queryBuilder, $poolId);
 
         return $executor;
     }
@@ -174,5 +174,21 @@ class Model
     public function setAttrs(array $attrs)
     {
         $this->attrs = $attrs;
+    }
+
+    /**
+     * @param array $attributes
+     *
+     * $attributes = [
+     *     'name' => $value
+     * ]
+     */
+    public function set(array $attributes){
+        foreach ($attributes as $name => $value){
+            $methodName = sprintf('set%s', ucfirst($name));
+            if(method_exists($this, $methodName)){
+                $this->$methodName($value);
+            }
+        }
     }
 }

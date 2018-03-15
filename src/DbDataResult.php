@@ -3,9 +3,12 @@
 namespace Swoft\Db;
 
 use Swoft\Core\AbstractDataResult;
+use Swoft\Db\Helper\EntityHelper;
 
 /**
- * The sync result of db
+ * Class DbDataResult
+ *
+ * @package Swoft\Db
  */
 class DbDataResult extends AbstractDataResult
 {
@@ -16,6 +19,18 @@ class DbDataResult extends AbstractDataResult
      */
     public function getResult(...$params)
     {
-        return $this->data;
+        $className = '';
+        $result    = $this->data;
+        if (!empty($params)) {
+            list($className) = $params;
+        }
+
+        // Fill data to Entity
+        if (\is_array($result) && !empty($className)) {
+            $result = EntityHelper::resultToEntity($result, $className);
+        }
+
+        $this->release();
+        return $result;
     }
 }
