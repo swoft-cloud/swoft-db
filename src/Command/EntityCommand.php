@@ -84,7 +84,7 @@ class EntityCommand
         $schema = new Schema();
         $schema->setDriver('MYSQL');
         $this->schema = $schema;
-        $syncDbConnect = $pool->createConnect();
+        $syncDbConnect = $pool->createConnection();
         $this->generatorEntity = new Generator($syncDbConnect);
 
         return true;
