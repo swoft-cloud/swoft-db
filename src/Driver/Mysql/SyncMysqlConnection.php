@@ -4,13 +4,13 @@ namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
 use Swoft\Db\AbstractDbConnection;
-use Swoft\Db\Bean\Annotation\Connect;
+use Swoft\Db\Bean\Annotation\Connection;
 use Swoft\Db\Driver\DriverType;
 
 /**
  * Mysql sync connection
  *
- * @Connect(type=DriverType::SYNC)
+ * @Connection(type=DriverType::SYNC)
  */
 class SyncMysqlConnection extends AbstractDbConnection
 {
@@ -75,9 +75,7 @@ class SyncMysqlConnection extends AbstractDbConnection
         $this->bindParams($params);
         $this->formatSqlByParams($params);
         $result = $this->stmt->execute();
-        if (App::isCoContext()) {
-            App::info($this->sql);
-        }
+
         if ($result !== true) {
             App::error('Sync mysql execute error，sql=' . $this->stmt->debugDumpParams());
         }

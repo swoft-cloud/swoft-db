@@ -11,13 +11,13 @@ use Swoft\Db\Driver\DriverType;
  * @Annotation
  * @Target("CLASS")
  *
- * @uses      Connect
+ * @uses      Connection
  * @version   2018年01月27日
  * @author    stelin <phpcrazy@126.com>
  * @copyright Copyright 2010-2016 swoft software
  * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
-class Connect
+class Connection
 {
     /**
      * @var string
@@ -39,8 +39,8 @@ class Connect
         if (isset($values['value'])) {
             $this->driver = $values['value'];
         }
-        if (isset($values['name'])) {
-            $this->driver = $values['name'];
+        if (isset($values['driver'])) {
+            $this->driver = $values['driver'];
         }
         if (isset($values['type'])) {
             $this->type = $values['type'];

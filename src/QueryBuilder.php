@@ -3,19 +3,17 @@
 namespace Swoft\Db;
 
 use Swoft\App;
+use Swoft\Core\RequestContext;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Exception\DbException;
+use Swoft\Db\Exception\MysqlException;
+use Swoft\Db\Helper\DbHelper;
 use Swoft\Db\Helper\EntityHelper;
-use Swoft\Pool\PoolInterface;
+use Swoft\Helper\PoolHelper;
+use Swoft\Pool\ConnectionInterface;
 
 /**
  * 查询器
- *
- * @uses      QueryBuilder
- * @version   2017年09月02日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
 abstract class QueryBuilder implements QueryBuilderInterface
 {
@@ -239,11 +237,6 @@ abstract class QueryBuilder implements QueryBuilderInterface
     protected $sql = '';
 
     /**
-     * @var PoolInterface
-     */
-    protected $pool;
-
-    /**
      * @var AbstractDbConnection
      */
     protected $connection;
@@ -256,22 +249,44 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * @var string
      */
-    protected $poolId;
+    protected $table;
+
+    /**
+     * @var string
+     */
+    protected $group = Pool::GROUP;
+
+    /**
+     * @var bool
+     */
+    protected $force = false;
 
     /**
      * QueryBuilder constructor.
      *
-     * @param PoolInterface        $pool
-     * @param AbstractDbConnection $connection
-     * @param string               $poolId
-     * @param string               $sql
+     * @param string              $group
+     * @param string              $sql
+     * @param string              $table
+     * @param ConnectionInterface $connection
      */
-    public function __construct(PoolInterface $pool, AbstractDbConnection $connection, string $poolId, string $sql = "")
+    public function __construct(string $group = Pool::GROUP, string $sql = '', string $table = null, ConnectionInterface $connection = null)
     {
-        $this->sql        = $sql;
-        $this->poolId     = $poolId;
+        if ($table != null) {
+            $this->from($table);
+        }
+        $this->sql   = $sql;
+        $this->table = $table;
+        $this->group = $group;
+
         $this->connection = $connection;
-        $this->pool       = $pool;
+    }
+
+    /**
+     * @param bool $master
+     */
+    public function force(bool $master = true)
+    {
+        $this->force = true;
     }
 
     /**
@@ -282,9 +297,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
      */
-    public function insert(string $tableName): QueryBuilder
+    public function insert(string $tableName = null): QueryBuilder
     {
-        $this->insert = $this->getTableNameByClassName($tableName);
+        $this->insert = $this->getTableName($tableName);
 
         return $this;
     }
@@ -297,9 +312,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
      */
-    public function update(string $tableName): QueryBuilder
+    public function update(string $tableName = null): QueryBuilder
     {
-        $this->update = $this->getTableNameByClassName($tableName);
+        $this->update = $this->getTableName($tableName);
 
         return $this;
     }
@@ -797,19 +812,19 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * 设置多个参数
      *
      * @param array $parameters
-     * $parameters = [
+     *    $parameters = [
      *    'key1' => 'value1',
      *    'key2' => 'value2',
-     * ]
-     * $parameters = [
+     *    ]
+     *    $parameters = [
      *    'value1',
      *    'value12',
-     * ]
-     * $parameters = [
-     *   ['key', 'value', 'type'],
-     *   ['key', 'value'],
-     *   ['key', 'value', 'type'],
-     * ]
+     *    ]
+     *    $parameters = [
+     *    ['key', 'value', 'type'],
+     *    ['key', 'value'],
+     *    ['key', 'value', 'type'],
+     *    ]
      *
      *
      * @throws \Swoft\Db\Exception\DbException
@@ -838,15 +853,8 @@ abstract class QueryBuilder implements QueryBuilderInterface
             }
             $this->setParameter($key, $value, $type);
         }
-        return $this;
-    }
 
-    /**
-     * @return \Swoft\Pool\PoolInterface
-     */
-    public function getPool(): \Swoft\Pool\PoolInterface
-    {
-        return $this->pool;
+        return $this;
     }
 
     /**
@@ -980,6 +988,55 @@ abstract class QueryBuilder implements QueryBuilderInterface
         }
 
         return [$key, $value];
+    }
+
+    /**
+     * @return ConnectionInterface
+     */
+    protected function selectConnection(): ConnectionInterface
+    {
+        if (!empty($this->connection)) {
+            return $this->connection;
+        }
+
+        $contextTsKey  = PoolHelper::getContextTsKey();
+        $contextCntKey = PoolHelper::getContextCntKey();
+        $groupKey      = PoolHelper::getGroupKey($this->group);
+
+        /* @var \SplStack $tsStack */
+        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $groupKey, new \SplStack());
+        if (!$tsStack->isEmpty()) {
+            $cntId      = $tsStack->offsetGet(0);
+            $connection = RequestContext::getContextDataByChildKey($contextCntKey, $cntId, null);
+
+            return $connection;
+        }
+
+        $node = Pool::SLAVE;
+        if ($this->force || $this->isInsert() || $this->isDelete() || $this->isUpdate()) {
+            $node = Pool::MASTER;
+        }
+
+        $pool = DbHelper::getPool($this->group, $node);
+
+        return $pool->getConnection();
+    }
+
+    /**
+     * @param string $tableName
+     *
+     * @return string
+     * @throws \Swoft\Db\Exception\MysqlException
+     */
+    private function getTableName(string $tableName = null): string
+    {
+        if ($tableName != null) {
+            return $this->getTableNameByClassName($tableName);
+        }
+        if ($this->table != null) {
+            return $this->table;
+        }
+        throw new MysqlException('Table name must be setted by use insert()!');
     }
 
     abstract protected function formatParamsKey($key): string;

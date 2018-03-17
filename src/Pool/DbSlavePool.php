@@ -9,7 +9,7 @@ use Swoft\Db\Pool\Config\DbSlavePoolConfig;
 /**
  * Slave pool
  *
- * @Pool()
+ * @Pool("default.slave")
  */
 class DbSlavePool extends DbPool
 {

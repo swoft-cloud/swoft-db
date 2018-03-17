@@ -40,13 +40,13 @@ class PoolTest extends TestCase
         $this->assertEquals($pConfig->getProvider(), 'consul2');
         $this->assertEquals($pConfig->getTimeout(), 2);
         $this->assertEquals($pConfig->getUri(), [
-            '127.0.0.1:3306/test?user=root&password=&charset=utf8',
-            '127.0.0.1:3306/test?user=root&password=&charset=utf8',
+            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
+            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
         ]);
         $this->assertEquals($pConfig->getBalancer(), 'random');
         $this->assertEquals($pConfig->getMaxActive(), 2);
         $this->assertEquals($pConfig->isUseProvider(), false);
-        $this->assertEquals($pConfig->getMaxWait(), 2);
+        $this->assertEquals($pConfig->getMaxWait(), 10);
     }
 
     public function testDbSlavePpt()
@@ -75,12 +75,12 @@ class PoolTest extends TestCase
         $this->assertEquals($pConfig->getProvider(), 'consul2');
         $this->assertEquals($pConfig->getTimeout(), 3);
         $this->assertEquals($pConfig->getUri(), [
-            '127.0.0.1:3306/test?user=root&password=&charset=utf8',
-            '127.0.0.1:3306/test?user=root&password=&charset=utf8',
+            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
+            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
         ]);
         $this->assertEquals($pConfig->getBalancer(), 'random');
         $this->assertEquals($pConfig->getMaxActive(), 2);
         $this->assertEquals($pConfig->isUseProvider(), false);
-        $this->assertEquals($pConfig->getMaxWait(), 2);
+        $this->assertEquals($pConfig->getMaxWait(), 10);
     }
 }

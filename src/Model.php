@@ -19,13 +19,13 @@ class Model
     /**
      * Insert data to db
      *
-     * @param string $poolId
+     * @param string $group
      *
      * @return ResultInterface
      */
-    public function save(string $poolId = Pool::MASTER)
+    public function save(string $group = Pool::GROUP)
     {
-        $executor = self::getExecutor($poolId);
+        $executor = self::getExecutor($group);
 
         return $executor->save($this);
     }
@@ -33,13 +33,13 @@ class Model
     /**
      * Delete data from db
      *
-     * @param string $poolId
+     * @param string $group
      *
      * @return ResultInterface
      */
-    public function delete(string $poolId = Pool::MASTER)
+    public function delete(string $group = Pool::GROUP)
     {
-        $executor = self::getExecutor($poolId);
+        $executor = self::getExecutor($group);
 
         return $executor->delete($this);
     }
@@ -48,13 +48,13 @@ class Model
      * Delete data by id
      *
      * @param mixed  $id ID
-     * @param string $poolId
+     * @param string $group
      *
      * @return ResultInterface
      */
-    public static function deleteById($id, string $poolId = Pool::MASTER)
+    public static function deleteById($id, string $group = Pool::GROUP)
     {
-        $executor = self::getExecutor($poolId);
+        $executor = self::getExecutor($group);
 
         return $executor->deleteById(static::class, $id);
     }
@@ -63,13 +63,13 @@ class Model
      * Delete by ids
      *
      * @param array  $ids
-     * @param string $poolId
+     * @param string $group
      *
      * @return ResultInterface
      */
-    public static function deleteByIds(array $ids, string $poolId = Pool::MASTER)
+    public static function deleteByIds(array $ids, string $group = Pool::GROUP)
     {
-        $executor = self::getExecutor($poolId);
+        $executor = self::getExecutor($group);
 
         return $executor->deleteByIds(static::class, $ids);
     }
@@ -77,13 +77,13 @@ class Model
     /**
      * Update data
      *
-     * @param string $poolId
+     * @param string $group
      *
      * @return ResultInterface
      */
-    public function update(string $poolId = Pool::MASTER)
+    public function update(string $group = Pool::GROUP)
     {
-        $executor = self::getExecutor($poolId);
+        $executor = self::getExecutor($group);
 
         return $executor->update($this);
     }
@@ -91,13 +91,13 @@ class Model
     /**
      * Find data from db
      *
-     * @param string $poolId
+     * @param string $group
      *
      * @return ResultInterface
      */
-    public function find(string $poolId = Pool::SLAVE)
+    public function find(string $group = Pool::GROUP)
     {
-        $executor = self::getExecutor($poolId);
+        $executor = self::getExecutor($group);
 
         return $executor->find($this);
     }
@@ -106,13 +106,13 @@ class Model
      * Find by id
      *
      * @param mixed  $id
-     * @param string $poolId
+     * @param string $group
      *
      * @return ResultInterface
      */
-    public static function findById($id, string $poolId = Pool::SLAVE)
+    public static function findById($id, string $group = Pool::GROUP)
     {
-        $executor = self::getExecutor($poolId);
+        $executor = self::getExecutor($group);
 
         return $executor->findById(static::class, $id);
     }
@@ -121,13 +121,13 @@ class Model
      * Find by ids
      *
      * @param array  $ids
-     * @param string $poolId
+     * @param string $group
      *
      * @return ResultInterface
      */
-    public static function findByIds(array $ids, string $poolId = Pool::SLAVE)
+    public static function findByIds(array $ids, string $group = Pool::GROUP)
     {
-        $executor = self::getExecutor($poolId);
+        $executor = self::getExecutor($group);
 
         return $executor->findByIds(static::class, $ids);
     }
@@ -135,27 +135,27 @@ class Model
     /**
      * Get the QueryBuilder
      *
-     * @param string $poolId
+     * @param string $group
      *
      * @return QueryBuilder
      */
-    public static function query(string $poolId = Pool::SLAVE): QueryBuilder
+    public static function query(string $group = Pool::GROUP): QueryBuilder
     {
-        return EntityManager::getQuery(static::class, $poolId, true);
+        return EntityManager::getQuery(static::class, $group);
     }
 
 
     /**
      * Get the exeutor
      *
-     * @param string $poolId
+     * @param string $group
      *
      * @return Executor
      */
-    private static function getExecutor(string $poolId = Pool::SLAVE): Executor
+    private static function getExecutor(string $group = Pool::GROUP): Executor
     {
-        $queryBuilder = EntityManager::getQuery(static::class, $poolId);
-        $executor     = new Executor($queryBuilder, $poolId);
+        $queryBuilder = EntityManager::getQuery(static::class, $group);
+        $executor     = new Executor($queryBuilder, $group);
 
         return $executor;
     }
@@ -183,10 +183,11 @@ class Model
      *     'name' => $value
      * ]
      */
-    public function set(array $attributes){
-        foreach ($attributes as $name => $value){
+    public function fill(array $attributes)
+    {
+        foreach ($attributes as $name => $value) {
             $methodName = sprintf('set%s', ucfirst($name));
-            if(method_exists($this, $methodName)){
+            if (method_exists($this, $methodName)) {
                 $this->$methodName($value);
             }
         }

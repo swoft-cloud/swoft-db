@@ -2,21 +2,24 @@
 
 namespace Swoft\Db;
 
-use Swoft\Db\Pool\DbPool;
-use Swoft\Db\Pool\DbSlavePool;
-
 /**
  * The type of pool
  */
 class Pool
 {
     /**
+     * Default group
+     */
+    const GROUP = 'default';
+
+    /**
      * The master
      */
-    const MASTER = DbPool::class;
+    const MASTER = 'master';
 
     /**
      * The slave
      */
-    const SLAVE = DbSlavePool::class;
+    const SLAVE = 'slave';
+
 }

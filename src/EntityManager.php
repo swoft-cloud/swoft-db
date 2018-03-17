@@ -6,11 +6,15 @@ use Swoft\App;
 use Swoft\Core\Coroutine;
 use Swoft\Core\RequestContext;
 use Swoft\Core\ResultInterface;
+use Swoft\Db\Bean\Collector\BuilderCollector;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Exception\DbException;
+use Swoft\Db\Exception\MysqlException;
+use Swoft\Db\Helper\DbHelper;
 use Swoft\Helper\PoolHelper;
 use Swoft\Pool\ConnectionInterface;
 use Swoft\Pool\PoolInterface;
+use Swoft\Db\Pool\Config\DbPoolProperties;
 
 /**
  * Class EntityManager
@@ -19,11 +23,6 @@ use Swoft\Pool\PoolInterface;
  */
 class EntityManager implements EntityManagerInterface
 {
-    /**
-     * Context connect
-     */
-    const CONTEXT_CONNECTS = 'contextConnects';
-
     /**
      * Db connection
      *
@@ -53,35 +52,35 @@ class EntityManager implements EntityManagerInterface
     /**
      * @var string
      */
-    private $poolId;
+    private $group;
 
     /**
      * EntityManager constructor.
      *
      * @param PoolInterface $pool
-     * @param string        $poolId
+     * @param string        $group
      */
-    private function __construct(PoolInterface $pool, string $poolId)
+    private function __construct(PoolInterface $pool, string $group)
     {
         $this->pool       = $pool;
-        $this->poolId     = $poolId;
+        $this->group      = $group;
         $this->connection = $pool->getConnection();
-
         $this->connection->setAutoRelease(false);
     }
 
     /**
      * Create a EntityManager
      *
-     * @param string $poolId
+     * @param string $group
+     * @param string $node
      *
      * @return EntityManager
      */
-    public static function create(string $poolId = Pool::MASTER): EntityManager
+    public static function create(string $group = Pool::GROUP, $node = Pool::MASTER): EntityManager
     {
-        $pool = self::getPool($poolId);
+        $pool = DbHelper::getPool($group, $node);
 
-        return new EntityManager($pool, $poolId);
+        return new EntityManager($pool, $group);
     }
 
     /**
@@ -95,65 +94,29 @@ class EntityManager implements EntityManagerInterface
     public function createQuery(string $sql = ''): QueryBuilder
     {
         $this->checkStatus();
-        $className = self::getQueryClassName($this->connection);
+        $className = $this->getQueryClassNameByConnection($this->connection);
 
-        return new $className($this->pool, $this->connection, $this->poolId, $sql);
+        return new $className($this->group, $sql, null, $this->connection);
     }
 
     /**
      * Create a QueryBuild for ActiveRecord
      *
      * @param string $className Entity class name
-     * @param string $poolId    Pool id, master node will be used as defaults
+     * @param string $group     Group id, master node will be used as defaults
      *
      * @return QueryBuilder
      */
-    public static function getQuery(string $className, $poolId): QueryBuilder
+    public static function getQuery(string $className, $group): QueryBuilder
     {
-
-        $connect = self::getConnect($poolId);
-
         $entities       = EntityCollector::getCollector();
         $tableName      = $entities[$className]['table']['name'];
-        $queryClassName = self::getQueryClassName($connect);
-
-        // Get connection pool
-        $pool = self::getPool($poolId);
+        $queryClassName = self::getQueryClassNameByGroup($group);
 
         /* @var QueryBuilder $query */
-        $query = new $queryClassName($pool, $connect, '');
-        $query->from($tableName);
+        $query = new $queryClassName($group, '', $tableName);
 
         return $query;
-    }
-
-    /**
-     * Get a connection
-     *
-     * @param string $poolId
-     *
-     * @return \Swoft\Pool\ConnectionInterface
-     */
-    private static function getConnect(string $poolId): ConnectionInterface
-    {
-        $contextTsKey  = PoolHelper::getContextTsKey();
-        $contextCntKey = PoolHelper::getContextCntKey();
-        $cidPoolId     = PoolHelper::getCidPoolId($poolId);
-
-        /* @var \SplStack $tsStack */
-        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $cidPoolId, new \SplStack());
-        if (!$tsStack->isEmpty()) {
-            $cntId      = $tsStack->offsetGet(0);
-            $connection = RequestContext::getContextDataByChildKey($contextCntKey, $cntId, null);
-
-            return $connection;
-        }
-
-        // Get a connection from pool
-        $pool       = self::getPool($poolId);
-        $connection = $pool->getConnection();
-
-        return $connection;
     }
 
     /**
@@ -323,10 +286,10 @@ class EntityManager implements EntityManagerInterface
      */
     public function close()
     {
-        if($this->isTransaction){
+        if ($this->isTransaction) {
             $this->rollback();
         }
-        if(!$this->connection->isRecv()){
+        if (!$this->connection->isRecv()) {
             $this->connection->receive();
         }
         $this->isClose = true;
@@ -389,7 +352,7 @@ class EntityManager implements EntityManagerInterface
     {
         $query = $this->createQuery();
 
-        return new Executor($query, $this->poolId);
+        return new Executor($query);
     }
 
     /**
@@ -399,13 +362,13 @@ class EntityManager implements EntityManagerInterface
     {
         $cntId        = $this->connection->getConnectionId();
         $contextTsKey = PoolHelper::getContextTsKey();
-        $cidPoolId    = PoolHelper::getCidPoolId($this->poolId);
+        $groupKey     = PoolHelper::getGroupKey($this->group);
 
         /* @var \SplStack $tsStack */
-        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $cidPoolId, new \SplStack());
+        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $groupKey, new \SplStack());
         $tsStack->push($cntId);
 
-        RequestContext::setContextDataByChildKey($contextTsKey, $cidPoolId, $tsStack);
+        RequestContext::setContextDataByChildKey($contextTsKey, $groupKey, $tsStack);
     }
 
     /**
@@ -415,13 +378,13 @@ class EntityManager implements EntityManagerInterface
     {
         $cid          = Coroutine::id();
         $contextTsKey = PoolHelper::getContextTsKey();
-        $cidPoolId    = PoolHelper::getCidPoolId($this->poolId);
+        $groupKey    = PoolHelper::getGroupKey($this->group);
 
         /* @var \SplStack $tsStack */
-        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $cidPoolId, new \SplStack());
+        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $groupKey, new \SplStack());
         $tsStack->pop();
 
-        RequestContext::setContextDataByChildKey($contextTsKey, $cidPoolId, $tsStack);
+        RequestContext::setContextDataByChildKey($contextTsKey, $groupKey, $tsStack);
     }
 
     /**
@@ -431,7 +394,7 @@ class EntityManager implements EntityManagerInterface
      *
      * @return string
      */
-    private static function getQueryClassName(ConnectionInterface $connect): string
+    private function getQueryClassNameByConnection(ConnectionInterface $connect): string
     {
         $connectClassName = \get_class($connect);
         $classNameTmp     = str_replace('\\', '/', $connectClassName);
@@ -440,5 +403,25 @@ class EntityManager implements EntityManagerInterface
         $namespace        = sprintf('%s\\QueryBuilder', $namespace);
 
         return $namespace;
+    }
+
+    /**
+     * @param string $group
+     *
+     * @throws \Swoft\Db\Exception\MysqlException
+     * @return string
+     */
+    private static function getQueryClassNameByGroup(string $group):string
+    {
+        $pool = DbHelper::getPool($group, Pool::MASTER);
+        /* @var DbPoolProperties $poolConfig*/
+        $poolConfig = $pool->getPoolConfig();
+        $driver = $poolConfig->getDriver();
+
+        $collector = BuilderCollector::getCollector();
+        if(!isset($collector[$driver])){
+            throw new MysqlException(sprintf('The queryBuilder of %s is not exist!', $driver));
+        }
+        return $collector[$driver];
     }
 }
