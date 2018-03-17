@@ -2,6 +2,7 @@
 
 namespace Swoft\Db\Test\Cases;
 
+use Swoft\Db\Db;
 use Swoft\Db\EntityManager;
 use Swoft\Db\Test\Testing\Entity\User;
 
@@ -70,4 +71,44 @@ class TsTest extends DbTestCase
         $this->assertEquals($uid, $user1Id['id']);
         $this->assertEquals($uid2, $user2Id['id']);
     }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testDbBuilder(array $ids){
+        $this->builder();
+
+        go(function (){
+            $this->builder();
+        });
+    }
+
+    public function testNull()
+    {
+        $user = User::findById(12122223)->getResult(User::class);
+        $this->assertEquals($user, null);
+    }
+
+    public function builder()
+    {
+        $result = Db::query('select * from user order by id desc limit 2')->execute()->getResult();
+        $result2 = Db::query('select * from user order by id desc limit 2')->execute()->getResult(User::class);
+
+        $result3 = Db::query()->select('*')->from(User::class)->where('name', 'stelin')->orderBy('id', 'DESC')->limit(1)->execute()->getResult();
+        $result4 = Db::query()->select('*')
+            ->from(User::class)
+            ->where('name', 'stelin')
+            ->orderBy('id', 'DESC')
+            ->limit(1)
+            ->execute()
+            ->getResult(User::class);
+
+        $this->assertCount(2, $result);
+        $this->assertCount(2, $result2);
+        $this->assertCount(5, $result3);
+        $this->assertEquals('stelin', $result4->getName());
+    }
+
 }

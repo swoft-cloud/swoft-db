@@ -44,7 +44,7 @@ class PoolTest extends TestCase
             '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
         ]);
         $this->assertEquals($pConfig->getBalancer(), 'random');
-        $this->assertEquals($pConfig->getMaxActive(), 2);
+        $this->assertEquals($pConfig->getMaxActive(), 30);
         $this->assertEquals($pConfig->isUseProvider(), false);
         $this->assertEquals($pConfig->getMaxWait(), 10);
     }
@@ -79,7 +79,7 @@ class PoolTest extends TestCase
             '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
         ]);
         $this->assertEquals($pConfig->getBalancer(), 'random');
-        $this->assertEquals($pConfig->getMaxActive(), 2);
+        $this->assertEquals($pConfig->getMaxActive(), 30);
         $this->assertEquals($pConfig->isUseProvider(), false);
         $this->assertEquals($pConfig->getMaxWait(), 10);
     }

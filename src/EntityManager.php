@@ -2,19 +2,14 @@
 
 namespace Swoft\Db;
 
-use Swoft\App;
 use Swoft\Core\Coroutine;
 use Swoft\Core\RequestContext;
 use Swoft\Core\ResultInterface;
-use Swoft\Db\Bean\Collector\BuilderCollector;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Exception\DbException;
-use Swoft\Db\Exception\MysqlException;
 use Swoft\Db\Helper\DbHelper;
 use Swoft\Helper\PoolHelper;
-use Swoft\Pool\ConnectionInterface;
 use Swoft\Pool\PoolInterface;
-use Swoft\Db\Pool\Config\DbPoolProperties;
 
 /**
  * Class EntityManager
@@ -94,7 +89,7 @@ class EntityManager implements EntityManagerInterface
     public function createQuery(string $sql = ''): QueryBuilder
     {
         $this->checkStatus();
-        $className = $this->getQueryClassNameByConnection($this->connection);
+        $className = DbHelper::getQueryClassNameByConnection($this->connection);
 
         return new $className($this->group, $sql, null, $this->connection);
     }
@@ -111,7 +106,7 @@ class EntityManager implements EntityManagerInterface
     {
         $entities       = EntityCollector::getCollector();
         $tableName      = $entities[$className]['table']['name'];
-        $queryClassName = self::getQueryClassNameByGroup($group);
+        $queryClassName = DbHelper::getQueryClassNameByGroup($group);
 
         /* @var QueryBuilder $query */
         $query = new $queryClassName($group, '', $tableName);
@@ -309,40 +304,6 @@ class EntityManager implements EntityManagerInterface
     }
 
     /**
-     * Get connetion pool by pool ID
-     *
-     * @param string $poolId
-     *
-     * @return PoolInterface
-     */
-    private static function getPool(string $poolId): PoolInterface
-    {
-        if ($poolId === Pool::SLAVE && self::hasSalvePool() === false) {
-            $poolId = Pool::MASTER;
-        }
-
-        $pool = App::getPool($poolId);
-
-        return $pool;
-    }
-
-    /**
-     * @return bool
-     */
-    private static function hasSalvePool()
-    {
-        $properties = App::getProperties();
-        $hasConfig  = isset($properties['db']['slave']['uri']) && !empty($properties['db']['slave']['uri']);
-        $hasEnv     = !empty(env('DB_SLAVE_URI'));
-
-        if ($hasConfig || $hasEnv) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Get an Executor
      *
      * @return Executor
@@ -385,43 +346,5 @@ class EntityManager implements EntityManagerInterface
         $tsStack->pop();
 
         RequestContext::setContextDataByChildKey($contextTsKey, $groupKey, $tsStack);
-    }
-
-    /**
-     * Get the class name of QueryBuilder
-     *
-     * @param ConnectionInterface $connect
-     *
-     * @return string
-     */
-    private function getQueryClassNameByConnection(ConnectionInterface $connect): string
-    {
-        $connectClassName = \get_class($connect);
-        $classNameTmp     = str_replace('\\', '/', $connectClassName);
-        $namespaceDir     = \dirname($classNameTmp);
-        $namespace        = str_replace('/', '\\', $namespaceDir);
-        $namespace        = sprintf('%s\\QueryBuilder', $namespace);
-
-        return $namespace;
-    }
-
-    /**
-     * @param string $group
-     *
-     * @throws \Swoft\Db\Exception\MysqlException
-     * @return string
-     */
-    private static function getQueryClassNameByGroup(string $group):string
-    {
-        $pool = DbHelper::getPool($group, Pool::MASTER);
-        /* @var DbPoolProperties $poolConfig*/
-        $poolConfig = $pool->getPoolConfig();
-        $driver = $poolConfig->getDriver();
-
-        $collector = BuilderCollector::getCollector();
-        if(!isset($collector[$driver])){
-            throw new MysqlException(sprintf('The queryBuilder of %s is not exist!', $driver));
-        }
-        return $collector[$driver];
     }
 }

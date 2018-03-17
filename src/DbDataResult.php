@@ -26,11 +26,16 @@ class DbDataResult extends AbstractDataResult
         }
 
         // Fill data to Entity
-        if (\is_array($result) && !empty($className)) {
+        if (\is_array($result) && !empty($result) && !empty($className)) {
             $result = EntityHelper::resultToEntity($result, $className);
         }
 
+        if (empty($result) && !empty($className)) {
+            return null;
+        }
+
         $this->release();
+
         return $result;
     }
 }
