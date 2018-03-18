@@ -15,6 +15,11 @@ use Swoft\Pool\PoolInterface;
 class DbHelper
 {
     /**
+     * Delimiter
+     */
+    const GROUP_NODE_DELIMITER = '.';
+
+    /**
      * @return string
      */
     public static function getContextSqlKey(): string
@@ -30,8 +35,11 @@ class DbHelper
      */
     public static function getPool(string $group, string $node): PoolInterface
     {
-        $poolName = self::getPoolName($group, $node);
-        if ($node == Pool::SLAVE && !App::hasPool($poolName)) {
+        $poolName        = self::getPoolName($group, $node);
+        $notConfig       = $node == Pool::SLAVE && !App::hasPool($poolName);
+        $incorrectConfig = App::hasPool($poolName) && empty(App::getPool($poolName)->getPoolConfig()->getUri());
+
+        if ($notConfig || $incorrectConfig) {
             $poolName = self::getPoolName($group, Pool::MASTER);
         }
 
@@ -84,6 +92,11 @@ class DbHelper
      */
     private static function getPoolName(string $group, string $node): string
     {
+        $groupNode = explode(self::GROUP_NODE_DELIMITER, $group);
+        if (count($groupNode) == 2) {
+            return $group;
+        }
+
         return sprintf('%s.%s', $group, $node);
     }
 }

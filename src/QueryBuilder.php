@@ -257,11 +257,6 @@ abstract class QueryBuilder implements QueryBuilderInterface
     protected $group = Pool::GROUP;
 
     /**
-     * @var bool
-     */
-    protected $force = false;
-
-    /**
      * QueryBuilder constructor.
      *
      * @param string              $group
@@ -279,14 +274,6 @@ abstract class QueryBuilder implements QueryBuilderInterface
         $this->group = $group;
 
         $this->connection = $connection;
-    }
-
-    /**
-     * @param bool $master
-     */
-    public function force(bool $master = true)
-    {
-        $this->force = true;
     }
 
     /**
@@ -1013,7 +1000,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
         }
 
         $node = Pool::SLAVE;
-        if ($this->force || $this->isInsert() || $this->isDelete() || $this->isUpdate()) {
+        if ($this->isInsert() || $this->isDelete() || $this->isUpdate()) {
             $node = Pool::MASTER;
         }
 
