@@ -96,7 +96,7 @@ class DbSlavePoolConfig extends DbPoolProperties
     /**
      * the default driver is mysql
      *
-     * @Value(name="${config.db.driver.provider}", env="${DB_SLAVE_DRIVER}")
+     * @Value(name="${config.db.slave.driver}", env="${DB_SLAVE_DRIVER}")
      * @var string
      */
     protected $driver = Driver::MYSQL;
