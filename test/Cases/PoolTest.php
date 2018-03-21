@@ -40,8 +40,8 @@ class PoolTest extends TestCase
         $this->assertEquals($pConfig->getProvider(), 'consul2');
         $this->assertEquals($pConfig->getTimeout(), 2);
         $this->assertEquals($pConfig->getUri(), [
-            '127.0.0.1:3306/swofttest?user=root&password=2wEwiesqe&charset=utf8',
-            '127.0.0.1:3306/swofttest?user=root&password=2wEwiesqe&charset=utf8',
+            '127.0.0.1:3306/swofttest?user=root&password=52xiyouwang&charset=utf8',
+            '127.0.0.1:3306/swofttest?user=root&password=52xiyouwang&charset=utf8',
         ]);
         $this->assertEquals($pConfig->getBalancer(), 'random');
         $this->assertEquals($pConfig->getMaxActive(), 30);
@@ -75,8 +75,8 @@ class PoolTest extends TestCase
         $this->assertEquals($pConfig->getProvider(), 'consul2');
         $this->assertEquals($pConfig->getTimeout(), 3);
         $this->assertEquals($pConfig->getUri(), [
-            '127.0.0.1:3306/swofttest?user=root&password=2wEwiesqe&charset=utf8',
-            '127.0.0.1:3306/swofttest?user=root&password=2wEwiesqe&charset=utf8',
+            '127.0.0.1:3306/swofttest?user=root&password=52xiyouwang&charset=utf8',
+            '127.0.0.1:3306/swofttest?user=root&password=52xiyouwang&charset=utf8',
         ]);
         $this->assertEquals($pConfig->getBalancer(), 'random');
         $this->assertEquals($pConfig->getMaxActive(), 30);

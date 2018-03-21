@@ -4,18 +4,13 @@ namespace Swoft\Db\Driver\Pgsql;
 
 use Swoft\App;
 use Swoft\Db\AbstractDbConnection;
-use Swoft\Db\Bean\Annotation\Connect;
+use Swoft\Db\Bean\Annotation\Connection;
 use Swoft\Db\Driver\DriverType;
 
 /**
- * 同步Mysql连接
+ * Pgsql sync connection
  *
- * @Connect(type=DriverType::SYNC)
- * @uses      SyncMysqlConnect
- * @version   2017年09月30日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * @Connection(type=DriverType::SYNC)
  */
 class SyncPgsqlConnection extends AbstractDbConnection
 {
