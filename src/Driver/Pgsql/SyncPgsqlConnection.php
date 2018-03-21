@@ -6,11 +6,13 @@ use Swoft\App;
 use Swoft\Db\AbstractDbConnection;
 use Swoft\Db\Bean\Annotation\Connection;
 use Swoft\Db\Driver\DriverType;
+use Swoft\Db\Driver\Driver;
+
 
 /**
  * Pgsql sync connection
  *
- * @Connection(type=DriverType::SYNC)
+ * @Connection(driver=Driver::PGSQL, type=DriverType::SYNC)
  */
 class SyncPgsqlConnection extends AbstractDbConnection
 {
@@ -20,7 +22,6 @@ class SyncPgsqlConnection extends AbstractDbConnection
      * @var \PDO
      */
     private $connection;
-
     /**
      * 预处理
      *

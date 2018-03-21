@@ -1,6 +1,6 @@
 <?php
 
-namespace Swoft\Db\Test\Cases;
+namespace Swoft\Db\Test\Cases\Pgsql;
 
 use Swoft\Db\Db;
 use Swoft\Db\EntityManager;

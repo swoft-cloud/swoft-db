@@ -4,20 +4,20 @@ namespace Swoft\Db\Driver\Pgsql;
 
 use Swoft\App;
 use Swoft\Core\ResultInterface;
+use Swoft\Db\AbstractDbConnection;
 use Swoft\Db\DbCoResult;
 use Swoft\Db\DbDataResult;
 use Swoft\Db\Helper\DbHelper;
 use Swoft\Db\Helper\EntityHelper;
 use Swoft\Helper\JsonHelper;
+use Swoft\Db\Bean\Annotation\Builder;
+use Swoft\Db\Driver\Driver;
+
 
 /**
- * Mysql查询器
+ * Mysql query builder
  *
- * @uses      QueryBuilder
- * @version   2017年09月01日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * @Builder(driver=Driver::PGSQL)
  */
 class QueryBuilder extends \Swoft\Db\QueryBuilder
 {
@@ -48,23 +48,29 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
 
         App::profileStart($profileKey);
 
-        $this->connect->prepare($sql);
-        $result = $this->connect->execute($this->parameters);
+        /* @var AbstractDbConnection $connection*/
+        $connection = $this->selectConnection();
+        $connection->prepare($sql);
+        $result = $connection->execute($this->parameters);
 
         App::profileEnd($profileKey);
-        App::debug(sprintf("sql execute sqlId=%s, result=%s, sql=%s", $sqlId, JsonHelper::encode($result, JSON_UNESCAPED_UNICODE), $sql));
+        App::debug(sprintf('sql execute sqlId=%s, result=%s, sql=%s', $sqlId, JsonHelper::encode($result, JSON_UNESCAPED_UNICODE), $sql));
 
-        $result = $this->transferResult($result);
+        $isFindOne = isset($this->limit['limit']) && $this->limit['limit'] === 1;
+        if ($this->isInsert()) {
+            $result = $connection->getInsertId();
+        } elseif ($this->isUpdate() || $this->isDelete()) {
+            $result = $connection->getAffectedRows();
+        } else {
+            $result = $connection->fetch();
+        }
+
+        $result = $this->transferResult($connection, $result);
 
         if (is_array($result) && !empty($className)) {
             $result = EntityHelper::resultToEntity($result, $className);
         }
-
-        if (!DbHelper::isContextTransaction($this->poolId)) {
-            $this->pool->release($this->connect);
-        }
-
-        $syncData = new DbDataResult($result);
+        $syncData = new DbDataResult($result, $connection);
 
         return $syncData;
     }
@@ -77,20 +83,21 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         $sql = $this->getStatement();
         list($sqlId, $profileKey) = $this->getSqlIdAndProfileKey($sql);
 
-        $this->connect->setDefer();
-        $this->connect->prepare($sql);
-        $result = $this->connect->execute($this->parameters);
+        /* @var AbstractDbConnection $connection*/
+        $connection = $this->selectConnection();
+        $connection->setDefer();
+        $connection->prepare($sql);
+        $result = $connection->execute($this->parameters);
 
-        App::debug(sprintf("sql execute sqlId=%s, sql=%s", $sqlId, $sql));
+        App::debug(sprintf('sql execute sqlId=%s, sql=%s', $sqlId, $sql));
         $isUpdateOrDelete = $this->isDelete() || $this->isUpdate();
-        $isFindOne        = $this->isSelect() && isset($this->limit['limit']) && $this->limit['limit'] == 1;
-        $corResult        = new DbCoResult($this->connect, $profileKey, $this->pool);
+        $isFindOne        = $this->isSelect() && isset($this->limit['limit']) && $this->limit['limit'] === 1;
+        $corResult        = new DbCoResult($connection, $profileKey);
 
         // 结果转换参数
-        $corResult->setPoolId($this->poolId);
-        $corResult->setIsInsert($this->isInsert());
-        $corResult->setIsUpdateOrDelete($isUpdateOrDelete);
-        $corResult->setIsFindOne($isFindOne);
+        $corResult->setInsert($this->isInsert());
+        $corResult->setUpdateOrDelete($isUpdateOrDelete);
+        $corResult->setFindOne($isFindOne);
 
         return $corResult;
     }
@@ -111,20 +118,23 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
     /**
      * 转换结果
      *
-     * @param mixed $result 查询结果
+     * @param AbstractDbConnection $connection
+     * @param mixed                $result
+     *
      * @return mixed
      */
-    private function transferResult($result)
+    private function transferResult(AbstractDbConnection $connection, $result)
     {
         $isFindOne        = isset($this->limit['limit']) && $this->limit['limit'] === 1;
         $isUpdateOrDelete = $this->isDelete() || $this->isUpdate();
         if ($result !== false && $this->isInsert()) {
-            $result = $this->connect->getInsertId();
+            $result = $connection->getInsertId();
         } elseif ($result !== false && $isUpdateOrDelete) {
-            $result = $this->connect->getAffectedRows();
+            $result = $connection->getAffectedRows();
         } elseif ($isFindOne && $result !== false && $this->isSelect()) {
             $result = $result[0] ?? [];
         }
+
         return $result;
     }
 

@@ -1,21 +1,21 @@
 <?php
 
-namespace Swoft\Db\Test\Cases;
+namespace Swoft\Db\Test\Cases\Mysql;
 
 /**
- * SyncMysqlArTest
+ * SyncMysqlEmTest
  */
-class MysqlArTest extends DbTestCase
+class MysqlEmTest extends DbTestCase
 {
     public function testSave()
     {
-        $this->arSave();
+        $this->emSave();
     }
 
     public function testCoSave()
     {
         go(function () {
-            $this->arSave();
+            $this->emSave();
         });
     }
 
@@ -26,7 +26,7 @@ class MysqlArTest extends DbTestCase
      */
     public function testDelete(int $id)
     {
-        $this->arDelete($id);
+        $this->emDelete($id);
     }
 
     /**
@@ -37,7 +37,7 @@ class MysqlArTest extends DbTestCase
     public function testCoDelete(int $id)
     {
         go(function () use ($id) {
-            $this->arDelete($id);
+            $this->emDelete($id);
         });
     }
 
@@ -48,7 +48,7 @@ class MysqlArTest extends DbTestCase
      */
     public function testDeleteById(int $id)
     {
-        $this->arDeleteById($id);
+        $this->emDeleteById($id);
     }
 
     /**
@@ -59,7 +59,7 @@ class MysqlArTest extends DbTestCase
     public function testCoDeleteById(int $id)
     {
         go(function () use ($id) {
-            $this->arDeleteById($id);
+            $this->emDeleteById($id);
         });
     }
 
@@ -70,7 +70,7 @@ class MysqlArTest extends DbTestCase
      */
     public function testDeleteByIds(array $ids)
     {
-        $this->arDeleteByIds($ids);
+        $this->emDeleteByIds($ids);
     }
 
     /**
@@ -81,7 +81,7 @@ class MysqlArTest extends DbTestCase
     public function testCoDeleteByIds(array $ids)
     {
         go(function () use ($ids) {
-            $this->arDeleteByIds($ids);
+            $this->emDeleteByIds($ids);
         });
     }
 
@@ -92,7 +92,7 @@ class MysqlArTest extends DbTestCase
      */
     public function testUpdate(int $id)
     {
-        $this->arUpdate($id);
+        $this->emUpdate($id);
     }
 
     /**
@@ -103,7 +103,7 @@ class MysqlArTest extends DbTestCase
     public function testCoUpdate(int $id)
     {
         go(function () use ($id) {
-            $this->arUpdate($id);
+            $this->emUpdate($id);
         });
     }
 
@@ -114,7 +114,7 @@ class MysqlArTest extends DbTestCase
      */
     public function testFindById(int $id)
     {
-        $this->arFindById($id);
+        $this->emFindById($id);
     }
 
     /**
@@ -125,30 +125,7 @@ class MysqlArTest extends DbTestCase
     public function testCoFindById(int $id)
     {
         go(function () use ($id) {
-            $this->arFindById($id);
-        });
-    }
-
-    /**
-     * @dataProvider mysqlProvider
-     *
-     * @param int $id
-     */
-    public function testFindByIdClass(int $id)
-    {
-        $this->arFindByIdClass($id);
-    }
-
-
-    /**
-     * @dataProvider mysqlProvider
-     *
-     * @param int $id
-     */
-    public function testCoFindByIdClass(int $id)
-    {
-        go(function () use ($id) {
-            $this->arFindByIdClass($id);
+            $this->emFindById($id);
         });
     }
 
@@ -159,7 +136,7 @@ class MysqlArTest extends DbTestCase
      */
     public function testFindByIds(array $ids)
     {
-        $this->arFindByIds($ids);
+        $this->emFindByIds($ids);
     }
 
     /**
@@ -170,29 +147,7 @@ class MysqlArTest extends DbTestCase
     public function testCoFindByIds(array $ids)
     {
         go(function () use ($ids) {
-            $this->arFindByIds($ids);
-        });
-    }
-
-    /**
-     * @dataProvider mysqlProviders
-     *
-     * @param array $ids
-     */
-    public function testFindByIdsByClass(array $ids)
-    {
-        $this->arFindByIdsByClass($ids);
-    }
-
-    /**
-     * @dataProvider mysqlProviders
-     *
-     * @param array $ids
-     */
-    public function testCoFindByIdsByClass(array $ids)
-    {
-        go(function () use ($ids) {
-            $this->arFindByIdsByClass($ids);
+            $this->emFindByIds($ids);
         });
     }
 
@@ -203,7 +158,29 @@ class MysqlArTest extends DbTestCase
      */
     public function testQuery(array $ids)
     {
-        $this->arQuery($ids);
+        $this->emQuery($ids);
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testSql(array $ids)
+    {
+        $this->emSql($ids);
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testCoSql(array $ids)
+    {
+        go(function () use ($ids){
+            $this->emSql($ids);
+        });
     }
 
     /**
@@ -214,7 +191,7 @@ class MysqlArTest extends DbTestCase
     public function testCoQuery(array $ids)
     {
         go(function () use ($ids) {
-            $this->arQuery($ids);
+            $this->emQuery($ids);
         });
     }
 }

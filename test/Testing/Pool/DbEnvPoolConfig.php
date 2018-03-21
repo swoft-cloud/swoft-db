@@ -90,6 +90,7 @@ class DbEnvPoolConfig extends PoolProperties
      */
     protected $provider = 'consul';
 
+
     /**
      * @return int
      */

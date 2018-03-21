@@ -75,7 +75,8 @@ class DbPool extends ConnectionPool
         if (!isset($collector[$driver][DriverType::SYNC])) {
             throw new DbException('The synchronous driver of ' . $driver . ' is not exist!');
         }
-
+        echo v
+echo $collector[$driver][DriverType::SYNC];
         return $collector[$driver][DriverType::SYNC];
     }
 }

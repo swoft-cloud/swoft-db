@@ -142,35 +142,35 @@ abstract class QueryBuilder implements QueryBuilderInterface
      *
      * @var string
      */
-    private $insert;
+    protected $insert;
 
     /**
      * 更新表名
      *
      * @var string
      */
-    private $update;
+    protected $update;
 
     /**
      * 是否是delete
      *
      * @var bool
      */
-    private $delete = false;
+    protected $delete = false;
 
     /**
      * select语句
      *
      * @var array
      */
-    private $select = [];
+    protected $select = [];
 
     /**
      * set语句
      *
      * @var array
      */
-    private $set = [];
+    protected $set = [];
 
 
     /**
@@ -185,35 +185,35 @@ abstract class QueryBuilder implements QueryBuilderInterface
      *
      * @var array
      */
-    private $join = [];
+    protected $join = [];
 
     /**
      * where语句
      *
      * @var array
      */
-    private $where = [];
+    protected $where = [];
 
     /**
      * group by语句
      *
      * @var array
      */
-    private $groupBy = [];
+    protected $groupBy = [];
 
     /**
      * having语句
      *
      * @var array
      */
-    private $having = [];
+    protected $having = [];
 
     /**
      * order by 语句
      *
      * @var array
      */
-    private $orderBy = [];
+    protected $orderBy = [];
 
     /**
      * limit 语句
@@ -259,9 +259,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * QueryBuilder constructor.
      *
-     * @param string              $group
-     * @param string              $sql
-     * @param string              $table
+     * @param string $group
+     * @param string $sql
+     * @param string $table
      * @param ConnectionInterface $connection
      */
     public function __construct(string $group = Pool::GROUP, string $sql = '', string $table = null, ConnectionInterface $connection = null)
@@ -357,7 +357,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * from语句
      *
-     * @param string      $table
+     * @param string $table
      * @param string|null $alias
      *
      * @return QueryBuilder
@@ -374,9 +374,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * inner join语句
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $criteria
-     * @param string       $alias
+     * @param string $alias
      *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
@@ -392,9 +392,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * left join语句
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $criteria
-     * @param string       $alias
+     * @param string $alias
      *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
@@ -410,9 +410,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * right join语句
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $criteria
-     * @param string       $alias
+     * @param string $alias
      *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
@@ -429,7 +429,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * where语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      * @param string $connector
      *
@@ -446,7 +446,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * where and 语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      *
      * @return QueryBuilder
@@ -484,7 +484,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * where or 语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      *
      * @return QueryBuilder
@@ -500,7 +500,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * where in 语句
      *
      * @param string $column
-     * @param array  $values
+     * @param array $values
      * @param string $connector
      *
      * @return QueryBuilder
@@ -516,7 +516,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * where not in 语句
      *
      * @param string $column
-     * @param array  $values
+     * @param array $values
      * @param string $connector
      *
      * @return QueryBuilder
@@ -532,8 +532,8 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * between语句
      *
      * @param string $column
-     * @param mixed  $min
-     * @param mixed  $max
+     * @param mixed $min
+     * @param mixed $max
      * @param string $connector
      *
      * @return QueryBuilder
@@ -549,8 +549,8 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * not between语句
      *
      * @param string $column
-     * @param mixed  $min
-     * @param mixed  $max
+     * @param mixed $min
+     * @param mixed $max
      * @param string $connector
      *
      * @return QueryBuilder
@@ -566,7 +566,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * having语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      * @param string $connector
      *
@@ -583,7 +583,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * having and 语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      *
      * @return QueryBuilder
@@ -599,7 +599,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * having or 语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      *
      * @return QueryBuilder
@@ -615,7 +615,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * having in 语句
      *
      * @param string $column
-     * @param array  $values
+     * @param array $values
      * @param string $connector
      *
      * @return QueryBuilder
@@ -631,7 +631,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * having not in 语句
      *
      * @param string $column
-     * @param array  $values
+     * @param array $values
      * @param string $connector
      *
      * @return QueryBuilder
@@ -647,8 +647,8 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * having between语句
      *
      * @param string $column
-     * @param mixed  $min
-     * @param mixed  $max
+     * @param mixed $min
+     * @param mixed $max
      * @param string $connector
      *
      * @return QueryBuilder
@@ -664,8 +664,8 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * having not between语句
      *
      * @param string $column
-     * @param mixed  $min
-     * @param mixed  $max
+     * @param mixed $min
+     * @param mixed $max
      * @param string $connector
      *
      * @return QueryBuilder
@@ -780,9 +780,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * 设置参数
      *
-     * @param mixed  $key   参数名称整数和字符串，(?n|:name)
-     * @param mixed  $value 值
-     * @param string $type  类型，默认按照$value传值的类型
+     * @param mixed $key 参数名称整数和字符串，(?n|:name)
+     * @param mixed $value 值
+     * @param string $type 类型，默认按照$value传值的类型
      *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
@@ -855,7 +855,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * 括号条件组拼
      *
-     * @param array  $criteria
+     * @param array $criteria
      * @param string $bracket
      * @param string $connector
      *
@@ -874,10 +874,10 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * join数据组装
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $criteria
-     * @param string       $type
-     * @param string       $alias
+     * @param string $type
+     * @param string $alias
      *
      * @return QueryBuilder
      */
@@ -902,9 +902,9 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * 条件组装
      *
-     * @param array  $criteria
+     * @param array $criteria
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      * @param string $connector
      *
@@ -916,7 +916,8 @@ abstract class QueryBuilder implements QueryBuilderInterface
         $value,
         string $operator = self::OPERATOR_EQ,
         string $connector = self::LOGICAL_AND
-    ): QueryBuilder {
+    ): QueryBuilder
+    {
         $criteria[] = array(
             'column'    => $column,
             'value'     => $value,
@@ -954,8 +955,8 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * 参数个数转换
      *
-     * @param mixed  $key
-     * @param mixed  $value
+     * @param mixed $key
+     * @param mixed $value
      * @param string $type
      *
      * @throws DbException

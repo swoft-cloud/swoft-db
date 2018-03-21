@@ -1,197 +1,220 @@
 <?php
 
-namespace Swoft\Db\Test\Cases;
+namespace Swoft\Db\Test\Cases\Pgsql;
 
 /**
- * SyncMysqlEmTest
+ * SyncpgsqlArTest
  */
-class PgsqlEmTest extends DbTestCase
+class PgsqlArTest extends DbTestCase
 {
     public function testSave()
     {
-        $this->emSave();
+        $this->arSave();
     }
 
     public function testCoSave()
     {
         go(function () {
-            $this->emSave();
+            $this->arSave();
         });
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
     public function testDelete(int $id)
     {
-        $this->emDelete($id);
+        $this->arDelete($id);
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
     public function testCoDelete(int $id)
     {
         go(function () use ($id) {
-            $this->emDelete($id);
+            $this->arDelete($id);
         });
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
     public function testDeleteById(int $id)
     {
-        $this->emDeleteById($id);
+        $this->arDeleteById($id);
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
     public function testCoDeleteById(int $id)
     {
         go(function () use ($id) {
-            $this->emDeleteById($id);
+            $this->arDeleteById($id);
         });
     }
 
     /**
-     * @dataProvider mysqlProviders
+     * @dataProvider pgsqlProviders
      *
      * @param array $ids
      */
     public function testDeleteByIds(array $ids)
     {
-        $this->emDeleteByIds($ids);
+        $this->arDeleteByIds($ids);
     }
 
     /**
-     * @dataProvider mysqlProviders
+     * @dataProvider pgsqlProviders
      *
      * @param array $ids
      */
     public function testCoDeleteByIds(array $ids)
     {
         go(function () use ($ids) {
-            $this->emDeleteByIds($ids);
+            $this->arDeleteByIds($ids);
         });
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
     public function testUpdate(int $id)
     {
-        $this->emUpdate($id);
+        $this->arUpdate($id);
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
     public function testCoUpdate(int $id)
     {
         go(function () use ($id) {
-            $this->emUpdate($id);
+            $this->arUpdate($id);
         });
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
     public function testFindById(int $id)
     {
-        $this->emFindById($id);
+        $this->arFindById($id);
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
     public function testCoFindById(int $id)
     {
         go(function () use ($id) {
-            $this->emFindById($id);
+            $this->arFindById($id);
         });
     }
 
     /**
-     * @dataProvider mysqlProviders
+     * @dataProvider pgsqlProvider
+     *
+     * @param int $id
+     */
+    public function testFindByIdClass(int $id)
+    {
+        $this->arFindByIdClass($id);
+    }
+
+
+    /**
+     * @dataProvider pgsqlProvider
+     *
+     * @param int $id
+     */
+    public function testCoFindByIdClass(int $id)
+    {
+        go(function () use ($id) {
+            $this->arFindByIdClass($id);
+        });
+    }
+
+    /**
+     * @dataProvider pgsqlProviders
      *
      * @param array $ids
      */
     public function testFindByIds(array $ids)
     {
-        $this->emFindByIds($ids);
+        $this->arFindByIds($ids);
     }
 
     /**
-     * @dataProvider mysqlProviders
+     * @dataProvider pgsqlProviders
      *
      * @param array $ids
      */
     public function testCoFindByIds(array $ids)
     {
         go(function () use ($ids) {
-            $this->emFindByIds($ids);
+            $this->arFindByIds($ids);
         });
     }
 
     /**
-     * @dataProvider mysqlProviders
+     * @dataProvider pgsqlProviders
+     *
+     * @param array $ids
+     */
+    public function testFindByIdsByClass(array $ids)
+    {
+        $this->arFindByIdsByClass($ids);
+    }
+
+    /**
+     * @dataProvider pgsqlProviders
+     *
+     * @param array $ids
+     */
+    public function testCoFindByIdsByClass(array $ids)
+    {
+        go(function () use ($ids) {
+            $this->arFindByIdsByClass($ids);
+        });
+    }
+
+    /**
+     * @dataProvider pgsqlProviders
      *
      * @param array $ids
      */
     public function testQuery(array $ids)
     {
-        $this->emQuery($ids);
+        $this->arQuery($ids);
     }
 
     /**
-     * @dataProvider mysqlProviders
-     *
-     * @param array $ids
-     */
-    public function testSql(array $ids)
-    {
-        $this->emSql($ids);
-    }
-
-    /**
-     * @dataProvider mysqlProviders
-     *
-     * @param array $ids
-     */
-    public function testCoSql(array $ids)
-    {
-        go(function () use ($ids){
-            $this->emSql($ids);
-        });
-    }
-
-    /**
-     * @dataProvider mysqlProviders
+     * @dataProvider pgsqlProviders
      *
      * @param array $ids
      */
     public function testCoQuery(array $ids)
     {
         go(function () use ($ids) {
-            $this->emQuery($ids);
+            $this->arQuery($ids);
         });
     }
 }

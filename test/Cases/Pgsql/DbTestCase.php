@@ -1,6 +1,6 @@
 <?php
 
-namespace Swoft\Db\Test\Cases;
+namespace Swoft\Db\Test\Cases\Pgsql;
 
 use PHPUnit\Framework\TestCase;
 use Swoft\Db\EntityManager;
@@ -344,12 +344,12 @@ class DbTestCase extends TestCase
         ];
     }
 
-    public function mysqlProviders()
+    public function pgsqlProviders()
     {
         return $this->addUsers();
     }
 
-    public function mysqlProvider()
+    public function pgsqlProvider()
     {
         return $this->addUser();
     }

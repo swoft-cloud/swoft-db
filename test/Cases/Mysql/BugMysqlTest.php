@@ -1,6 +1,6 @@
 <?php
 
-namespace Swoft\Db\Test\Cases;
+namespace Swoft\Db\Test\Cases\Mysql;
 
 use Swoft\Db\Test\Testing\Entity\User;
 
