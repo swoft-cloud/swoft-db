@@ -50,22 +50,8 @@ interface DbConnectInterface
     public function commit();
 
     /**
-     * @return array|bool
-     */
-    public function recv();
-
-    /**
-     * @param bool $defer
-     */
-    public function setDefer($defer = true);
-
-    /**
      * Destory
      */
     public function destory();
 
-    /**
-     * @return string
-     */
-    public function getSql();
 }

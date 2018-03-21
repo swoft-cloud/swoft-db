@@ -3,12 +3,12 @@
 namespace Swoft\Db\Bean\Collector;
 
 use Swoft\Bean\CollectorInterface;
-use Swoft\Db\Bean\Annotation\Connect;
+use Swoft\Db\Bean\Annotation\Connection;
 
 /**
  * The collector of connect
  */
-class ConnectCollector implements CollectorInterface
+class ConnectionCollector implements CollectorInterface
 {
     /**
      * @var array
@@ -27,7 +27,7 @@ class ConnectCollector implements CollectorInterface
      */
     public static function collect(string $className, $objectAnnotation = null, string $propertyName = "", string $methodName = "", $propertyValue = null)
     {
-        if ($objectAnnotation instanceof Connect) {
+        if ($objectAnnotation instanceof Connection) {
             $type   = $objectAnnotation->getType();
             $driver = $objectAnnotation->getDriver();
             self::$connects[$driver][$type] = $className;

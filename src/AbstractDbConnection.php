@@ -2,7 +2,9 @@
 
 namespace Swoft\Db;
 
+use Swoft\Core\RequestContext;
 use Swoft\Db\Exception\MysqlException;
+use Swoft\Db\Helper\DbHelper;
 use Swoft\Pool\AbstractConnection;
 
 /**
@@ -10,19 +12,6 @@ use Swoft\Pool\AbstractConnection;
  */
 abstract class AbstractDbConnection extends AbstractConnection implements DbConnectInterface
 {
-    /**
-     * Recv
-     */
-    public function recv()
-    {
-    }
-
-    /**
-     * @param bool $defer
-     */
-    public function setDefer($defer = true)
-    {
-    }
 
     /**
      *
@@ -68,5 +57,18 @@ abstract class AbstractDbConnection extends AbstractConnection implements DbConn
         unset($configs['path'], $configs['query']);
 
         return $configs;
+    }
+
+    /**
+     * @param string $sql
+     */
+    protected function pushSqlToStack(string $sql)
+    {
+        $contextSqlKey = DbHelper::getContextSqlKey();
+        /* @var \SplStack $stack */
+        $stack = RequestContext::getContextDataByKey($contextSqlKey, new \SplStack());
+        $stack->push($sql);
+
+        RequestContext::setContextDataByKey($contextSqlKey, $stack);
     }
 }

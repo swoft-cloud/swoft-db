@@ -4,7 +4,6 @@ namespace Swoft\Db;
 
 use Swoft\App;
 use Swoft\Core\AbstractCoResult;
-use Swoft\Db\Helper\DbHelper;
 use Swoft\Db\Helper\EntityHelper;
 
 /**
@@ -36,18 +35,14 @@ class DbCoResult extends AbstractCoResult
     private $findOne = false;
 
     /**
-     * @var string
-     */
-    private $poolId;
-
-    /**
      * @param array ...$params
+     *
      * @return mixed
      */
     public function getResult(...$params)
     {
         $className = '';
-        if (! empty($params)) {
+        if (!empty($params)) {
             list($className) = $params;
         }
 
@@ -59,27 +54,8 @@ class DbCoResult extends AbstractCoResult
         App::debug("SQL语句执行结果(defer) sqlId=$sqlId result=" . json_encode($result));
 
         // Fill data to Entity
-        if (\is_array($result) && ! empty($className)) {
+        if (\is_array($result) && !empty($className)) {
             $result = EntityHelper::resultToEntity($result, $className);
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param bool $defer
-     * @return mixed
-     */
-    public function recv($defer = false)
-    {
-        $result = $this->connection->recv();
-
-        // Reset defer status
-        $defer && $this->connection->setDefer(false);
-
-        $isSqlSession = DbHelper::isContextTransaction($this->poolId);
-        if ($this->pool !== null && ! $isSqlSession) {
-            $this->pool->release($this->connection);
         }
 
         return $result;
@@ -110,17 +86,10 @@ class DbCoResult extends AbstractCoResult
     }
 
     /**
-     * @param string $poolId
-     */
-    public function setPoolId(string $poolId)
-    {
-        $this->poolId = $poolId;
-    }
-
-    /**
      * 转换结果
      *
      * @param mixed $result 查询结果
+     *
      * @return mixed
      */
     private function transferResult($result)
@@ -132,6 +101,7 @@ class DbCoResult extends AbstractCoResult
         } elseif ($this->findOne && $result !== false) {
             $result = $result[0] ?? [];
         }
+
         return $result;
     }
 }

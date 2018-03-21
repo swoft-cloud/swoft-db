@@ -5,7 +5,7 @@ namespace Swoft\Db\Pool;
 use Swoft\App;
 use Swoft\Bean\Annotation\Inject;
 use Swoft\Bean\Annotation\Pool;
-use Swoft\Db\Bean\Collector\ConnectCollector;
+use Swoft\Db\Bean\Collector\ConnectionCollector;
 use Swoft\Db\Driver\DriverType;
 use Swoft\Db\Exception\DbException;
 use Swoft\Db\Pool\Config\DbPoolConfig;
@@ -15,7 +15,7 @@ use Swoft\Pool\ConnectionPool;
 /**
  * Db pool
  *
- * @Pool()
+ * @Pool("default.master")
  */
 class DbPool extends ConnectionPool
 {
@@ -36,7 +36,7 @@ class DbPool extends ConnectionPool
     public function createConnection(): ConnectionInterface
     {
         $driver    = $this->poolConfig->getDriver();
-        $collector = ConnectCollector::getCollector();
+        $collector = ConnectionCollector::getCollector();
 
         if (App::isCoContext()) {
             $connectClassName = $this->getCorConnectClassName($collector, $driver);

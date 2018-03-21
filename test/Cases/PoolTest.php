@@ -44,9 +44,9 @@ class PoolTest extends TestCase
             '127.0.0.1:3306/swofttest?user=root&password=2wEwiesqe&charset=utf8',
         ]);
         $this->assertEquals($pConfig->getBalancer(), 'random');
-        $this->assertEquals($pConfig->getMaxActive(), 2);
+        $this->assertEquals($pConfig->getMaxActive(), 30);
         $this->assertEquals($pConfig->isUseProvider(), false);
-        $this->assertEquals($pConfig->getMaxWait(), 2);
+        $this->assertEquals($pConfig->getMaxWait(), 10);
     }
 
     public function testDbSlavePpt()
@@ -79,8 +79,8 @@ class PoolTest extends TestCase
             '127.0.0.1:3306/swofttest?user=root&password=2wEwiesqe&charset=utf8',
         ]);
         $this->assertEquals($pConfig->getBalancer(), 'random');
-        $this->assertEquals($pConfig->getMaxActive(), 2);
+        $this->assertEquals($pConfig->getMaxActive(), 30);
         $this->assertEquals($pConfig->isUseProvider(), false);
-        $this->assertEquals($pConfig->getMaxWait(), 2);
+        $this->assertEquals($pConfig->getMaxWait(), 10);
     }
 }
