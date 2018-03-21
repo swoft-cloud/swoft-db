@@ -54,9 +54,9 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         App::debug(sprintf('sql execute sqlId=%s, result=%s, sql=%s', $sqlId, JsonHelper::encode($result, JSON_UNESCAPED_UNICODE), $sql));
 
         $isFindOne = isset($this->limit['limit']) && $this->limit['limit'] === 1;
-        if ($this->isInsert()) {
+        if ($this->isSqlOperation($sql, 'insert')) {
             $result = $connection->getInsertId();
-        } elseif ($this->isUpdate() || $this->isDelete()) {
+        } elseif ($this->isSqlOperation($sql, 'update') || $this->isSqlOperation($sql, 'delete')) {
             $result = $connection->getAffectedRows();
         } else {
             $result = $connection->fetch();
@@ -80,19 +80,20 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         $sql = $this->getStatement();
         list($sqlId, $profileKey) = $this->getSqlIdAndProfileKey($sql);
 
-        /* @var AbstractDbConnection $connection*/
+        /* @var AbstractDbConnection $connection */
         $connection = $this->selectConnection();
         $connection->setDefer();
         $connection->prepare($sql);
         $result = $connection->execute($this->parameters);
 
         App::debug(sprintf('sql execute sqlId=%s, sql=%s', $sqlId, $sql));
-        $isUpdateOrDelete = $this->isDelete() || $this->isUpdate();
+        $isInsert         = $this->isSqlOperation($sql, 'insert');
+        $isUpdateOrDelete = $this->isSqlOperation($sql, 'delete') || $this->isSqlOperation($sql, 'update');
         $isFindOne        = $this->isSelect() && isset($this->limit['limit']) && $this->limit['limit'] === 1;
         $corResult        = new DbCoResult($connection, $profileKey);
 
         // 结果转换参数
-        $corResult->setInsert($this->isInsert());
+        $corResult->setInsert($isInsert);
         $corResult->setUpdateOrDelete($isUpdateOrDelete);
         $corResult->setFindOne($isFindOne);
 

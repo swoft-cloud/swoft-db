@@ -740,4 +740,20 @@ trait Statement
 
         return $alias;
     }
+
+    /**
+     * @param string $sql
+     * @param string $operation
+     *
+     * @return bool
+     */
+    protected function isSqlOperation(string $sql, $operation = 'update'): bool
+    {
+        $sql = trim($sql);
+        $sql = strtolower($sql);
+        if(strpos($sql, $operation) === 0){
+            return true;
+        }
+        return false;
+    }
 }
