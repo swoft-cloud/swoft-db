@@ -9,6 +9,7 @@ use Swoft\Db\Exception\MysqlException;
 use Swoft\Db\Driver\DriverType;
 use Swoft\Db\Driver\Driver;
 use Swoole\Coroutine\PostgreSQL;
+use Swoole\Coroutine\Channel;
 
 
 /**

@@ -10,7 +10,7 @@ use Swoft\Db\Test\Testing\Entity\User;
 class BugPgsqlTest extends DbTestCase
 {
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
@@ -20,7 +20,7 @@ class BugPgsqlTest extends DbTestCase
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
@@ -34,8 +34,9 @@ class BugPgsqlTest extends DbTestCase
     public function query($id)
     {
         $query = User::query()->select('name,id')->where('id', $id)->limit(1)->execute();
-
+        var_dump($query);
         $result = $query->getResult();
+        var_dump($result);
         $this->assertCount(2, $result);
         $this->assertFalse(empty(get_last_sql()));
     }
@@ -66,7 +67,6 @@ class BugPgsqlTest extends DbTestCase
 
         /* @var User $user */
         $user = User::findById($result)->getResult(User::class);
-var_dump($user);
         $this->assertEquals($user->getName(), 'stelin3');
         $this->assertEquals($user->getSex(), 1);
         $this->assertEquals($user->getDesc(), 'this is my desc2');
@@ -74,7 +74,7 @@ var_dump($user);
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
@@ -84,7 +84,7 @@ var_dump($user);
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
@@ -102,7 +102,7 @@ var_dump($user);
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
@@ -112,7 +112,7 @@ var_dump($user);
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
@@ -134,7 +134,7 @@ var_dump($user);
 
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */
@@ -144,7 +144,7 @@ var_dump($user);
     }
 
     /**
-     * @dataProvider mysqlProvider
+     * @dataProvider pgsqlProvider
      *
      * @param int $id
      */

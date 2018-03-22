@@ -24,7 +24,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
     /**
      * @var string
      */
-    private $profilePrefix = "mysql";
+    private $profilePrefix = "pgsql";
 
     /**
      * @return ResultInterface
@@ -48,7 +48,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
 
         App::profileStart($profileKey);
 
-        /* @var AbstractDbConnection $connection*/
+        /* @var AbstractDbConnection $connection */
         $connection = $this->selectConnection();
         $connection->prepare($sql);
         $result = $connection->execute($this->parameters);
@@ -83,7 +83,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         $sql = $this->getStatement();
         list($sqlId, $profileKey) = $this->getSqlIdAndProfileKey($sql);
 
-        /* @var AbstractDbConnection $connection*/
+        /* @var AbstractDbConnection $connection */
         $connection = $this->selectConnection();
         $connection->setDefer();
         $connection->prepare($sql);
@@ -119,7 +119,7 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
      * 转换结果
      *
      * @param AbstractDbConnection $connection
-     * @param mixed                $result
+     * @param mixed $result
      *
      * @return mixed
      */
@@ -225,5 +225,40 @@ class QueryBuilder extends \Swoft\Db\QueryBuilder
         $table = $this->from['table']??'';
 
         return '"' . $table . '"';
+    }
+
+    /**
+     * select语句
+     *
+     * @return string
+     */
+    protected function getSelectString(): string
+    {
+        $statement = '';
+        if (empty($this->select)) {
+            return $statement;
+        }
+
+        // 字段组拼
+        foreach ($this->select as $column => $alias) {
+            $column = explode(',',$column);
+            $column =  array_map(function($v){
+                return '"'.$v.'"';
+            },$column);
+
+            $statement .=  implode(',',$column);
+            if ($alias !== null) {
+                $statement .= ' AS ' . $alias;
+            }
+            $statement .= ', ';
+        }
+
+        //select组拼
+        $statement = substr($statement, 0, -2);
+        if (!empty($statement)) {
+            $statement = 'SELECT ' . $statement;
+        }
+
+        return $statement;
     }
 }

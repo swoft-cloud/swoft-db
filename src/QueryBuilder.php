@@ -178,7 +178,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      *
      * @var array
      */
-    private $from = [];
+    protected $from = [];
 
     /**
      * join语句
