@@ -2,7 +2,6 @@
 
 namespace Swoft\Db\Test\Cases;
 
-use PHPUnit\Framework\TestCase;
 use Swoft\Db\EntityManager;
 use Swoft\Db\Pool;
 use Swoft\Db\QueryBuilder;
@@ -12,7 +11,7 @@ use Swoft\Db\Types;
 /**
  * DbTestCache
  */
-class DbTestCase extends TestCase
+abstract class AbstractDbTestCase extends AbstractTestCase
 {
     public function arSave(string $group = Pool::GROUP)
     {
@@ -22,25 +21,25 @@ class DbTestCase extends TestCase
         $user->setDesc('this my desc');
         $user->setAge(mt_rand(1, 100));
 
-        $id     = $user->save($group)->getResult();
+        $id = $user->save($group)->getResult();
         $reuslt = $id > 0;
         $this->assertTrue($reuslt);
     }
 
     /**
-     * @param int $id
+     * @param int    $id
      * @param string $group
      */
     public function arDelete(int $id, string $group = Pool::GROUP)
     {
         /* @var User $user */
-        $user   = User::findById($id, $group)->getResult(User::class);
+        $user = User::findById($id, $group)->getResult(User::class);
         $result = $user->delete($group)->getResult();
         $this->assertEquals(1, $result);
     }
 
     /**
-     * @param int $id
+     * @param int    $id
      * @param string $group
      */
     public function arDeleteById(int $id, string $group = Pool::GROUP)
@@ -50,7 +49,7 @@ class DbTestCase extends TestCase
     }
 
     /**
-     * @param array $ids
+     * @param array  $ids
      * @param string $group
      */
     public function arDeleteByIds(array $ids, string $group = Pool::GROUP)
@@ -60,7 +59,7 @@ class DbTestCase extends TestCase
     }
 
     /**
-     * @param int $id
+     * @param int    $id
      * @param string $group
      */
     public function arUpdate(int $id, string $group = Pool::GROUP)
@@ -78,7 +77,7 @@ class DbTestCase extends TestCase
     }
 
     /**
-     * @param int $id
+     * @param int    $id
      * @param string $group
      */
     public function arFindById(int $id, string $group = Pool::GROUP)
@@ -88,7 +87,7 @@ class DbTestCase extends TestCase
     }
 
     /**
-     * @param int $id
+     * @param int    $id
      * @param string $group
      */
     public function arFindByIdClass(int $id, string $group = Pool::GROUP)
@@ -99,7 +98,7 @@ class DbTestCase extends TestCase
     }
 
     /**
-     * @param array $ids
+     * @param array  $ids
      * @param string $group
      */
     public function arFindByIds(array $ids, string $group = Pool::GROUP)
@@ -131,7 +130,12 @@ class DbTestCase extends TestCase
 
     public function arQuery(array $ids, string $group = Pool::GROUP)
     {
-        $result = User::query($group)->select('*')->orderBy('id', QueryBuilder::ORDER_BY_DESC)->limit(2)->execute()->getResult();
+        $result = User::query($group)
+                      ->select('*')
+                      ->orderBy('id', QueryBuilder::ORDER_BY_DESC)
+                      ->limit(2)
+                      ->execute()
+                      ->getResult();
         $this->assertCount(2, $result);
     }
 
@@ -152,14 +156,14 @@ class DbTestCase extends TestCase
     }
 
     /**
-     * @param int $id
+     * @param int    $id
      * @param string $group
      */
     public function emDelete(int $id, string $group = Pool::GROUP)
     {
 
         /* @var User $user */
-        $user   = User::findById($id, $group)->getResult(User::class);
+        $user = User::findById($id, $group)->getResult(User::class);
         $em = EntityManager::create($group);
         $result = $em->delete($user)->getResult();
         $em->close();
@@ -168,7 +172,7 @@ class DbTestCase extends TestCase
     }
 
     /**
-     * @param int $id
+     * @param int    $id
      * @param string $group
      */
     public function emDeleteById(int $id, string $group = Pool::GROUP)
@@ -181,7 +185,7 @@ class DbTestCase extends TestCase
     }
 
     /**
-     * @param array $ids
+     * @param array  $ids
      * @param string $group
      */
     public function emDeleteByIds(array $ids, string $group = Pool::GROUP)
@@ -194,7 +198,7 @@ class DbTestCase extends TestCase
     }
 
     /**
-     * @param int $id
+     * @param int    $id
      * @param string $group
      */
     public function emUpdate(int $id, string $group = Pool::GROUP)
@@ -229,7 +233,7 @@ class DbTestCase extends TestCase
     }
 
     /**
-     * @param array $ids
+     * @param array  $ids
      * @param string $group
      */
     public function emFindByIds(array $ids, string $group = Pool::GROUP)
@@ -249,62 +253,75 @@ class DbTestCase extends TestCase
     public function emQuery(array $ids, string $group = Pool::GROUP)
     {
         $em = EntityManager::create($group);
-        $result = $em->createQuery()->select('*')->from(User::class)->orderBy('id', QueryBuilder::ORDER_BY_DESC)->limit(2)->execute()->getResult();
+        $result = $em->createQuery()
+                     ->select('*')
+                     ->from(User::class)
+                     ->orderBy('id', QueryBuilder::ORDER_BY_DESC)
+                     ->limit(2)
+                     ->execute()
+                     ->getResult();
         $em->close();
 
         $this->assertCount(2, $result);
     }
 
-    public function emSql(array $ids, string $group = Pool::GROUP){
+    public function emSql(array $ids, string $group = Pool::GROUP)
+    {
         $em = EntityManager::create($group);
         $result = $em->createQuery('select * from user where id in(?, ?) and name = ? order by id desc limit 2')
-            ->setParameter(0, $ids[0])
-            ->setParameter(1, $ids[1])
-            ->setParameter(2, 'stelin')
-            ->execute()->getResult();
+                     ->setParameter(0, $ids[0])
+                     ->setParameter(1, $ids[1])
+                     ->setParameter(2, 'stelin')
+                     ->execute()
+                     ->getResult();
         $em->close();
 
         $em = EntityManager::create($group);
         $result2 = $em->createQuery('select * from user where id in(?, ?) and name = ? order by id desc limit 2')
-            ->setParameter(0, $ids[0])
-            ->setParameter(1, $ids[1])
-            ->setParameter(2, 'stelin', Types::STRING)
-            ->execute()->getResult();
+                      ->setParameter(0, $ids[0])
+                      ->setParameter(1, $ids[1])
+                      ->setParameter(2, 'stelin', Types::STRING)
+                      ->execute()
+                      ->getResult();
         $em->close();
 
         $em = EntityManager::create($group);
         $result3 = $em->createQuery('select * from user where id in(?, ?) and name = ? order by id desc limit 2')
-            ->setParameters([$ids[0], $ids[1], 'stelin'])
-            ->execute()->getResult();
+                      ->setParameters([$ids[0], $ids[1], 'stelin'])
+                      ->execute()
+                      ->getResult();
         $em->close();
 
         $em = EntityManager::create($group);
         $result4 = $em->createQuery('select * from user where id in(:id1, :id2) and name = :name order by id desc limit 2')
-            ->setParameter(':id1', $ids[0])
-            ->setParameter('id2', $ids[1])
-            ->setParameter('name', 'stelin')
-            ->execute()->getResult();
+                      ->setParameter(':id1', $ids[0])
+                      ->setParameter('id2', $ids[1])
+                      ->setParameter('name', 'stelin')
+                      ->execute()
+                      ->getResult();
         $em->close();
 
         $em = EntityManager::create($group);
         $result5 = $em->createQuery('select * from user where id in(:id1, :id2) and name = :name order by id desc limit 2')
-            ->setParameters([
-                'id1' => $ids[0],
-                ':id2' => $ids[1],
-                'name' => 'stelin'
-            ])
-            ->execute()->getResult();
+                      ->setParameters([
+                          'id1'  => $ids[0],
+                          ':id2' => $ids[1],
+                          'name' => 'stelin'
+                      ])
+                      ->execute()
+                      ->getResult();
         $em->close();
 
 
         $em = EntityManager::create($group);
         $result6 = $em->createQuery('select * from user where id in(:id1, :id2) and name = :name order by id desc limit 2')
-            ->setParameters([
-                ['id1', $ids[0]],
-                [':id2', $ids[1], Types::INT],
-                ['name', 'stelin', Types::STRING],
-            ])
-            ->execute()->getResult();
+                      ->setParameters([
+                          ['id1', $ids[0]],
+                          [':id2', $ids[1], Types::INT],
+                          ['name', 'stelin', Types::STRING],
+                      ])
+                      ->execute()
+                      ->getResult();
         $em->close();
 
         $this->assertCount(2, $result);
@@ -322,7 +339,7 @@ class DbTestCase extends TestCase
         $user->setSex(1);
         $user->setDesc('this my desc');
         $user->setAge(mt_rand(1, 100));
-        $id  = $user->save($group)->getResult();
+        $id = $user->save($group)->getResult();
         $id2 = $user->save($group)->getResult();
 
         return [

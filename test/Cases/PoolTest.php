@@ -2,7 +2,6 @@
 
 namespace Swoft\Db\Test\Cases;
 
-use PHPUnit\Framework\TestCase;
 use Swoft\App;
 use Swoft\Db\Test\Testing\Pool\DbEnvPoolConfig;
 use Swoft\Db\Test\Testing\Pool\DbPptPoolConfig;
@@ -12,7 +11,7 @@ use Swoft\Db\Test\Testing\Pool\DbSlavePptConfig;
 /**
  * PoolTest
  */
-class PoolTest extends TestCase
+class PoolTest extends AbstractTestCase
 {
     public function testDbPpt()
     {
@@ -40,8 +39,8 @@ class PoolTest extends TestCase
         $this->assertEquals($pConfig->getProvider(), 'consul2');
         $this->assertEquals($pConfig->getTimeout(), 2);
         $this->assertEquals($pConfig->getUri(), [
-            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
-            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
+            '127.0.0.1:3306/test?user=root&password=&charset=utf8',
+            '127.0.0.1:3306/test?user=root&password=&charset=utf8',
         ]);
         $this->assertEquals($pConfig->getBalancer(), 'random');
         $this->assertEquals($pConfig->getMaxActive(), 30);
@@ -75,8 +74,8 @@ class PoolTest extends TestCase
         $this->assertEquals($pConfig->getProvider(), 'consul2');
         $this->assertEquals($pConfig->getTimeout(), 3);
         $this->assertEquals($pConfig->getUri(), [
-            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
-            '127.0.0.1:3306/test?user=root&password=123456&charset=utf8',
+            '127.0.0.1:3306/test?user=root&password=&charset=utf8',
+            '127.0.0.1:3306/test?user=root&password=&charset=utf8',
         ]);
         $this->assertEquals($pConfig->getBalancer(), 'random');
         $this->assertEquals($pConfig->getMaxActive(), 30);

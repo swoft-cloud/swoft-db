@@ -7,11 +7,10 @@ use Swoft\Db\Test\Testing\Entity\User;
 /**
  * BugMysqlTest
  */
-class BugMysqlTest extends DbTestCase
+class BugMysqlTest extends AbstractDbTestCase
 {
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testResult(int $id)
@@ -21,7 +20,6 @@ class BugMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testCo(int $id)
@@ -47,7 +45,7 @@ class BugMysqlTest extends DbTestCase
 
     public function testCoAttr()
     {
-        go(function (){
+        go(function () {
             $this->attr();
         });
     }
@@ -60,7 +58,7 @@ class BugMysqlTest extends DbTestCase
             'desc' => 'this is my desc2',
             'age'  => 99,
         ];
-        $user  = new User();
+        $user = new User();
         $user->fill($attrs);
         $result = $user->save()->getResult();
 
@@ -75,7 +73,6 @@ class BugMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testModelSelect(int $id)
@@ -85,12 +82,11 @@ class BugMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testModelCoSelect(int $id)
     {
-        go(function () use ($id){
+        go(function () use ($id) {
             $this->modelSelect($id);
         });
     }
@@ -103,7 +99,6 @@ class BugMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testModelDelete(int $id)
@@ -113,12 +108,11 @@ class BugMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testModelCoDelete(int $id)
     {
-        go(function () use ($id){
+        go(function () use ($id) {
             $this->modelDelete($id);
         });
     }
@@ -135,7 +129,6 @@ class BugMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testModelUpdate(int $id)
@@ -145,12 +138,11 @@ class BugMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testModelCoUpdate(int $id)
     {
-        go(function () use ($id){
+        go(function () use ($id) {
             $this->modelUpdate($id);
         });
     }
@@ -158,16 +150,16 @@ class BugMysqlTest extends DbTestCase
     public function modelUpdate(int $id)
     {
         $data = [
-            'name' => 'stelin7872',
-            'sex'  => 18,
+            'name'        => 'stelin7872',
+            'sex'         => 18,
             'description' => 'descc',
-            'age'  => 100,
+            'age'         => 100,
         ];
 
         $result = User::query()->update()->set($data)->where('id', $id)->execute()->getResult();
         $this->assertEquals(1, $result);
 
-        /* @var User $user*/
+        /* @var User $user */
         $user = User::findById($id)->getResult(User::class);
         $this->assertEquals($user->getName(), 'stelin7872');
         $this->assertEquals($user->getSex(), 18);
@@ -186,7 +178,7 @@ class BugMysqlTest extends DbTestCase
      */
     public function testModelCoInsert()
     {
-        go(function (){
+        go(function () {
             $this->modelInsert();
         });
     }
@@ -196,16 +188,16 @@ class BugMysqlTest extends DbTestCase
     public function modelInsert()
     {
         $data = [
-            'name' => 'stelin666',
-            'sex'  => 19,
+            'name'        => 'stelin666',
+            'sex'         => 19,
             'description' => '1212',
-            'age'  => 100,
+            'age'         => 100,
         ];
 
         $id = User::query()->insert()->set($data)->execute()->getResult();
         $this->assertFalse(empty($id));
 
-        /* @var User $user*/
+        /* @var User $user */
         $user = User::findById($id)->getResult(User::class);
         $this->assertEquals($user->getName(), 'stelin666');
         $this->assertEquals($user->getSex(), 19);
