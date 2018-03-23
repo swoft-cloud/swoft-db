@@ -3,11 +3,12 @@
 namespace Swoft\Db;
 
 use Swoft\Core\ResultInterface;
+use Swoft\Db\Bean\Collector\EntityCollector;
 
 /**
  * The model of activerecord
  */
-class Model
+class Model implements \ArrayAccess, \Iterator
 {
     /**
      * The data of old
@@ -15,6 +16,16 @@ class Model
      * @var array
      */
     private $attrs = [];
+
+    /**
+     * Model constructor.
+     *
+     * @param array $attributes
+     */
+    public function __construct(array $attributes = [])
+    {
+        $this->fill($attributes);
+    }
 
     /**
      * Insert data to db
@@ -144,7 +155,6 @@ class Model
         return EntityManager::getQuery(static::class, $group);
     }
 
-
     /**
      * Get the exeutor
      *
@@ -191,5 +201,139 @@ class Model
                 $this->$methodName($value);
             }
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->toJson();
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        $entities = EntityCollector::getCollector();
+        $columns  = $entities[static::class]['field'];
+
+        $data = [];
+        foreach ($columns as $propertyName => $column) {
+            $methodName = sprintf('get%s', ucfirst($propertyName));
+            if (!method_exists($this, $methodName) || !isset($column['column'])) {
+                continue;
+            }
+
+            $data[$propertyName] = $this->$methodName();
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return string
+     */
+    public function toJson(): string
+    {
+        return json_encode($this->toArray(), JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Whether a offset exists
+     *
+     * @param mixed $offset
+     *
+     * @return boolean true on success or false on failure.
+     */
+    public function offsetExists($offset)
+    {
+        $data = $this->toArray();
+
+        return isset($data[$offset]);
+    }
+
+    /**
+     * Offset to retrieve
+     *
+     * @param mixed $offset
+     *
+     * @return mixed Can return all value types.
+     */
+    public function offsetGet($offset)
+    {
+        $data  = $this->toArray();
+        $value = $data[$offset]??null;
+
+        return $value;
+    }
+
+    /**
+     * Offset to set
+     *
+     * @param mixed $offset
+     * @param mixed $value
+     *
+     * @return void
+     */
+    public function offsetSet($offset, $value)
+    {
+        $this->fill([$offset => $value]);
+    }
+
+    /**
+     * @param mixed $offset
+     */
+    public function offsetUnset($offset)
+    {
+
+    }
+
+    /**
+     * Return the current element
+     *
+     * @return mixed Can return any type.
+     */
+    public function current()
+    {
+        return current($this->attrs);
+    }
+
+    /**
+     * Move forward to next element
+     * @return void Any returned value is ignored.
+     */
+    public function next()
+    {
+        next($this->attrs);
+    }
+
+    /**
+     * Return the key of the current element
+     * @return mixed scalar on success, or null on failure.
+     */
+    public function key()
+    {
+        return key($this->attrs);
+    }
+
+    /**
+     * Checks if current position is valid
+     * @return boolean The return value will be casted to boolean and then evaluated.
+     * Returns true on success or false on failure.
+     */
+    public function valid()
+    {
+        return ($this->current() !== false);
+    }
+
+    /**
+     * Rewind the Iterator to the first element
+     * @return void Any returned value is ignored.
+     */
+    public function rewind()
+    {
+        reset($this->attrs);
     }
 }

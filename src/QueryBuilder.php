@@ -321,13 +321,16 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * select语句
      *
-     * @param string $column
+     * @param mixed $column
      * @param string $alias
      *
      * @return QueryBuilder
      */
-    public function select(string $column, string $alias = null): QueryBuilder
+    public function select($column, string $alias = null): QueryBuilder
     {
+        if (is_array($column)) {
+            return $this->selects($column);
+        }
         $this->select[$column] = $alias;
 
         return $this;
