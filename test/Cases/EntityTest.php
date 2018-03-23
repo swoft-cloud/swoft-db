@@ -7,7 +7,7 @@ use Swoft\Db\Test\Testing\Entity\User;
 
 /**
  */
-class EntityTest extends DbTestCase
+class EntityTest extends AbstractDbTestCase
 {
     public function testToArray()
     {
