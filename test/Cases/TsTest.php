@@ -6,7 +6,7 @@ use Swoft\Db\Db;
 use Swoft\Db\EntityManager;
 use Swoft\Db\Test\Testing\Entity\User;
 
-class TsTest extends DbTestCase
+class TsTest extends AbstractDbTestCase
 {
     public function testTsRollback()
     {
@@ -26,7 +26,7 @@ class TsTest extends DbTestCase
 
         $em = EntityManager::create();
         $em->beginTransaction();
-        $uid  = $em->save($user)->getResult();
+        $uid = $em->save($user)->getResult();
         $uid2 = $user->save()->getResult();
         $em->rollback();
 
@@ -58,7 +58,7 @@ class TsTest extends DbTestCase
 
         $em = EntityManager::create();
         $em->beginTransaction();
-        $uid  = $em->save($user)->getResult();
+        $uid = $em->save($user)->getResult();
         $uid2 = $user->save()->getResult();
         $em->commit();
 
@@ -74,13 +74,13 @@ class TsTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProviders
-     *
      * @param array $ids
      */
-    public function testDbBuilder(array $ids){
+    public function testDbBuilder(array $ids)
+    {
         $this->builder();
 
-        go(function (){
+        go(function () {
             $this->builder();
         });
     }
@@ -96,14 +96,22 @@ class TsTest extends DbTestCase
         $result = Db::query('select * from user order by id desc limit 2')->execute()->getResult();
         $result2 = Db::query('select * from user order by id desc limit 2')->execute()->getResult(User::class);
 
-        $result3 = Db::query()->select('*')->from(User::class)->where('name', 'stelin')->orderBy('id', 'DESC')->limit(1)->execute()->getResult();
-        $result4 = Db::query()->select('*')
-            ->from(User::class)
-            ->where('name', 'stelin')
-            ->orderBy('id', 'DESC')
-            ->limit(1)
-            ->execute()
-            ->getResult(User::class);
+        $result3 = Db::query()
+                     ->select('*')
+                     ->from(User::class)
+                     ->where('name', 'stelin')
+                     ->orderBy('id', 'DESC')
+                     ->limit(1)
+                     ->execute()
+                     ->getResult();
+        $result4 = Db::query()
+                     ->select('*')
+                     ->from(User::class)
+                     ->where('name', 'stelin')
+                     ->orderBy('id', 'DESC')
+                     ->limit(1)
+                     ->execute()
+                     ->getResult(User::class);
 
         $this->assertCount(2, $result);
         $this->assertCount(2, $result2);

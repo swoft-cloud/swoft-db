@@ -5,7 +5,7 @@ namespace Swoft\Db\Test\Cases;
 /**
  * SyncMysqlEmTest
  */
-class MysqlEmTest extends DbTestCase
+class MysqlEmTest extends AbstractDbTestCase
 {
     public function testSave()
     {
@@ -21,7 +21,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testDelete(int $id)
@@ -31,7 +30,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testCoDelete(int $id)
@@ -43,7 +41,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testDeleteById(int $id)
@@ -53,7 +50,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testCoDeleteById(int $id)
@@ -65,7 +61,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProviders
-     *
      * @param array $ids
      */
     public function testDeleteByIds(array $ids)
@@ -75,7 +70,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProviders
-     *
      * @param array $ids
      */
     public function testCoDeleteByIds(array $ids)
@@ -87,7 +81,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testUpdate(int $id)
@@ -97,7 +90,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testCoUpdate(int $id)
@@ -109,7 +101,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testFindById(int $id)
@@ -119,7 +110,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testCoFindById(int $id)
@@ -131,7 +121,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProviders
-     *
      * @param array $ids
      */
     public function testFindByIds(array $ids)
@@ -141,7 +130,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProviders
-     *
      * @param array $ids
      */
     public function testCoFindByIds(array $ids)
@@ -153,7 +141,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProviders
-     *
      * @param array $ids
      */
     public function testQuery(array $ids)
@@ -163,7 +150,6 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProviders
-     *
      * @param array $ids
      */
     public function testSql(array $ids)
@@ -173,19 +159,17 @@ class MysqlEmTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProviders
-     *
      * @param array $ids
      */
     public function testCoSql(array $ids)
     {
-        go(function () use ($ids){
+        go(function () use ($ids) {
             $this->emSql($ids);
         });
     }
 
     /**
      * @dataProvider mysqlProviders
-     *
      * @param array $ids
      */
     public function testCoQuery(array $ids)

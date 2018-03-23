@@ -8,11 +8,10 @@ use Swoft\Db\Test\Testing\Entity\User;
 /**
  * SqlMysqlTest
  */
-class SqlMysqlTest extends DbTestCase
+class SqlMysqlTest extends AbstractDbTestCase
 {
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testUpdate(int $id)
@@ -22,7 +21,6 @@ class SqlMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testDelete(int $id)
@@ -32,7 +30,6 @@ class SqlMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testCoDelete(int $id)
@@ -46,7 +43,6 @@ class SqlMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testCoUpdate(int $id)
@@ -58,7 +54,6 @@ class SqlMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testSelect(int $id)
@@ -68,7 +63,6 @@ class SqlMysqlTest extends DbTestCase
 
     /**
      * @dataProvider mysqlProvider
-     *
      * @param int $id
      */
     public function testCoSelect(int $id)
@@ -92,14 +86,18 @@ class SqlMysqlTest extends DbTestCase
 
     private function insert()
     {
-        $name   = "swoft insert";
-        $result = Db::query('insert into user(name, sex,description, age) values("' . $name . '", 1, "xxxx", 99)')->execute()->getResult();
-        $user   = User::findById($result)->getResult();
+        $name = "swoft insert";
+        $result = Db::query('insert into user(name, sex,description, age) values("' . $name . '", 1, "xxxx", 99)')
+                    ->execute()
+                    ->getResult();
+        $user = User::findById($result)->getResult();
 
         $this->assertEquals($user['name'], $name);
 
-        $result = Db::query('INSERT into user(name, sex,description, age) values("' . $name . '", 1, "xxxx", 99)')->execute()->getResult();
-        $user   = User::findById($result)->getResult();
+        $result = Db::query('INSERT into user(name, sex,description, age) values("' . $name . '", 1, "xxxx", 99)')
+                    ->execute()
+                    ->getResult();
+        $user = User::findById($result)->getResult();
         $this->assertEquals($user['name'], $name);
     }
 
@@ -120,11 +118,11 @@ class SqlMysqlTest extends DbTestCase
 
     private function update($id)
     {
-        $name   = 'update name1';
+        $name = 'update name1';
         $result = Db::query('update user set name="' . $name . '" where id=' . $id)->execute()->getResult();
         $this->assertEquals(1, $result);
 
-        $name   = 'update name 协程框架';
+        $name = 'update name 协程框架';
         $result = Db::query('UPDATE user set name="' . $name . '" where id=' . $id)->execute()->getResult();
         $this->assertEquals(1, $result);
 

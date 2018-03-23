@@ -1,6 +1,5 @@
     /**
-     * {{function}}
-     *
+     * {{comment}}
      * @return {{coReturnType}}
      */
     public function {{function}}(){{returnType}}
