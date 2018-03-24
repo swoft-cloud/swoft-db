@@ -38,7 +38,7 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function save($entity):ResultInterface
+    public function save($entity): ResultInterface
     {
         // 实体映射信息处理
         list($table, , , $fields) = $this->getFields($entity, 1);
@@ -58,7 +58,7 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function delete($entity):ResultInterface
+    public function delete($entity): ResultInterface
     {
         // 实体映射数据
         list($table, , , $fields) = $this->getFields($entity, 3);
@@ -80,7 +80,7 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function deleteById($className, $id):ResultInterface
+    public function deleteById($className, $id): ResultInterface
     {
         // 实体映射数据
         list($table, , $idColumn) = $this->getTable($className);
@@ -98,7 +98,7 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function deleteByIds($className, array $ids):ResultInterface
+    public function deleteByIds($className, array $ids): ResultInterface
     {
         // 实体映射数据
         list($table, , $idColumn) = $this->getTable($className);
@@ -115,14 +115,15 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function update($entity):ResultInterface
+    public function update($entity): ResultInterface
     {
         // 实体映射数据
         list($table, $idColumn, $idValue, $fields) = $this->getFields($entity, 2);
 
         if (empty($fields)) {
-            App::warning("更新的数据不能为空(没有数据发生改变 table=" . $table . " id=" . $idColumn . " value=" . $idValue);
-            return new DbDataResult(0);
+            $pool = $this->queryBuilder->getConnection();
+            $connection = $this->queryBuilder->getConnection();
+            return new DbDataResult(0, $connection);
         }
         // 构建update查询器
         $this->queryBuilder->update($table)->where($idColumn, $idValue);
@@ -193,6 +194,7 @@ class Executor
      *
      * @param object $entity 实体对象
      * @param int    $type   类型，1=insert 3=delete|find 2=update
+     *
      * @return array
      * @throws \Swoft\Exception\ValidatorException
      */
@@ -206,7 +208,7 @@ class Executor
         // 实体映射字段、值处理以及验证处理
         $idValue = null;
         foreach ($fields as $proName => $proAry) {
-            $column = $proAry['column'];
+            $column  = $proAry['column'];
             $default = $proAry['default'];
 
             // 实体属性对应值
@@ -240,7 +242,7 @@ class Executor
 
         // 如果是更新找到变化的字段
         if ($type === 2) {
-            $oldFields = $entity->getAttrs();
+            $oldFields    = $entity->getAttrs();
             $changeFields = array_diff($changeFields, $oldFields);
         }
 
@@ -252,16 +254,17 @@ class Executor
      *
      * @param array $columnAry     属性字段验证规则
      * @param mixed $propertyValue 数组字段值
+     *
      * @throws ValidatorException
      */
     private function validate(array $columnAry, $propertyValue)
     {
         // 验证信息
-        $column = $columnAry['column'];
-        $length = $columnAry['length'] ?? -1;
+        $column    = $columnAry['column'];
+        $length    = $columnAry['length'] ?? -1;
         $validates = $columnAry['validates'] ?? [];
-        $type = $columnAry['type'] ?? Types::STRING;
-        $required = $columnAry['required'] ?? false;
+        $type      = $columnAry['type'] ?? Types::STRING;
+        $required  = $columnAry['required'] ?? false;
 
         // 必须传值验证
         if ($propertyValue === null && $required) {
@@ -279,12 +282,12 @@ class Executor
 
         // 循环验证，一个验证不通过，验证失败
         foreach ($validates as $validate) {
-            $name = $validate['name'];
-            $params = $validate['value'];
+            $name     = $validate['name'];
+            $params   = $validate['value'];
             $beanName = 'Validator' . $name;
 
             // 验证器未定义
-            if (! BeanFactory::hasBean($beanName)) {
+            if (!BeanFactory::hasBean($beanName)) {
                 App::warning('验证器不存在，beanName=' . $beanName);
                 continue;
             }
@@ -300,13 +303,19 @@ class Executor
      *
      * @param object $entity  实体对象
      * @param string $proName 属性名称
+     *
      * @return mixed
      * @throws \InvalidArgumentException
      */
     private function getEntityProValue($entity, string $proName)
     {
-        $getterMethod = 'get' . ucfirst($proName);
-        if (! method_exists($entity, $getterMethod)) {
+        $proName      = explode('_', $proName);
+        $proName      = array_map(function ($word) {
+            return ucfirst($word);
+        }, $proName);
+        $proName      = implode('', $proName);
+        $getterMethod = 'get' . $proName;
+        if (!method_exists($entity, $getterMethod)) {
             throw new \InvalidArgumentException('实体对象属性getter方法不存在，properName=' . $proName);
         }
         $proValue = $entity->$getterMethod();
@@ -318,20 +327,21 @@ class Executor
      * 实例映射信息
      *
      * @param object $entity
+     *
      * @return array
      * @throws \InvalidArgumentException
      */
     private function getClassMetaData($entity): array
     {
         // 不是对象
-        if (! \is_object($entity) && ! class_exists($entity)) {
+        if (!\is_object($entity) && !class_exists($entity)) {
             throw new \InvalidArgumentException('实体不是对象');
         }
 
         // 对象实例不是实体
-        $entities = EntityCollector::getCollector();
+        $entities  = EntityCollector::getCollector();
         $className = \is_string($entity) ? $entity : \get_class($entity);
-        if (! isset($entities[$className]['table']['name'])) {
+        if (!isset($entities[$className]['table']['name'])) {
             throw new \InvalidArgumentException('对象不是实体对象，className=' . $className);
         }
 
@@ -342,15 +352,16 @@ class Executor
      * 实体表映射结构
      *
      * @param string $className
+     *
      * @return array
      */
     private function getTable(string $className): array
     {
-        $entities = EntityCollector::getCollector();
-        $fields = $entities[$className]['field'];
+        $entities   = EntityCollector::getCollector();
+        $fields     = $entities[$className]['field'];
         $idProperty = $entities[$className]['table']['id'];
-        $tableName = $entities[$className]['table']['name'];
-        $idColumn = $entities[$className]['column'][$idProperty];
+        $tableName  = $entities[$className]['table']['name'];
+        $idColumn   = $entities[$className]['column'][$idProperty];
         return [$tableName, $idProperty, $idColumn, $fields];
     }
 

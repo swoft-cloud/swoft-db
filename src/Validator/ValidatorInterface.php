@@ -5,24 +5,18 @@ namespace Swoft\Db\Validator;
 use Swoft\Exception\ValidatorException;
 
 /**
- * 通用验证器接口
+ * Interface ValidatorInterface
  *
- * @uses      ValidatorInterface
- * @version   2017年09月12日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * @package Swoft\Db\Validator
  */
 interface ValidatorInterface
 {
     /**
-     * 验证结果
-     *
-     * @param string $cloum     字段名称
-     * @param mixed  $value     字段传入值
-     * @param array  ...$params 其它参数数组传入
-     * @throws ValidatorException
-     * @return bool 成功返回true,失败抛异常
+     * @param string $column    Colunm name
+     * @param mixed  $value     Column value
+     * @param array  ...$params Other parameters
+     * @throws ValidatorException When validation failures, will throw an Exception
+     * @return bool When validation successful
      */
-    public function validate(string $cloum, $value, ...$params): bool;
+    public function validate(string $column, $value, ...$params): bool;
 }

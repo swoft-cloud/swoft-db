@@ -156,7 +156,7 @@ class SetGetGenerator
         $aliasProperty = $property;
         $primaryKey    = $fieldInfo['key'] === 'PRI';
         $required      = $primaryKey ? false : ($fieldInfo['nullable'] === 'NO');
-        $default       = !empty($fieldInfo['default']) ? $fieldInfo['default'] : false;
+        $default       = strtolower($fieldInfo['default']) !== 'null' ? $fieldInfo['default'] : false;
         $dbType        = $this->schema->dbSchema[$fieldInfo['type']] ?? '';
         $phpType       = $this->schema->phpSchema[$fieldInfo['type']] ?? 'mixed';
         $length        = $fieldInfo['length'];
@@ -173,9 +173,6 @@ class SetGetGenerator
         $this->checkAliasProperty($aliasProperty);
 
         $formatComment = "     * @var {$phpType} \${$aliasProperty} {$comment}\n";
-        if (!empty($comment)) {
-            $formatComment = "     * @var {$phpType} \${$aliasProperty}\n";
-        }
 
         $this->propertyStub .= PHP_EOL . str_replace([
                 "{{comment}}\n",
@@ -194,7 +191,7 @@ class SetGetGenerator
                 !empty($dbType) ? $dbType : ($isEnum ? '"feature-enum"' : (\is_int($default) ? '"int"' : '"string"')),
                 $length !== null ? ", length={$length}" : '',
                 $required ? "     * @Required()\n" : '',
-                $default !== false ? (\is_int($default) ? " = {$default};" : " = '{$default}';") : ($required ? ' = \'\';' : ';')
+                $default !== false ? (\is_int($default) ? " = {$default};" : (trim($default) === '' ? ' = \'\';' : " = '{$default}';")) : ($required ? ' = \'\';' : ';')
             ], $propertyStub);
     }
 
@@ -208,17 +205,25 @@ class SetGetGenerator
     private function parseSetter(string $setterStub, array $fieldInfo)
     {
         $property      = $fieldInfo['name'];
+        $comment       = $fieldInfo['column_comment'];
         $aliasProperty = $property;
         $this->checkAliasProperty($aliasProperty);
-        $function         = 'set' . ucfirst($aliasProperty);
+        $function         = explode('_', $aliasProperty);
+        $function         = array_map(function ($word) {
+            return ucfirst($word);
+        }, $function);
+        $function         = implode('', $function);
+        $function         = 'set' . $function;
         $primaryKey       = $fieldInfo['key'] === 'PRI';
         $type             = $this->schema->phpSchema[$fieldInfo['type']] ?? 'mixed';
         $this->setterStub .= PHP_EOL . str_replace([
+                '{{comment}}',
                 '{{function}}',
                 '{{attribute}}',
                 '{{type}}',
                 '{{hasReturnType}}'
             ], [
+                $comment,
                 $function,
                 $aliasProperty,
                 $type !== 'mixed' ? "{$type} " : '',
@@ -236,18 +241,26 @@ class SetGetGenerator
     private function parseGetter(string $getterStub, array $fieldInfo)
     {
         $property      = $fieldInfo['name'];
+        $comment       = $fieldInfo['column_comment'];
         $aliasProperty = $property;
         $this->checkAliasProperty($aliasProperty);
-        $function         = 'get' . ucfirst($aliasProperty);
+        $function         = explode('_', $aliasProperty);
+        $function         = array_map(function ($word) {
+            return ucfirst($word);
+        }, $function);
+        $function         = implode('', $function);
+        $function         = 'get' . $function;
         $default          = !empty($fieldInfo['default']) ? $fieldInfo['default'] : false;
         $primaryKey       = $fieldInfo['key'] === 'PRI';
         $returnType       = $this->schema->phpSchema[$fieldInfo['type']] ?? 'mixed';
         $this->getterStub .= PHP_EOL . str_replace([
+                '{{comment}}',
                 '{{function}}',
                 '{{attribute}}',
                 '{{coReturnType}}',
                 '{{returnType}}',
             ], [
+                $comment,
                 $function,
                 $aliasProperty,
                 $returnType,

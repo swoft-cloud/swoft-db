@@ -18,12 +18,11 @@ abstract class AbstractGenerator
      */
     protected $uses = [
         'Swoft\Db\Model',
-        'Swoft\Bean\Annotation\Column',
-        'Swoft\Bean\Annotation\Entity',
-        'Swoft\Bean\Annotation\Enum',
-        'Swoft\Bean\Annotation\Id',
-        'Swoft\Bean\Annotation\Required',
-        'Swoft\Bean\Annotation\Table',
+        'Swoft\Db\Bean\Annotation\Column',
+        'Swoft\Db\Bean\Annotation\Entity',
+        'Swoft\Db\Bean\Annotation\Id',
+        'Swoft\Db\Bean\Annotation\Required',
+        'Swoft\Db\Bean\Annotation\Table',
         'Swoft\Db\Types'
     ];
 
@@ -79,6 +78,7 @@ abstract class AbstractGenerator
 
     /**
      * 解析属性
+     *
      * @param string $entity     实体
      * @param mixed  $entityName 实体注释名称
      * @param array  $fields     字段
@@ -86,11 +86,16 @@ abstract class AbstractGenerator
      */
     protected function parseProperty(string $entity, $entityName, array $fields, Schema $schema)
     {
-        $this->entity      = $entity;
-        $this->entityName  = $entityName;
-        $this->entityClass = ucwords($this->entity);
-        $this->entityDate  = date('Y年m月d日');
-        $this->fields      = $fields;
+        $this->entity     = $entity;
+        $this->entityName = $entityName;
+        $this->entityDate = date('Y年m月d日');
+        $this->fields     = $fields;
+
+        $this->entityClass = explode('_', $this->entity);
+        $this->entityClass = array_map(function ($word) {
+            return ucfirst($word);
+        }, $this->entityClass);
+        $this->entityClass = implode('', $this->entityClass);
 
         $param = [
             $schema,

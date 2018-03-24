@@ -5,23 +5,19 @@ namespace Swoft\Db\Pool;
 use Swoft\App;
 use Swoft\Bean\Annotation\Inject;
 use Swoft\Bean\Annotation\Pool;
-use Swoft\Db\Bean\Collector\ConnectCollector;
+use Swoft\Db\Bean\Collector\ConnectionCollector;
 use Swoft\Db\Driver\DriverType;
 use Swoft\Db\Exception\DbException;
 use Swoft\Db\Pool\Config\DbPoolConfig;
-use Swoft\Pool\ConnectPool;
+use Swoft\Pool\ConnectionInterface;
+use Swoft\Pool\ConnectionPool;
 
 /**
- * The pool of data
+ * Db pool
  *
- * @Pool()
- * @uses      DbPool
- * @version   2017年09月01日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * @Pool("default.master")
  */
-class DbPool extends ConnectPool
+class DbPool extends ConnectionPool
 {
     /**
      * The config of pool
@@ -32,21 +28,23 @@ class DbPool extends ConnectPool
      */
     protected $poolConfig;
 
-    public function createConnect()
+    /**
+     * Create connection
+     *
+     * @return ConnectionInterface
+     */
+    public function createConnection(): ConnectionInterface
     {
         $driver    = $this->poolConfig->getDriver();
-        $collector = ConnectCollector::getCollector();
+        $collector = ConnectionCollector::getCollector();
 
-        if (App::isCorContext()) {
+        if (App::isCoContext()) {
             $connectClassName = $this->getCorConnectClassName($collector, $driver);
         } else {
             $connectClassName = $this->getSyncConnectClassName($collector, $driver);
         }
-        return new $connectClassName($this);
-    }
 
-    public function reConnect($client)
-    {
+        return new $connectClassName($this);
     }
 
     /**

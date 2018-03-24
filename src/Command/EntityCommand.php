@@ -6,25 +6,16 @@ use Swoft\App;
 use Swoft\Console\Bean\Annotation\Command;
 use Swoft\Db\Entity\Generator;
 use Swoft\Db\Entity\Mysql\Schema;
+use Swoft\Db\Pool\DbPool;
 use Swoft\Db\Pool\DbSlavePool;
 
 /**
  * the group command list of database entity
  *
  * @Command(coroutine=false)
- * @uses      EntityCommand
- * @version   2017年10月11日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
 class EntityCommand
 {
-    /**
-     * @var array $drivers 数据库驱动列表
-     */
-    private $drivers = ['Mysql'];
-
     /**
      * @var \Swoft\Db\Entity\Schema $schema schema对象
      */
@@ -89,16 +80,11 @@ class EntityCommand
     private function initDatabase(): bool
     {
         App::setAlias('@entityPath', $this->filePath);
-        $pool = App::getBean(DbSlavePool::class);
-        $driver = $pool->getDriver();
-        if (in_array($driver, $this->drivers)) {
-            $schema = new Schema();
-            $schema->setDriver($driver);
-            $this->schema = $schema;
-        } else {
-            throw new \RuntimeException('There is no corresponding driver matching schema');
-        }
-        $syncDbConnect = $pool->createConnect();
+        $pool = App::getBean(DbPool::class);
+        $schema = new Schema();
+        $schema->setDriver('MYSQL');
+        $this->schema = $schema;
+        $syncDbConnect = $pool->createConnection();
         $this->generatorEntity = new Generator($syncDbConnect);
 
         return true;
