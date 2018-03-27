@@ -15,195 +15,147 @@ use Swoft\Exception\ValidatorException;
 class Executor
 {
     /**
-     * 查询器
-     *
-     * @var QueryBuilder
-     */
-    private $queryBuilder;
-
-    /**
-     * Executor constructor.
-     *
-     * @param QueryBuilder $queryBuilder
-     */
-    public function __construct(QueryBuilder $queryBuilder)
-    {
-        $this->queryBuilder = $queryBuilder;
-    }
-
-    /**
-     * insert实体数据
-     *
-     * @param object $entity 实体
+     * @param object $entity
      *
      * @return ResultInterface
      */
-    public function save($entity): ResultInterface
+    public static function save($entity): ResultInterface
     {
-        // 实体映射信息处理
-        list($table, , , $fields) = $this->getFields($entity, 1);
+        list($table, , , $fields) = self::getFields($entity, 1);
 
-        // 构建insert查询器
-        $this->queryBuilder->insert($table);
+        $query = Query::table($table)->insert();
         foreach ($fields ?? [] as $column => $value) {
-            $this->queryBuilder->set($column, $value);
-        }
-        return $this->getResult();
-    }
-
-    /**
-     * 按实体信息删除数据
-     *
-     * @param object $entity 实体
-     *
-     * @return ResultInterface
-     */
-    public function delete($entity): ResultInterface
-    {
-        // 实体映射数据
-        list($table, , , $fields) = $this->getFields($entity, 3);
-
-        // 构建delete查询器
-        $this->queryBuilder->delete()->from($table);
-        foreach ($fields ?? [] as $column => $value) {
-            $this->queryBuilder->where($column, $value);
+            $query = $query->set($column, $value);
         }
 
-        return $this->getResult();
-    }
-
-    /**
-     * 根据ID删除数据
-     *
-     * @param string $className 实体类名
-     * @param mixed  $id        删除ID
-     *
-     * @return ResultInterface
-     */
-    public function deleteById($className, $id): ResultInterface
-    {
-        // 实体映射数据
-        list($table, , $idColumn) = $this->getTable($className);
-
-        // 构建delete查询器
-        $this->queryBuilder->delete()->from($table)->where($idColumn, $id);
-        return $this->getResult();
-    }
-
-    /**
-     * 根据ID删除数据
-     *
-     * @param string $className 实体类名
-     * @param array  $ids       ID集合
-     *
-     * @return ResultInterface
-     */
-    public function deleteByIds($className, array $ids): ResultInterface
-    {
-        // 实体映射数据
-        list($table, , $idColumn) = $this->getTable($className);
-
-        // 构建delete查询器
-        $this->queryBuilder->delete()->from($table)->whereIn($idColumn, $ids);
-        return $this->getResult();
-    }
-
-    /**
-     * 按实体更新信息(默认按照主键)
-     *
-     * @param object $entity 具体实体实例
-     *
-     * @return ResultInterface
-     */
-    public function update($entity): ResultInterface
-    {
-        // 实体映射数据
-        list($table, $idColumn, $idValue, $fields) = $this->getFields($entity, 2);
-
-        if (empty($fields)) {
-            $pool = $this->queryBuilder->getConnection();
-            $connection = $this->queryBuilder->getConnection();
-            return new DbDataResult(0, $connection);
-        }
-        // 构建update查询器
-        $this->queryBuilder->update($table)->where($idColumn, $idValue);
-        foreach ($fields ?? [] as $column => $value) {
-            $this->queryBuilder->set($column, $value);
-        }
-        return $this->getResult();
-    }
-
-    /**
-     * 按实体信息查找
-     *
-     * @param object $entity 实体实例
-     *
-     * @return ResultInterface
-     */
-    public function find($entity): ResultInterface
-    {
-        // 实体映射数据
-        list($tableName, , , $fields) = $this->getFields($entity, 3);
-
-        // 构建find查询器
-        $this->queryBuilder->select('*')->from($tableName);
-        foreach ($fields ?? [] as $column => $value) {
-            $this->queryBuilder->where($column, $value);
-        }
-        return $this->queryBuilder->execute();
-    }
-
-    /**
-     * 根据ID查找
-     *
-     * @param string $className 实体类名
-     * @param mixed  $id        ID
-     *
-     * @return ResultInterface
-     */
-    public function findById($className, $id): ResultInterface
-    {
-        // 实体映射数据
-        list($tableName, , $columnId) = $this->getTable($className);
-
-        // 构建find查询器
-        $query = $this->queryBuilder->select("*")->from($tableName)->where($columnId, $id)->limit(1);
         return $query->execute();
     }
 
     /**
-     * 根据ids查找
+     * @param object $entity
      *
-     * @param string $className 类名
+     * @return ResultInterface
+     */
+    public static function delete($entity): ResultInterface
+    {
+        list($table, , , $fields) = self::getFields($entity, 3);
+
+        $query = Query::table($table)->delete();
+        foreach ($fields ?? [] as $column => $value) {
+            $query->where($column, $value);
+        }
+
+        return $query->execute();
+    }
+
+    /**
+     * @param string $className
+     * @param mixed  $id
+     *
+     * @return ResultInterface
+     */
+    public static function deleteById($className, $id): ResultInterface
+    {
+        list($table, , $idColumn) = self::getTable($className);
+        $query = Query::table($table)->delete()->where($idColumn, $id);
+
+        return $query->execute();
+    }
+
+    /**
+     * @param string $className
      * @param array  $ids
      *
      * @return ResultInterface
      */
-    public function findByIds($className, array $ids): ResultInterface
+    public static function deleteByIds($className, array $ids): ResultInterface
     {
-        // 实体映射数据
-        list($tableName, , $columnId) = $this->getTable($className);
+        list($table, , $idColumn) = self::getTable($className);
+        $query = Query::table($table)->delete()->whereIn($idColumn, $ids);
 
-        // 构建find查询器
-        $query = $this->queryBuilder->select("*")->from($tableName)->whereIn($columnId, $ids);
         return $query->execute();
     }
 
     /**
-     * 获取实体映射结构
+     * @param object $entity
      *
+     * @return ResultInterface
+     */
+    public static function update($entity): ResultInterface
+    {
+        // 实体映射数据
+        list($table, $idColumn, $idValue, $fields) = self::getFields($entity, 2);
+
+        if (empty($fields)) {
+            return new DbDataResult(0);
+        }
+        // 构建update查询器
+        $query = Query::table($table)->update()->where($idColumn, $idValue);
+        foreach ($fields ?? [] as $column => $value) {
+            $query->set($column, $value);
+        }
+
+        return $query->execute();
+    }
+
+    /**
+     * @param object $entity
+     *
+     * @return ResultInterface
+     */
+    public static function find($entity): ResultInterface
+    {
+        list($tableName, , , $fields) = self::getFields($entity, 3);
+
+        $query = Query::table($tableName)->select('*');
+        foreach ($fields ?? [] as $column => $value) {
+            $query->where($column, $value);
+        }
+
+        return $query->execute();
+    }
+
+    /**
+     * @param string $className
+     * @param mixed  $id
+     *
+     * @return ResultInterface
+     */
+    public static function findById($className, $id): ResultInterface
+    {
+        list($tableName, , $columnId) = self::getTable($className);
+        $query = Query::table($tableName)->select("*")->where($columnId, $id)->limit(1);
+
+        return $query->execute();
+    }
+
+    /**
+     * @param string $className
+     * @param array  $ids
+     *
+     * @return ResultInterface
+     */
+    public static function findByIds($className, array $ids): ResultInterface
+    {
+        list($tableName, , $columnId) = self::getTable($className);
+        $query = Query::table($tableName)->select("*")->whereIn($columnId, $ids);
+
+        return $query->execute();
+    }
+
+    /**
      * @param object $entity 实体对象
      * @param int    $type   类型，1=insert 3=delete|find 2=update
      *
      * @return array
      * @throws \Swoft\Exception\ValidatorException
      */
-    private function getFields($entity, $type = 1): array
+    private static function getFields($entity, $type = 1): array
     {
         $changeFields = [];
 
         // 实体表结构信息
-        list($table, $id, $idColumn, $fields) = $this->getClassMetaData($entity);
+        list($table, $id, $idColumn, $fields) = self::getClassMetaData($entity);
 
         // 实体映射字段、值处理以及验证处理
         $idValue = null;
@@ -212,7 +164,7 @@ class Executor
             $default = $proAry['default'];
 
             // 实体属性对应值
-            $proValue = $this->getEntityProValue($entity, $proName);
+            $proValue = self::getEntityProValue($entity, $proName);
 
             // insert逻辑
             if ($type === 1 && $id === $proName && $default === $proValue) {
@@ -230,7 +182,7 @@ class Executor
             }
 
             // 属性值验证
-            $this->validate($proAry, $proValue);
+            self::validate($proAry, $proValue);
 
             // id值赋值
             if ($idColumn === $column) {
@@ -274,7 +226,7 @@ class Executor
         // 类型验证器
         $validator = [
             'name'  => ucfirst($type),
-            'value' => [$length]
+            'value' => [$length],
         ];
 
         // 所有验证器
@@ -324,14 +276,12 @@ class Executor
     }
 
     /**
-     * 实例映射信息
-     *
      * @param object $entity
      *
      * @return array
      * @throws \InvalidArgumentException
      */
-    private function getClassMetaData($entity): array
+    private static function getClassMetaData($entity): array
     {
         // 不是对象
         if (!\is_object($entity) && !class_exists($entity)) {
@@ -345,33 +295,22 @@ class Executor
             throw new \InvalidArgumentException('对象不是实体对象，className=' . $className);
         }
 
-        return $this->getTable($className);
+        return self::getTable($className);
     }
 
     /**
-     * 实体表映射结构
-     *
      * @param string $className
      *
      * @return array
      */
-    private function getTable(string $className): array
+    private static function getTable(string $className): array
     {
         $entities   = EntityCollector::getCollector();
         $fields     = $entities[$className]['field'];
         $idProperty = $entities[$className]['table']['id'];
         $tableName  = $entities[$className]['table']['name'];
         $idColumn   = $entities[$className]['column'][$idProperty];
-        return [$tableName, $idProperty, $idColumn, $fields];
-    }
 
-    /**
-     * 获取执行结果
-     *
-     * @return ResultInterface
-     */
-    private function getResult()
-    {
-        return $this->queryBuilder->execute();
+        return [$tableName, $idProperty, $idColumn, $fields];
     }
 }

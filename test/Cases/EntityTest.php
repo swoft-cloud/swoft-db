@@ -2,12 +2,11 @@
 
 namespace Swoft\Db\Test\Cases;
 
-use Swoft\Db\Db;
 use Swoft\Db\Test\Testing\Entity\User;
 
 /**
  */
-class EntityTest extends AbstractDbTestCase
+class EntityTest extends AbstractMysqlCase
 {
     public function testToArray()
     {
@@ -22,11 +21,11 @@ class EntityTest extends AbstractDbTestCase
         $array = $user->toArray();
 
         $data = [
-            'id'          => 12,
-            'name'        => 'stelin',
-            'sex'         => 1,
+            'id'   => 12,
+            'name' => 'stelin',
+            'sex'  => 1,
             'desc' => 'this my desc',
-            'age'         => $age,
+            'age'  => $age,
         ];
         $this->assertEquals($data, $array);
     }
@@ -73,59 +72,44 @@ class EntityTest extends AbstractDbTestCase
     {
         $user = User::findById($id)->getResult(User::class);
         $data = [];
-        foreach ($user as $key => $value){
+        foreach ($user as $key => $value) {
             $data[$key] = $value;
         }
 
         $this->assertEquals($data, $user->toArray());
     }
 
-    /**
-     * @dataProvider mysqlProvider
-     *
-     * @param int $id
-     */
-    public function testDbSelect(int $id)
+    public function testArrayAttr()
     {
-        $result = Db::select('*')->from(User::class)->where('id', $id)->limit(1)->execute()->getResult();
-        $this->assertEquals($id, $result['id']);
-    }
-
-    /**
-     * @dataProvider mysqlProvider
-     *
-     * @param int $id
-     */
-    public function testDbDelete(int $id)
-    {
-        $result = Db::delete()->from(User::class)->where('id', $id)->execute()->getResult();
-        $this->assertEquals(1, $result);
-    }
-
-    /**
-     * @dataProvider mysqlProvider
-     *
-     * @param int $id
-     */
-    public function testDbUpdate(int $id)
-    {
-        $result = Db::update(User::class)->set(['name' => 'stelin666'])->where('id', $id)->execute()->getResult();
-        $user   = User::findById($id)->getResult();
-        $this->assertEquals('stelin666', $user['name']);
-    }
-
-    public function testDbInsert()
-    {
-        $values = [
-            'name'        => 'stelin',
-            'sex'         => 1,
-            'description' => 'this my desc',
-            'age'         => 99,
+        $data = [
+            'name' => 'stelin',
+            'sex'  => 1,
+            'desc' => 'desc2',
+            'age'  => 100,
         ];
 
-        $result = Db::insert(User::class)->set($values)->execute()->getResult();
-        $user   = User::findById($result)->getResult();
-        $this->assertCount(5, $user);
-    }
+        $user   = new User();
+        $result = $user->fill($data)->save()->getResult();
 
+        $resultUser = User::findById($result)->getResult();
+        $this->assertEquals('stelin', $resultUser['name']);
+        $this->assertEquals(1, $resultUser['sex']);
+        $this->assertEquals('desc2', $resultUser['description']);
+        $this->assertEquals(100, $resultUser['age']);
+
+
+        $user2         = new User();
+        $user2['name'] = 'stelin2';
+        $user2['sex']  = 1;
+        $user2['desc'] = 'this my desc9';
+        $user2['age']  = 99;
+
+        $result2     = $user2->save()->getResult();
+        $resultUser2 = User::findById($result2)->getResult();
+
+        $this->assertEquals('stelin2', $resultUser2['name']);
+        $this->assertEquals(1, $resultUser2['sex']);
+        $this->assertEquals('this my desc9', $resultUser2['description']);
+        $this->assertEquals(99, $resultUser2['age']);
+    }
 }

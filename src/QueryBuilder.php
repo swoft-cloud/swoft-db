@@ -3,19 +3,17 @@
 namespace Swoft\Db;
 
 use Swoft\App;
-use Swoft\Core\RequestContext;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Exception\DbException;
 use Swoft\Db\Exception\MysqlException;
 use Swoft\Db\Helper\DbHelper;
 use Swoft\Db\Helper\EntityHelper;
-use Swoft\Helper\PoolHelper;
-use Swoft\Pool\ConnectionInterface;
+use Swoft\Core\ResultInterface;
 
 /**
  * 查询器
  */
-abstract class QueryBuilder implements QueryBuilderInterface
+class QueryBuilder implements QueryBuilderInterface
 {
     /**
      * 升序
@@ -133,23 +131,18 @@ abstract class QueryBuilder implements QueryBuilderInterface
     const IS_NOT = 'IS NOT';
 
     /**
-     * SQL语句
-     */
-    use Statement;
-
-    /**
      * 插入表名
      *
      * @var string
      */
-    private $insert;
+    private $insert = '';
 
     /**
      * 更新表名
      *
      * @var string
      */
-    private $update;
+    private $update = '';
 
     /**
      * 是否是delete
@@ -230,13 +223,6 @@ abstract class QueryBuilder implements QueryBuilderInterface
     protected $parameters = [];
 
     /**
-     * sql语句
-     *
-     * @var string
-     */
-    protected $sql = '';
-
-    /**
      * @var AbstractDbConnection
      */
     protected $connection;
@@ -247,61 +233,45 @@ abstract class QueryBuilder implements QueryBuilderInterface
     protected $lastSql;
 
     /**
-     * @var string
+     * @var array
      */
-    protected $table;
+    protected $table = [];
 
     /**
      * @var string
      */
-    protected $group = Pool::GROUP;
+    protected $instance = Pool::INSTANCE;
 
     /**
-     * QueryBuilder constructor.
-     *
-     * @param string              $group
-     * @param string              $sql
-     * @param string              $table
-     * @param ConnectionInterface $connection
+     * @var string
      */
-    public function __construct(string $group = Pool::GROUP, string $sql = '', string $table = null, ConnectionInterface $connection = null)
-    {
-        if ($table != null) {
-            $this->from($table);
-        }
-        $this->sql   = $sql;
-        $this->table = $table;
-        $this->group = $group;
-
-        $this->connection = $connection;
-    }
+    protected $node = '';
 
     /**
-     * insert语句
+     * Selected database
      *
-     * @param string $tableName
-     *
+     * @var string
+     */
+    protected $db = '';
+
+    /**
      * @return QueryBuilder
-     * @throws \Swoft\Db\Exception\DbException
+     * @throws DbException
      */
-    public function insert(string $tableName = null): QueryBuilder
+    public function insert(): QueryBuilder
     {
-        $this->insert = $this->getTableName($tableName);
+        $this->insert = $this->getTableName();
 
         return $this;
     }
 
     /**
-     * update语句
-     *
-     * @param string $tableName
-     *
      * @return QueryBuilder
-     * @throws \Swoft\Db\Exception\DbException
+     * @throws DbException
      */
-    public function update(string $tableName = null): QueryBuilder
+    public function update(): QueryBuilder
     {
-        $this->update = $this->getTableName($tableName);
+        $this->update = $this->getTableName();
 
         return $this;
     }
@@ -321,7 +291,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
     /**
      * select语句
      *
-     * @param mixed $column
+     * @param mixed  $column
      * @param string $alias
      *
      * @return QueryBuilder
@@ -356,20 +326,16 @@ abstract class QueryBuilder implements QueryBuilderInterface
         return $this;
     }
 
-
     /**
-     * from语句
-     *
-     * @param string      $table
-     * @param string|null $alias
+     * @param string $table
+     * @param string $alias
      *
      * @return QueryBuilder
-     * @throws \Swoft\Db\Exception\DbException
      */
-    public function from(string $table, string $alias = null): QueryBuilder
+    public function table(string $table, string $alias = null)
     {
-        $this->from['table'] = $this->getTableNameByClassName($table);
-        $this->from['alias'] = $alias;
+        $this->table['table'] = $this->getTableNameByClassName($table);
+        $this->table['alias'] = $alias;
 
         return $this;
     }
@@ -931,6 +897,60 @@ abstract class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
+     * @param string $db
+     */
+    public function selectDb(string $db)
+    {
+        $this->db = $db;
+    }
+
+    /**
+     * @param string $node
+     */
+    public function selectNode(string $node = Pool::MASTER)
+    {
+        $this->node = $node;
+    }
+
+    /**
+     * @param string $instance
+     */
+    public function selectInstance(string $instance)
+    {
+        $this->instance = $instance;
+    }
+
+    public function force(bool $master = true)
+    {
+        if ($master) {
+            $this->node = Pool::MASTER;
+        }
+    }
+
+    /**
+     * @return ResultInterface
+     */
+    public function execute()
+    {
+        $statementClassName = DbHelper::getStatementClassNameByInstance($this->instance);
+        /* @var StatementInterface $statement */
+        $statement    = new $statementClassName($this);
+        $sql          = $statement->getStatement();
+        $instanceName = $this->getInstanceName();
+
+        return Db::query($sql, $this->parameters, $instanceName);
+    }
+
+    /**
+     * @return string
+     */
+    private function getInstanceName()
+    {
+        return sprintf('%s.%s.%s', $this->instance, $this->node, $this->db);
+    }
+
+
+    /**
      * 实体类名获取表名
      *
      * @param string $tableName
@@ -981,53 +1001,142 @@ abstract class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * @return ConnectionInterface
-     */
-    protected function selectConnection(): ConnectionInterface
-    {
-        if (!empty($this->connection)) {
-            return $this->connection;
-        }
-
-        $contextTsKey  = PoolHelper::getContextTsKey();
-        $contextCntKey = PoolHelper::getContextCntKey();
-        $groupKey      = PoolHelper::getGroupKey($this->group);
-
-        /* @var \SplStack $tsStack */
-        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $groupKey, new \SplStack());
-        if (!$tsStack->isEmpty()) {
-            $cntId      = $tsStack->offsetGet(0);
-            $connection = RequestContext::getContextDataByChildKey($contextCntKey, $cntId, null);
-
-            return $connection;
-        }
-
-        $node = Pool::SLAVE;
-        if ($this->isInsert() || $this->isDelete() || $this->isUpdate()) {
-            $node = Pool::MASTER;
-        }
-
-        $pool = DbHelper::getPool($this->group, $node);
-
-        return $pool->getConnection();
-    }
-
-    /**
-     * @param string $tableName
-     *
      * @return string
      * @throws \Swoft\Db\Exception\MysqlException
      */
-    private function getTableName(string $tableName = null): string
+    private function getTableName(): string
     {
-        if ($tableName != null) {
-            return $this->getTableNameByClassName($tableName);
+        if (empty($this->table)) {
+            throw new MysqlException('Table name must be setted!');
         }
-        if ($this->table != null) {
-            return $this->table;
-        }
-        throw new MysqlException('Table name must be setted by use insert()!');
+        $table = $this->table['table'];
+
+        return $table;
     }
 
-    abstract protected function formatParamsKey($key): string;
+    /**
+     * @param mixed $key
+     *
+     * @return string
+     */
+    private function formatParamsKey($key): string
+    {
+        if (\is_string($key) && strpos($key, ':') === false) {
+            return ':' . $key;
+        }
+        if (is_int($key) && App::isCoContext()) {
+            return '?' . $key;
+        }
+
+        return $key;
+    }
+
+    /**
+     * @return string
+     */
+    public function getInsert(): string
+    {
+        return $this->insert;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUpdate(): string
+    {
+        return $this->update;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDelete(): bool
+    {
+        return $this->delete;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSelect(): array
+    {
+        return $this->select;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSet(): array
+    {
+        return $this->set;
+    }
+
+    /**
+     * @return array
+     * @throws MysqlException
+     */
+    public function getFrom(): array
+    {
+        if (empty($this->table)) {
+            throw new MysqlException('Table name must be setted!');
+        }
+
+        return $this->table;
+    }
+
+    /**
+     * @return array
+     */
+    public function getJoin(): array
+    {
+        return $this->join;
+    }
+
+    /**
+     * @return array
+     */
+    public function getWhere(): array
+    {
+        return $this->where;
+    }
+
+    /**
+     * @return array
+     */
+    public function getGroupBy(): array
+    {
+        return $this->groupBy;
+    }
+
+    /**
+     * @return array
+     */
+    public function getHaving(): array
+    {
+        return $this->having;
+    }
+
+    /**
+     * @return array
+     */
+    public function getOrderBy(): array
+    {
+        return $this->orderBy;
+    }
+
+    /**
+     * @return array
+     */
+    public function getLimit(): array
+    {
+        return $this->limit;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParameters(): array
+    {
+        return $this->parameters;
+    }
 }

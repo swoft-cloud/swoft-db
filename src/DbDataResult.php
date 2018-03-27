@@ -2,15 +2,10 @@
 
 namespace Swoft\Db;
 
-use Swoft\Core\AbstractDataResult;
-use Swoft\Db\Helper\EntityHelper;
-
 /**
- * Class DbDataResult
- *
- * @package Swoft\Db
+ * DbDataResult
  */
-class DbDataResult extends AbstractDataResult
+class DbDataResult extends DbResult
 {
     /**
      * @param array ...$params
@@ -19,20 +14,8 @@ class DbDataResult extends AbstractDataResult
      */
     public function getResult(...$params)
     {
-        $className = '';
-        $result    = $this->data;
-        if (!empty($params)) {
-            list($className) = $params;
-        }
-
-        // Fill data to Entity
-        if (\is_array($result) && !empty($result) && !empty($className)) {
-            $result = EntityHelper::resultToEntity($result, $className);
-        }
-
-        if (empty($result) && !empty($className)) {
-            return null;
-        }
+        list($className) = array_pad($params, 1, '');
+        $result = $this->getResultByClass($className);
 
         $this->release();
 

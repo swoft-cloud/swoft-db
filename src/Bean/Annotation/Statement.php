@@ -8,7 +8,7 @@ use Swoft\Db\Driver\Driver;
  * @Annotation
  * @Target("CLASS")
  */
-class Builder
+class Statement
 {
     /**
      * @var string

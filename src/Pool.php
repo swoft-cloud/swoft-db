@@ -12,6 +12,8 @@ class Pool
      */
     const GROUP = 'default';
 
+    const INSTANCE = 'default';
+
     /**
      * The master
      */

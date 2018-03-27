@@ -14,7 +14,7 @@ abstract class AbstractTestCase extends TestCase
     protected function tearDown()
     {
         parent::tearDown();
-        swoole_event_exit();
+//        swoole_event_exit();
     }
 
 }

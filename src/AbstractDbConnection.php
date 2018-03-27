@@ -12,14 +12,6 @@ use Swoft\Pool\AbstractConnection;
  */
 abstract class AbstractDbConnection extends AbstractConnection implements DbConnectInterface
 {
-
-    /**
-     *
-     */
-    public function fetch()
-    {
-    }
-
     /**
      * @return string
      */

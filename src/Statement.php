@@ -3,16 +3,20 @@
 namespace Swoft\Db;
 
 /**
- * SQL语句组装
- *
- * @uses      Statement
- * @version   2017年09月07日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * Statement
  */
-trait Statement
+class Statement implements StatementInterface
 {
+    /**
+     * @var QueryBuilder
+     */
+    protected $builder;
+
+    public function __construct(QueryBuilder $queryBuilder)
+    {
+        $this->builder = $queryBuilder;
+    }
+
     /**
      * 组拼SQL
      *
@@ -21,9 +25,7 @@ trait Statement
     public function getStatement(): string
     {
         $statement = '';
-        if ($this->isQuerySql()) {
-            $statement = $this->sql;
-        } elseif ($this->isSelect()) {
+        if ($this->isSelect()) {
             $statement = $this->getSelectStatement();
         } elseif ($this->isInsert()) {
             $statement = $this->getInsertStatement();
@@ -32,6 +34,7 @@ trait Statement
         } elseif ($this->isDelete()) {
             $statement = $this->getDeleteStatement();
         }
+
         return $statement;
     }
 
@@ -43,7 +46,7 @@ trait Statement
     protected function getSelectStatement(): string
     {
         $statement = '';
-        if (! $this->isSelect()) {
+        if (!$this->isSelect()) {
             return $statement;
         }
 
@@ -51,32 +54,32 @@ trait Statement
         $statement .= $this->getSelectString();
 
         // from语句
-        if ($this->from) {
+        if ($this->builder->getFrom()) {
             $statement .= ' ' . $this->getFromString();
         }
 
         // where语句
-        if ($this->where) {
+        if ($this->builder->getWhere()) {
             $statement .= ' ' . $this->getWhereString();
         }
 
         // groupBy语句
-        if ($this->groupBy) {
+        if ($this->builder->getGroupBy()) {
             $statement .= ' ' . $this->getGroupByString();
         }
 
         // having语句
-        if ($this->having) {
+        if ($this->builder->getHaving()) {
             $statement .= ' ' . $this->getHavingString();
         }
 
         // orderBy语句
-        if ($this->orderBy) {
+        if ($this->builder->getOrderBy()) {
             $statement .= ' ' . $this->getOrderByString();
         }
 
         // limit语句
-        if ($this->limit) {
+        if ($this->builder->getLimit()) {
             $statement .= ' ' . $this->getLimitString();
         }
 
@@ -91,7 +94,7 @@ trait Statement
     protected function getInsertStatement(): string
     {
         $statement = '';
-        if (! $this->isInsert()) {
+        if (!$this->isInsert()) {
             return $statement;
         }
 
@@ -99,7 +102,7 @@ trait Statement
         $statement .= $this->getInsertString();
 
         // set语句
-        if ($this->set) {
+        if ($this->builder->getSet()) {
             $statement .= ' ' . $this->getSetString();
         }
 
@@ -114,7 +117,7 @@ trait Statement
     protected function getUpdateStatement(): string
     {
         $statement = '';
-        if (! $this->isUpdate()) {
+        if (!$this->isUpdate()) {
             return $statement;
         }
 
@@ -122,22 +125,22 @@ trait Statement
         $statement .= $this->getUpdateString();
 
         // set语句
-        if ($this->set) {
+        if ($this->builder->getSet()) {
             $statement .= ' ' . $this->getSetString();
         }
 
         // where语句
-        if ($this->where) {
+        if ($this->builder->getWhere()) {
             $statement .= ' ' . $this->getWhereString();
         }
 
         // orderBy语句
-        if ($this->orderBy) {
+        if ($this->builder->getOrderBy()) {
             $statement .= ' ' . $this->getOrderByString();
         }
 
         // limit语句
-        if ($this->limit) {
+        if ($this->builder->getLimit()) {
             $statement .= ' ' . $this->getLimitString();
         }
 
@@ -152,7 +155,7 @@ trait Statement
     protected function getDeleteStatement(): string
     {
         $statement = '';
-        if (! $this->isDelete()) {
+        if (!$this->isDelete()) {
             return $statement;
         }
 
@@ -160,22 +163,22 @@ trait Statement
         $statement .= $this->getDeleteString();
 
         // from语句
-        if ($this->from) {
+        if ($this->builder->getFrom()) {
             $statement .= ' ' . $this->getFromString();
         }
 
         // where语句
-        if ($this->where) {
+        if ($this->builder->getWhere()) {
             $statement .= ' ' . $this->getWhereString();
         }
 
         // orderBy语句
-        if ($this->orderBy) {
+        if ($this->builder->getOrderBy()) {
             $statement .= ' ' . $this->getOrderByString();
         }
 
         // limit语句
-        if ($this->limit) {
+        if ($this->builder->getLimit()) {
             $statement .= ' ' . $this->getLimitString();
         }
 
@@ -190,12 +193,13 @@ trait Statement
     protected function getSelectString(): string
     {
         $statement = '';
-        if (empty($this->select)) {
+        $select    = $this->builder->getSelect();
+        if (empty($select)) {
             return $statement;
         }
 
         // 字段组拼
-        foreach ($this->select as $column => $alias) {
+        foreach ($select as $column => $alias) {
             $statement .= $column;
             if ($alias !== null) {
                 $statement .= ' AS ' . $alias;
@@ -205,7 +209,7 @@ trait Statement
 
         //select组拼
         $statement = substr($statement, 0, -2);
-        if (! empty($statement)) {
+        if (!empty($statement)) {
             $statement = 'SELECT ' . $statement;
         }
 
@@ -220,7 +224,7 @@ trait Statement
     public function getFromString(): string
     {
         $statement = '';
-        if (empty($this->from)) {
+        if (empty($this->builder->getFrom())) {
             return $statement;
         }
 
@@ -235,7 +239,7 @@ trait Statement
         $statement .= ' ' . $this->getJoinString();
         $statement = rtrim($statement);
 
-        if (! empty($statement)) {
+        if (!empty($statement)) {
             $statement = 'FROM ' . $statement;
         }
 
@@ -250,12 +254,13 @@ trait Statement
     protected function getJoinString(): string
     {
         $statement = '';
-        foreach ($this->join as $i => $join) {
+        $join      = $this->builder->getJoin();
+        foreach ($join as $i => $join) {
 
             // join信息
-            $type = $join['type'];
-            $table = $join['table'];
-            $alias = $join['alias'];
+            $type     = $join['type'];
+            $table    = $join['table'];
+            $alias    = $join['alias'];
             $criteria = $join['criteria'];
 
             // join类型
@@ -274,6 +279,7 @@ trait Statement
         }
 
         $statement = trim($statement);
+
         return $statement;
     }
 
@@ -284,6 +290,7 @@ trait Statement
      * @param string $table
      * @param string $statement
      * @param  array $criteria
+     *
      * @return string
      */
     protected function getJoinCriteria(int $joinIndex, string $table, string $statement, array $criteria): string
@@ -302,6 +309,7 @@ trait Statement
             }
             $statement .= $criterion;
         }
+
         return $statement;
     }
 
@@ -311,11 +319,12 @@ trait Statement
      * @param int    $joinIndex
      * @param string $table
      * @param string $column
+     *
      * @return string
      */
     protected function getJoinCriteriaUsingPreviousTable(int $joinIndex, string $table, string $column): string
     {
-        $joinCriteria = '';
+        $joinCriteria      = '';
         $previousJoinIndex = $joinIndex - 1;
 
         if (array_key_exists($previousJoinIndex, $this->join)) {
@@ -327,7 +336,7 @@ trait Statement
         } elseif ($this->isSelect()) {
             // 查询
             $previousTable = $this->getFrom();
-            $alias = $this->getFromAlias();
+            $alias         = $this->getFromAlias();
             if (!empty($alias)) {
                 $previousTable = $alias;
             }
@@ -343,7 +352,7 @@ trait Statement
             $joinCriteria .= $previousTable . '.';
         }
 
-        $joinCriteria .= $column . ' ' . self::OPERATOR_EQ . ' ' . $table . '.' . $column;
+        $joinCriteria .= $column . ' ' . QueryBuilder::OPERATOR_EQ . ' ' . $table . '.' . $column;
 
         return $joinCriteria;
     }
@@ -355,9 +364,10 @@ trait Statement
      */
     protected function getWhereString(): string
     {
-        $statement = $this->getCriteriaString($this->where);
+        $where = $this->builder->getWhere();
+        $statement = $this->getCriteriaString($where);
 
-        if (! empty($statement)) {
+        if (!empty($statement)) {
             $statement = 'WHERE ' . $statement;
         }
 
@@ -368,17 +378,18 @@ trait Statement
      * where条件
      *
      * @param array $criteria
+     *
      * @return string
      */
     protected function getCriteriaString(array &$criteria): string
     {
-        $statement = '';
+        $statement    = '';
         $useConnector = false;
 
         foreach ($criteria as $i => $criterion) {
             // 是括号符
             if (array_key_exists('bracket', $criterion)) {
-                if (strcmp($criterion['bracket'], self::BRACKET_OPEN) === 0) {
+                if (strcmp($criterion['bracket'], QueryBuilder::BRACKET_OPEN) === 0) {
                     if ($useConnector) {
                         $statement .= ' ' . $criterion['connector'] . ' ';
                     }
@@ -397,9 +408,10 @@ trait Statement
 
             // 没有括号
             $useConnector = true;
-            $value = $this->getCriteriaWithoutBracket($criterion['operator'], $criterion['value'], $criterion['column']);
-            $statement .= $criterion['column'] . ' ' . $criterion['operator'] . ' ' . $value;
+            $value        = $this->getCriteriaWithoutBracket($criterion['operator'], $criterion['value'], $criterion['column']);
+            $statement    .= $criterion['column'] . ' ' . $criterion['operator'] . ' ' . $value;
         }
+
         return $statement;
     }
 
@@ -408,31 +420,32 @@ trait Statement
      *
      * @param string $operator
      * @param  mixed $criterionVaue
+     *
      * @return bool|string
      */
     protected function getCriteriaWithoutBracket(string $operator, $criterionVaue, $columnName)
     {
         switch ($operator) {
-            case self::BETWEEN:
-            case self::NOT_BETWEEN:
-                $end = $this->getQuoteValue($criterionVaue[1]);
+            case QueryBuilder::BETWEEN:
+            case QueryBuilder::NOT_BETWEEN:
+                $end   = $this->getQuoteValue($criterionVaue[1]);
                 $start = $this->getQuoteValue($criterionVaue[0]);
-                $value = $start . ' ' . self::LOGICAL_AND . ' ' . $end;
+                $value = $start . ' ' . QueryBuilder::LOGICAL_AND . ' ' . $end;
                 break;
 
-            case self::IN:
-            case self::NOT_IN:
-                $value = self::BRACKET_OPEN;
+            case QueryBuilder::IN:
+            case QueryBuilder::NOT_IN:
+                $value = QueryBuilder::BRACKET_OPEN;
                 // 数组处理
                 foreach ($criterionVaue ?? [] as $criterionValue) {
                     $criterionValue = $this->getQuoteValue($criterionValue);
-                    $value .= $criterionValue . ', ';
+                    $value          .= $criterionValue . ', ';
                 }
                 $value = substr($value, 0, -2);
-                $value .= self::BRACKET_CLOSE;
+                $value .= QueryBuilder::BRACKET_CLOSE;
                 break;
-            case self::IS:
-            case self::IS_NOT:
+            case QueryBuilder::IS:
+            case QueryBuilder::IS_NOT:
                 $value = $criterionVaue;
                 $value = $this->getQuoteValue($value);
                 break;
@@ -441,6 +454,7 @@ trait Statement
                 $value = $this->getQuoteValue($value);
                 break;
         }
+
         return $value;
     }
 
@@ -452,7 +466,8 @@ trait Statement
     protected function getGroupByString(): string
     {
         $statement = '';
-        foreach ($this->groupBy as $groupBy) {
+        $groupBys  = $this->builder->getGroupBy();
+        foreach ($groupBys as $groupBy) {
             $statement .= $groupBy['column'];
             if ($groupBy['order']) {
                 $statement .= ' ' . $groupBy['order'];
@@ -461,7 +476,7 @@ trait Statement
         }
 
         $statement = substr($statement, 0, -2);
-        if (! empty($statement)) {
+        if (!empty($statement)) {
             $statement = 'GROUP BY ' . $statement;
         }
 
@@ -475,10 +490,12 @@ trait Statement
      */
     protected function getHavingString(): string
     {
-        $statement = $this->getCriteriaString($this->having);
-        if (! empty($statement)) {
+        $having = $this->builder->getHaving();
+        $statement = $this->getCriteriaString($having);
+        if (!empty($statement)) {
             $statement = 'HAVING ' . $statement;
         }
+
         return $statement;
     }
 
@@ -490,12 +507,13 @@ trait Statement
     protected function getOrderByString(): string
     {
         $statement = '';
-        foreach ($this->orderBy as $orderBy) {
+        $orderBys  = $this->builder->getOrderBy();
+        foreach ($orderBys as $orderBy) {
             $statement .= $orderBy['column'] . ' ' . $orderBy['order'] . ', ';
         }
 
         $statement = substr($statement, 0, -2);
-        if (! empty($statement)) {
+        if (!empty($statement)) {
             $statement = 'ORDER BY ' . $statement;
         }
 
@@ -510,19 +528,14 @@ trait Statement
     protected function getLimitString(): string
     {
         $statement = '';
-        if (! $this->limit) {
+        $limit     = $this->builder->getLimit();
+        if (!$limit) {
             return $statement;
         }
-        $statement .= $this->limit['limit'];
 
-        if ($this->limit['offset'] !== 0) {
-            $statement .= ' OFFSET ' . $this->limit['offset'];
-        }
-
-        if (! empty($statement)) {
-            $statement = 'LIMIT ' . $statement;
-        }
-
+        $limit     = $limit['limit'];
+        $offset    = $limit['offset'];
+        $statement = sprintf('LIMIT %d,%d', $offset, $limit);
         return $statement;
     }
 
@@ -534,12 +547,13 @@ trait Statement
     protected function getSetString(): string
     {
         $statement = '';
-        foreach ($this->set as $set) {
-            $statement .= $set['column'] . ' ' . self::OPERATOR_EQ . ' ' . $this->getQuoteValue($set['value']) . ', ';
+        $sets      = $this->builder->getSet();
+        foreach ($sets as $set) {
+            $statement .= $set['column'] . ' ' . QueryBuilder::OPERATOR_EQ . ' ' . $this->getQuoteValue($set['value']) . ', ';
         }
 
         $statement = substr($statement, 0, -2);
-        if (! empty($statement)) {
+        if (!empty($statement)) {
             $statement = 'SET ' . $statement;
         }
 
@@ -554,12 +568,12 @@ trait Statement
     protected function getInsertString(): string
     {
         $statement = '';
-        if (! $this->insert) {
+        if (!$this->builder->getInsert()) {
             return $statement;
         }
 
         $statement .= $this->getInsert();
-        if (! empty($statement)) {
+        if (!empty($statement)) {
             $statement = 'INSERT ' . $statement;
         }
 
@@ -574,7 +588,7 @@ trait Statement
     protected function getUpdateString(): string
     {
         $statement = '';
-        if (! $this->update) {
+        if (!$this->builder->getUpdate()) {
             return $statement;
         }
 
@@ -583,7 +597,7 @@ trait Statement
         // join条件
         $statement .= ' ' . $this->getJoinString();
         $statement = rtrim($statement);
-        if (! empty($statement)) {
+        if (!empty($statement)) {
             $statement = 'UPDATE ' . $statement;
         }
 
@@ -599,32 +613,21 @@ trait Statement
     {
         $statement = '';
 
-        if (! $this->delete && ! $this->isDeleteTableFrom()) {
+        $delete = $this->builder->isDelete();
+        if (!$delete && !$this->isDeleteTableFrom()) {
             return $statement;
         }
 
-        if (\is_array($this->delete)) {
-            $statement .= implode(', ', $this->delete);
+        if (\is_array($delete)) {
+            $statement .= implode(', ', $delete);
         }
 
         if ($statement || $this->isDeleteTableFrom()) {
             $statement = 'DELETE ' . $statement;
             $statement = trim($statement);
         }
-        return $statement;
-    }
 
-    /**
-     * 字符串转换
-     *
-     * @param $value
-     * @return string
-     */
-    protected function getQuoteValue($value): string
-    {
-        $key = uniqid();
-        $this->setParameter($key, $value);
-        return ":{$key}";
+        return $statement;
     }
 
     /**
@@ -634,7 +637,7 @@ trait Statement
      */
     protected function hasParameter($key): bool
     {
-        return array_key_exists($key, $this->parameters);
+        return array_key_exists($key, $this->builder->getParameters());
     }
 
     /**
@@ -644,7 +647,7 @@ trait Statement
      */
     protected function getInsert(): string
     {
-        return $this->insert;
+        return $this->builder->getInsert();
     }
 
     /**
@@ -654,7 +657,7 @@ trait Statement
      */
     protected function getUpdate()
     {
-        return $this->update;
+        return $this->builder->getUpdate();
     }
 
     /**
@@ -664,17 +667,7 @@ trait Statement
      */
     protected function isSelect(): bool
     {
-        return ! empty($this->select);
-    }
-
-    /**
-     * 是否是查询SQL
-     *
-     * @return bool
-     */
-    protected function isQuerySql(): bool
-    {
-        return ! empty($this->sql);
+        return !empty($this->builder->getSelect());
     }
 
     /**
@@ -684,7 +677,7 @@ trait Statement
      */
     protected function isInsert(): bool
     {
-        return ! empty($this->insert);
+        return !empty($this->builder->getInsert());
     }
 
     /**
@@ -694,7 +687,7 @@ trait Statement
      */
     protected function isDelete(): bool
     {
-        return ! empty($this->delete);
+        return !empty($this->builder->isDelete());
     }
 
     /**
@@ -704,7 +697,9 @@ trait Statement
      */
     protected function isDeleteTableFrom(): bool
     {
-        return $this->delete === true;
+        $delete = $this->builder->isDelete();
+
+        return $delete === true;
     }
 
     /**
@@ -714,7 +709,7 @@ trait Statement
      */
     protected function isUpdate(): bool
     {
-        return ! empty($this->update);
+        return !empty($this->builder->getUpdate());
     }
 
     /**
@@ -724,7 +719,8 @@ trait Statement
      */
     protected function getFrom(): string
     {
-        $table = $this->from['table']??'';
+        $from  = $this->builder->getFrom();
+        $table = $from['table']??'';
 
         return $table;
     }
@@ -736,24 +732,22 @@ trait Statement
      */
     protected function getFromAlias(): string
     {
-        $alias = $this->from['alias']??'';
+        $from  = $this->builder->getFrom();
+        $alias = $from['alias']??'';
 
         return $alias;
     }
 
     /**
-     * @param string $sql
-     * @param string $operation
+     * 字符串转换
      *
-     * @return bool
+     * @param $value
+     * @return string
      */
-    protected function isSqlOperation(string $sql, $operation = 'update'): bool
+    protected function getQuoteValue($value): string
     {
-        $sql = trim($sql);
-        $sql = strtolower($sql);
-        if(strpos($sql, $operation) === 0){
-            return true;
-        }
-        return false;
+        $key = uniqid();
+        $this->builder->setParameter($key, $value);
+        return ":{$key}";
     }
 }

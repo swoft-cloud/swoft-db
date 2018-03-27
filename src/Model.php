@@ -6,12 +6,12 @@ use Swoft\Core\ResultInterface;
 use Swoft\Db\Bean\Collector\EntityCollector;
 
 /**
- * The model of activerecord
+ * Activerecord
  */
 class Model implements \ArrayAccess, \Iterator
 {
     /**
-     * The data of old
+     * Old data
      *
      * @var array
      */
@@ -30,144 +30,100 @@ class Model implements \ArrayAccess, \Iterator
     /**
      * Insert data to db
      *
-     * @param string $group
-     *
      * @return ResultInterface
      */
-    public function save(string $group = Pool::GROUP)
+    public function save()
     {
-        $executor = self::getExecutor($group);
-
-        return $executor->save($this);
+        return Executor::save($this);
     }
 
     /**
      * Delete data from db
      *
-     * @param string $group
-     *
      * @return ResultInterface
      */
-    public function delete(string $group = Pool::GROUP)
+    public function delete()
     {
-        $executor = self::getExecutor($group);
 
-        return $executor->delete($this);
+        return Executor::delete($this);
     }
 
     /**
      * Delete data by id
      *
-     * @param mixed  $id ID
-     * @param string $group
+     * @param mixed $id ID
      *
      * @return ResultInterface
      */
-    public static function deleteById($id, string $group = Pool::GROUP)
+    public static function deleteById($id)
     {
-        $executor = self::getExecutor($group);
-
-        return $executor->deleteById(static::class, $id);
+        return Executor::deleteById(static::class, $id);
     }
 
     /**
      * Delete by ids
      *
-     * @param array  $ids
-     * @param string $group
+     * @param array $ids
      *
      * @return ResultInterface
      */
-    public static function deleteByIds(array $ids, string $group = Pool::GROUP)
+    public static function deleteByIds(array $ids)
     {
-        $executor = self::getExecutor($group);
-
-        return $executor->deleteByIds(static::class, $ids);
+        return Executor::deleteByIds(static::class, $ids);
     }
 
     /**
      * Update data
      *
-     * @param string $group
-     *
      * @return ResultInterface
      */
-    public function update(string $group = Pool::GROUP)
+    public function update()
     {
-        $executor = self::getExecutor($group);
-
-        return $executor->update($this);
+        return Executor::update($this);
     }
 
     /**
      * Find data from db
      *
-     * @param string $group
-     *
      * @return ResultInterface
      */
-    public function find(string $group = Pool::GROUP)
+    public function find()
     {
-        $executor = self::getExecutor($group);
-
-        return $executor->find($this);
+        return Executor::find($this);
     }
 
     /**
      * Find by id
      *
-     * @param mixed  $id
-     * @param string $group
+     * @param mixed $id
      *
      * @return ResultInterface
      */
-    public static function findById($id, string $group = Pool::GROUP)
+    public static function findById($id)
     {
-        $executor = self::getExecutor($group);
-
-        return $executor->findById(static::class, $id);
+        return Executor::findById(static::class, $id);
     }
 
     /**
      * Find by ids
      *
-     * @param array  $ids
-     * @param string $group
+     * @param array $ids
      *
      * @return ResultInterface
      */
-    public static function findByIds(array $ids, string $group = Pool::GROUP)
+    public static function findByIds(array $ids)
     {
-        $executor = self::getExecutor($group);
-
-        return $executor->findByIds(static::class, $ids);
+        return Executor::findByIds(static::class, $ids);
     }
 
     /**
      * Get the QueryBuilder
      *
-     * @param string $group
-     *
      * @return QueryBuilder
      */
-    public static function query(string $group = Pool::GROUP): QueryBuilder
+    public static function query(): QueryBuilder
     {
-        return EntityManager::getQuery(static::class, $group);
-    }
-
-    /**
-     * Get the exeutor
-     *
-     * @param string $group
-     *
-     * @return Executor
-     */
-    private static function getExecutor(string $group = Pool::GROUP): Executor
-    {
-        $queryBuilder = EntityManager::getQuery(static::class, $group);
-        $executor     = new Executor($queryBuilder, $group);
-
-        return $executor;
+        return Query::table(static::class);
     }
 
     /**
@@ -192,6 +148,7 @@ class Model implements \ArrayAccess, \Iterator
      * $attributes = [
      *     'name' => $value
      * ]
+     * @return \Swoft\Db\Model
      */
     public function fill(array $attributes)
     {
@@ -201,6 +158,7 @@ class Model implements \ArrayAccess, \Iterator
                 $this->$methodName($value);
             }
         }
+        return $this;
     }
 
     /**
@@ -302,6 +260,7 @@ class Model implements \ArrayAccess, \Iterator
 
     /**
      * Move forward to next element
+     *
      * @return void Any returned value is ignored.
      */
     public function next()
@@ -311,6 +270,7 @@ class Model implements \ArrayAccess, \Iterator
 
     /**
      * Return the key of the current element
+     *
      * @return mixed scalar on success, or null on failure.
      */
     public function key()
@@ -320,6 +280,7 @@ class Model implements \ArrayAccess, \Iterator
 
     /**
      * Checks if current position is valid
+     *
      * @return boolean The return value will be casted to boolean and then evaluated.
      * Returns true on success or false on failure.
      */
@@ -330,6 +291,7 @@ class Model implements \ArrayAccess, \Iterator
 
     /**
      * Rewind the Iterator to the first element
+     *
      * @return void Any returned value is ignored.
      */
     public function rewind()

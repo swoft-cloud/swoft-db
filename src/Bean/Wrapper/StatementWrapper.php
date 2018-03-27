@@ -3,19 +3,19 @@
 namespace Swoft\Db\Bean\Wrapper;
 
 use Swoft\Bean\Wrapper\AbstractWrapper;
-use Swoft\Db\Bean\Annotation\Builder;
+use Swoft\Db\Bean\Annotation\Statement;
 
 /**
- * BuilderWrapper
+ * StatementWrapper
  */
-class BuilderWrapper extends AbstractWrapper
+class StatementWrapper extends AbstractWrapper
 {
     /**
      * @var array
      */
     protected $classAnnotations
         = [
-            Builder::class,
+            Statement::class,
         ];
 
     /**
@@ -25,7 +25,7 @@ class BuilderWrapper extends AbstractWrapper
      */
     public function isParseClassAnnotations(array $annotations): bool
     {
-        return isset($annotations[Builder::class]);
+        return isset($annotations[Statement::class]);
     }
 
     /**

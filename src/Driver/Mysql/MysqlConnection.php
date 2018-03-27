@@ -26,6 +26,11 @@ class MysqlConnection extends AbstractDbConnection
     private $sql = '';
 
     /**
+     * @var mixed
+     */
+    private $result;
+
+    /**
      * Prepare
      *
      * @param string $sql
@@ -61,11 +66,20 @@ class MysqlConnection extends AbstractDbConnection
     {
         $result = $this->connection->recv();
         $this->connection->setDefer(false);
+
         $this->recv = true;
+        $this->result = $result;
 
         return $result;
     }
 
+    /**
+     * @return mixed
+     */
+    public function fetch()
+    {
+        return $this->result;
+    }
 
     /**
      * @return mixed
@@ -151,7 +165,6 @@ class MysqlConnection extends AbstractDbConnection
         $this->recv = false;
         $this->connection->setDefer($defer);
     }
-
 
     /**
      * @return void

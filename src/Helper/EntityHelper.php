@@ -6,7 +6,7 @@ use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Types;
 
 /**
- * The helper of entity
+ * EntityHelper
  */
 class EntityHelper
 {
@@ -14,19 +14,16 @@ class EntityHelper
      * @param array  $result
      * @param string $className
      *
-     * @return mixed
+     * @return array
      */
-    public static function resultToEntity(array $result, string $className)
+    public static function listToEntity(array $result, string $className): array
     {
-        if (!isset($result[0])) {
-            return self::arrayToEntity($result, $className);
-        }
         $entities = [];
-        foreach ($result as $entityData) {
-            if (!\is_array($entityData)) {
+        foreach ($result as $data) {
+            if (!\is_array($data)) {
                 continue;
             }
-            $entities[] = self::arrayToEntity($entityData, $className);
+            $entities[] = self::arrayToEntity($data, $className);
         }
 
         return $entities;
@@ -36,17 +33,14 @@ class EntityHelper
      * @param array  $data
      * @param string $className
      *
-     * @return mixed
+     * @return object
      */
     public static function arrayToEntity(array $data, string $className)
     {
-
+        $attrs    = [];
+        $object   = new $className();
         $entities = EntityCollector::getCollector();
-        if (!isset($className)) {
-            return $data;
-        }
-        $attrs  = [];
-        $object = new $className();
+
         foreach ($data as $col => $value) {
             if (!isset($entities[$className]['column'][$col])) {
                 continue;

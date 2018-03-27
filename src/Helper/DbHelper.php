@@ -4,10 +4,12 @@ namespace Swoft\Db\Helper;
 
 use Swoft\App;
 use Swoft\Db\Bean\Collector\BuilderCollector;
+use Swoft\Db\Bean\Collector\StatementCollector;
 use Swoft\Db\Exception\MysqlException;
 use Swoft\Db\Pool;
 use Swoft\Pool\ConnectionInterface;
 use Swoft\Pool\PoolInterface;
+use Swoft\Db\Pool\Config\DbPoolProperties;
 
 /**
  * DbHelper
@@ -46,23 +48,47 @@ class DbHelper
         return App::getPool($poolName);
     }
 
+    public static function getStatementClassNameByInstance(string $instance): string
+    {
+        $pool = DbHelper::getPool($instance, Pool::MASTER);
+        /* @var \Swoft\Db\Pool\Config\DbPoolProperties $poolConfig */
+        $poolConfig = $pool->getPoolConfig();
+        $driver     = $poolConfig->getDriver();
+
+        $collector = StatementCollector::getCollector();
+        if (!isset($collector[$driver])) {
+            throw new MysqlException(sprintf('The Statement of %s is not exist!', $driver));
+        }
+        return $collector[$driver];
+    }
+
+    public static function getDriverByInstance(string $instance): string
+    {
+        $pool = DbHelper::getPool($instance, Pool::MASTER);
+        /* @var DbPoolProperties $poolConfig */
+        $poolConfig = $pool->getPoolConfig();
+
+        return $poolConfig->getDriver();
+    }
+
     /**
      * @param string $group
      *
      * @throws \Swoft\Db\Exception\MysqlException
      * @return string
      */
-    public static function getQueryClassNameByGroup(string $group):string
+    public static function getQueryClassNameByGroup(string $group): string
     {
         $pool = DbHelper::getPool($group, Pool::MASTER);
-        /* @var \Swoft\Db\Pool\Config\DbPoolProperties $poolConfig*/
+        /* @var \Swoft\Db\Pool\Config\DbPoolProperties $poolConfig */
         $poolConfig = $pool->getPoolConfig();
-        $driver = $poolConfig->getDriver();
+        $driver     = $poolConfig->getDriver();
 
         $collector = BuilderCollector::getCollector();
-        if(!isset($collector[$driver])){
+        if (!isset($collector[$driver])) {
             throw new MysqlException(sprintf('The queryBuilder of %s is not exist!', $driver));
         }
+
         return $collector[$driver];
     }
 
