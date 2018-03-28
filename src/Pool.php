@@ -3,24 +3,22 @@
 namespace Swoft\Db;
 
 /**
- * The type of pool
+ * Pool
  */
 class Pool
 {
     /**
-     * Default group
+     * Default instance
      */
-    const GROUP = 'default';
-
     const INSTANCE = 'default';
 
     /**
-     * The master
+     * Master
      */
     const MASTER = 'master';
 
     /**
-     * The slave
+     * Slave
      */
     const SLAVE = 'slave';
 

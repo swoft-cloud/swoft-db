@@ -898,33 +898,50 @@ class QueryBuilder implements QueryBuilderInterface
 
     /**
      * @param string $db
+     *
+     * @return QueryBuilder
      */
     public function selectDb(string $db)
     {
         $this->db = $db;
+        return $this;
     }
 
     /**
      * @param string $node
+     *
+     * @return QueryBuilder
      */
     public function selectNode(string $node = Pool::MASTER)
     {
         $this->node = $node;
+
+        return $this;
     }
 
     /**
      * @param string $instance
+     *
+     * @return QueryBuilder
      */
     public function selectInstance(string $instance)
     {
         $this->instance = $instance;
+
+        return $this;
     }
 
+    /**
+     * @param bool $master
+     *
+     * @return QueryBuilder
+     */
     public function force(bool $master = true)
     {
         if ($master) {
             $this->node = Pool::MASTER;
         }
+        return $this;
     }
 
     /**

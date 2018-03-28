@@ -41,11 +41,11 @@ abstract class DbResult extends AbstractResult
             $result = EntityHelper::arrayToEntity($result, $className);
         }
 
-        if (!empty($className) && $this->type == Db::RESULT_FETCH && empty($result)) {
+        if (!empty($className) && $this->type == Db::RETURN_FETCH && empty($result)) {
             return [];
         }
 
-        if (!empty($className) && $this->type == Db::RESULT_ONE && empty($result)) {
+        if (!empty($className) && $this->type == Db::RETURN_ONE && empty($result)) {
             return null;
         }
 
@@ -60,15 +60,15 @@ abstract class DbResult extends AbstractResult
         /* @var AbstractDbConnection $connection */
         $connection = $this->connection;
 
-        if ($this->type == Db::RESULT_INSERTID) {
+        if ($this->type == Db::RETURN_INSERTID) {
             return $this->connection->getInsertId();
         }
 
-        if ($this->type == Db::RESULT_ROWS) {
+        if ($this->type == Db::RETURN_ROWS) {
             return $connection->getAffectedRows();
         }
 
-        if ($this->type == Db::RESULT_FETCH) {
+        if ($this->type == Db::RETURN_FETCH) {
             return $connection->fetch();
         }
 

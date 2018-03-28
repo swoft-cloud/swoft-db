@@ -3,29 +3,37 @@
 namespace Swoft\Db\Event\Listeners;
 
 use Swoft\Bean\Annotation\Listener;
+use Swoft\Core\RequestContext;
 use Swoft\Db\AbstractDbConnection;
+use Swoft\Db\Helper\DbHelper;
 use Swoft\Event\AppEvent;
 use Swoft\Event\EventHandlerInterface;
 use Swoft\Event\EventInterface;
-use Swoft\Event\Events\TransactionReleaseEvent;
+use Swoft\Helper\PoolHelper;
 use Swoft\Log\Log;
 
 /**
  * TransactionRelease
  *
- * @Listener(AppEvent::TRANSACTION_RELEASE)
+ * @Listener(AppEvent::RESOURCE_RELEASE_BEFORE)
  */
-class TransactionReleaseListener implements EventHandlerInterface
+class ResourceReleaseBeforeListener implements EventHandlerInterface
 {
+    /**
+     * @param \Swoft\Event\EventInterface $event
+     */
     public function handle(EventInterface $event)
     {
-        if (!($event instanceof TransactionReleaseEvent)) {
+        $contextTsKey  = DbHelper::getContextTsKey();
+        $contextCntKey = PoolHelper::getContextCntKey();
+        $transactions  = RequestContext::getContextDataByKey($contextTsKey, []);
+        $connections   = RequestContext::getContextDataByKey($contextCntKey, []);
+
+        if (empty($connections) || empty($transactions)) {
             return;
         }
 
-        $tsStacks = $event->getTsStacks();
-        $connections = $event->getConnections();
-        foreach ($tsStacks as $tsStack) {
+        foreach ($transactions as $instance => $tsStack) {
             if (!($tsStack instanceof \SplStack)) {
                 continue;
             }
@@ -37,7 +45,6 @@ class TransactionReleaseListener implements EventHandlerInterface
                 $connection = $connections[$connectId];
                 if ($connection instanceof AbstractDbConnection) {
                     $connection->rollback();
-                    $connections[$connectId] = $connection;
 
                     Log::error(sprintf('%s transaction is not committed or rollbacked', get_class($connection)));
                 }

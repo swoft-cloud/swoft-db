@@ -163,7 +163,7 @@ class MysqlConnection extends AbstractDbConnection
     public function setDefer($defer = true)
     {
         $this->recv = false;
-        $this->connection->setDefer($defer);
+        $result = $this->connection->setDefer($defer);
     }
 
     /**

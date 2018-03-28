@@ -22,8 +22,9 @@ class Executor
     public static function save($entity): ResultInterface
     {
         list($table, , , $fields) = self::getFields($entity, 1);
+        $instance = self::getInstance(get_class($entity));
 
-        $query = Query::table($table)->insert();
+        $query = Query::table($table)->insert()->selectInstance($instance);
         foreach ($fields ?? [] as $column => $value) {
             $query = $query->set($column, $value);
         }
@@ -39,8 +40,9 @@ class Executor
     public static function delete($entity): ResultInterface
     {
         list($table, , , $fields) = self::getFields($entity, 3);
+        $instance = self::getInstance(get_class($entity));
 
-        $query = Query::table($table)->delete();
+        $query = Query::table($table)->delete()->selectInstance($instance);
         foreach ($fields ?? [] as $column => $value) {
             $query->where($column, $value);
         }
@@ -57,7 +59,9 @@ class Executor
     public static function deleteById($className, $id): ResultInterface
     {
         list($table, , $idColumn) = self::getTable($className);
-        $query = Query::table($table)->delete()->where($idColumn, $id);
+        $instance = self::getInstance($className);
+
+        $query = Query::table($table)->delete()->where($idColumn, $id)->selectInstance($instance);
 
         return $query->execute();
     }
@@ -71,7 +75,9 @@ class Executor
     public static function deleteByIds($className, array $ids): ResultInterface
     {
         list($table, , $idColumn) = self::getTable($className);
-        $query = Query::table($table)->delete()->whereIn($idColumn, $ids);
+        $instance = self::getInstance($className);
+
+        $query = Query::table($table)->delete()->whereIn($idColumn, $ids)->selectInstance($instance);
 
         return $query->execute();
     }
@@ -90,7 +96,8 @@ class Executor
             return new DbDataResult(0);
         }
         // 构建update查询器
-        $query = Query::table($table)->update()->where($idColumn, $idValue);
+        $instance = self::getInstance(get_class($entity));
+        $query = Query::table($table)->update()->where($idColumn, $idValue)->selectInstance($instance);
         foreach ($fields ?? [] as $column => $value) {
             $query->set($column, $value);
         }
@@ -106,8 +113,9 @@ class Executor
     public static function find($entity): ResultInterface
     {
         list($tableName, , , $fields) = self::getFields($entity, 3);
+        $instance = self::getInstance(get_class($entity));
 
-        $query = Query::table($tableName)->select('*');
+        $query = Query::table($tableName)->select('*')->selectInstance($instance);
         foreach ($fields ?? [] as $column => $value) {
             $query->where($column, $value);
         }
@@ -124,7 +132,9 @@ class Executor
     public static function findById($className, $id): ResultInterface
     {
         list($tableName, , $columnId) = self::getTable($className);
-        $query = Query::table($tableName)->select("*")->where($columnId, $id)->limit(1);
+        $instance = self::getInstance($className);
+
+        $query = Query::table($tableName)->select("*")->where($columnId, $id)->limit(1)->selectInstance($instance);
 
         return $query->execute();
     }
@@ -138,7 +148,9 @@ class Executor
     public static function findByIds($className, array $ids): ResultInterface
     {
         list($tableName, , $columnId) = self::getTable($className);
-        $query = Query::table($tableName)->select("*")->whereIn($columnId, $ids);
+        $instance = self::getInstance($className);
+
+        $query = Query::table($tableName)->select("*")->whereIn($columnId, $ids)->selectInstance($instance);
 
         return $query->execute();
     }
@@ -312,5 +324,19 @@ class Executor
         $idColumn   = $entities[$className]['column'][$idProperty];
 
         return [$tableName, $idProperty, $idColumn, $fields];
+    }
+
+    /**
+     * @param string $className
+     *
+     * @return string
+     */
+    private static function getInstance(string $className):string
+    {
+        $collector = EntityCollector::getCollector();
+        if(!isset($collector[$className]['instance'])){
+            return Pool::INSTANCE;
+        }
+        return $collector[$className]['instance'];
     }
 }
