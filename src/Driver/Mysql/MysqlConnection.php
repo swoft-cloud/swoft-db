@@ -6,6 +6,7 @@ use Swoft\App;
 use Swoft\Db\Bean\Annotation\Connection;
 use Swoft\Db\AbstractDbConnection;
 use Swoft\Db\Exception\MysqlException;
+use Swoft\Log\Log;
 use Swoole\Coroutine\Mysql;
 
 /**
@@ -38,6 +39,38 @@ class MysqlConnection extends AbstractDbConnection
     public function prepare(string $sql)
     {
         $this->sql  = $sql;
+    }
+
+    /**
+     * Create connection
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function createConnection()
+    {
+        $uri                = $this->pool->getConnectionAddress();
+        $options            = $this->parseUri($uri);
+        $options['timeout'] = $this->pool->getTimeout();
+
+        // init
+        $mysql = new MySQL();
+        $mysql->connect([
+            'host'     => $options['host'],
+            'port'     => $options['port'],
+            'user'     => $options['user'],
+            'password' => $options['password'],
+            'database' => $options['database'],
+            'timeout'  => $options['timeout'],
+            'charset'  => $options['charset'],
+        ]);
+
+        // error
+        if ($mysql->connected === false) {
+            throw new MysqlException('Database connection error，error=' . $mysql->connect_error);
+        }
+
+        $this->originDb = $options['database'];
+        $this->connection = $mysql;
     }
 
     /**
@@ -111,7 +144,8 @@ class MysqlConnection extends AbstractDbConnection
     public function rollback()
     {
         if (!$this->recv) {
-            throw new MysqlException('You forget to getResult() before rollback !');
+            $this->receive();
+            App::error('You forget to getResult() before rollback !');
         }
         $this->connection->query('rollback;');
     }
@@ -122,39 +156,19 @@ class MysqlConnection extends AbstractDbConnection
     public function commit()
     {
         if (!$this->recv) {
-            throw new MysqlException('You forget to getResult() before commit !');
+            $this->receive();
+            App::error('You forget to getResult() before commit !');
         }
         $this->connection->query('commit;');
     }
 
     /**
-     * Create connection
-     *
-     * @throws \InvalidArgumentException
+     * @param string $db
      */
-    public function createConnection()
+    public function selectDb(string $db)
     {
-        $uri                = $this->pool->getConnectionAddress();
-        $options            = $this->parseUri($uri);
-        $options['timeout'] = $this->pool->getTimeout();
-
-        // init
-        $mysql = new MySQL();
-        $mysql->connect([
-            'host'     => $options['host'],
-            'port'     => $options['port'],
-            'user'     => $options['user'],
-            'password' => $options['password'],
-            'database' => $options['database'],
-            'timeout'  => $options['timeout'],
-            'charset'  => $options['charset'],
-        ]);
-
-        // error
-        if ($mysql->connected === false) {
-            throw new MysqlException('Database connection error，error=' . $mysql->connect_error);
-        }
-        $this->connection = $mysql;
+        $this->connection->query(sprintf('use %s', $db));
+        $this->currentDb = $db;
     }
 
     /**

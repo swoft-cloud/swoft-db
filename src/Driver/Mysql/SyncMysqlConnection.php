@@ -134,6 +134,14 @@ class SyncMysqlConnection extends AbstractDbConnection
     }
 
     /**
+     * @param string $db
+     */
+    public function selectDb(string $db)
+    {
+        $this->connection->exec(sprintf('use %s', $db));
+    }
+
+    /**
      * @return mixed
      */
     public function getInsertId()

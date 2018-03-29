@@ -18,8 +18,10 @@ class DbCoResult extends DbResult
     public function getResult(...$params)
     {
         list($className) = array_pad($params, 1, '');
-        $this->recv(true);
+        $this->recv(true, false);
         $result = $this->getResultByClass($className);
+        $this->release();
+
         return $result;
     }
 }

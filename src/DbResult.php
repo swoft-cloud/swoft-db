@@ -61,7 +61,7 @@ abstract class DbResult extends AbstractResult
         $connection = $this->connection;
 
         if ($this->type == Db::RETURN_INSERTID) {
-            return $this->connection->getInsertId();
+            return $this->connection->getInsertId();;
         }
 
         if ($this->type == Db::RETURN_ROWS) {

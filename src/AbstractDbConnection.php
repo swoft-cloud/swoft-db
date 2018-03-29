@@ -10,14 +10,35 @@ use Swoft\Pool\AbstractConnection;
 /**
  * Abstract database connection
  */
-abstract class AbstractDbConnection extends AbstractConnection implements DbConnectInterface
+abstract class AbstractDbConnection extends AbstractConnection implements DbConnectionInterface
 {
+    /**
+     * @var string
+     */
+    protected $originDb = '';
+
+    /**
+     * @var string
+     */
+    protected $currentDb = '';
+
     /**
      * @return string
      */
     public function getDriver(): string
     {
         return $this->pool->getDriver();
+    }
+
+    /**
+     * @param bool $release
+     */
+    public function release($release = false)
+    {
+        if(!empty($this->currentDb) && $this->currentDb != $this->originDb){
+            $this->selectDb($this->originDb);
+        }
+        parent::release($release);
     }
 
     /**

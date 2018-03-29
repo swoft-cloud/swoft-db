@@ -56,6 +56,10 @@ class Db
         /* @var AbstractDbConnection $connection */
         $connection = self::getConnection($instance, $node);
 
+        if(!empty($db)){
+            $connection->selectDb($db);
+        }
+
         /* @var DbPool $pool */
         $pool = $connection->getPool();
         /* @var DbPoolProperties $poolConfig */

@@ -5,7 +5,7 @@ namespace Swoft\Db;
 /**
  * Database interface
  */
-interface DbConnectInterface
+interface DbConnectionInterface
 {
     /**
      * @param string $sql
@@ -48,6 +48,13 @@ interface DbConnectInterface
      * Commit transaction
      */
     public function commit();
+
+    /**
+     * @param string $db
+     *
+     * @return void
+     */
+    public function selectDb(string $db);
 
     /**
      * Destory
