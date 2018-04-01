@@ -72,6 +72,11 @@ class Model implements \ArrayAccess, \Iterator
         return Executor::deleteByIds(static::class, $ids);
     }
 
+    public function updateOne(array $attributes, array $condition)
+    {
+
+    }
+
     /**
      * Update data
      *

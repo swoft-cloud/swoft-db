@@ -10,7 +10,7 @@ use Swoft\Db\Validator\ValidatorInterface;
 use Swoft\Exception\ValidatorException;
 
 /**
- * The executor of db
+ * Executor
  */
 class Executor
 {
@@ -24,12 +24,10 @@ class Executor
         list($table, , , $fields) = self::getFields($entity, 1);
         $instance = self::getInstance(get_class($entity));
 
-        $query = Query::table($table)->insert()->selectInstance($instance);
-        foreach ($fields ?? [] as $column => $value) {
-            $query = $query->set($column, $value);
-        }
+        $fields = $fields ?? [];
+        $query = Query::table($table)->selectInstance($instance);
 
-        return $query->execute();
+        return $query->insert($fields);
     }
 
     /**
@@ -42,12 +40,12 @@ class Executor
         list($table, , , $fields) = self::getFields($entity, 3);
         $instance = self::getInstance(get_class($entity));
 
-        $query = Query::table($table)->delete()->selectInstance($instance);
+        $query = Query::table($table)->selectInstance($instance);
         foreach ($fields ?? [] as $column => $value) {
             $query->where($column, $value);
         }
 
-        return $query->execute();
+        return $query->delete();
     }
 
     /**
@@ -61,9 +59,9 @@ class Executor
         list($table, , $idColumn) = self::getTable($className);
         $instance = self::getInstance($className);
 
-        $query = Query::table($table)->delete()->where($idColumn, $id)->selectInstance($instance);
+        $query = Query::table($table)->where($idColumn, $id)->selectInstance($instance);
 
-        return $query->execute();
+        return $query->delete();
     }
 
     /**
@@ -77,9 +75,33 @@ class Executor
         list($table, , $idColumn) = self::getTable($className);
         $instance = self::getInstance($className);
 
-        $query = Query::table($table)->delete()->whereIn($idColumn, $ids)->selectInstance($instance);
+        $query = Query::table($table)->whereIn($idColumn, $ids)->selectInstance($instance);
 
-        return $query->execute();
+        return $query->delete();
+    }
+
+    /**
+     * @param string $className
+     * @param array  $condition
+     *
+     * @return ResultInterface
+     */
+    public function deleteOne(string $className, array $condition)
+    {
+        $instance = self::getInstance($className);
+        return Query::table($className)->selectInstance($instance)->condition($condition)->limit(1)->delete();
+    }
+
+    /**
+     * @param string $className
+     * @param array  $condition
+     *
+     * @return ResultInterface
+     */
+    public function deleteAll(string $className, array $condition)
+    {
+        $instance = self::getInstance($className);
+        return Query::table($className)->selectInstance($instance)->condition($condition)->delete();
     }
 
     /**
@@ -97,12 +119,36 @@ class Executor
         }
         // 构建update查询器
         $instance = self::getInstance(get_class($entity));
-        $query = Query::table($table)->update()->where($idColumn, $idValue)->selectInstance($instance);
-        foreach ($fields ?? [] as $column => $value) {
-            $query->set($column, $value);
-        }
+        $fields = $fields ?? [];
+        $query    = Query::table($table)->where($idColumn, $idValue)->selectInstance($instance);
 
-        return $query->execute();
+        return $query->update($fields);
+    }
+
+    /**
+     * @param string $className
+     * @param array  $attributes
+     * @param array  $condition
+     *
+     * @return ResultInterface
+     */
+    public static function updateOne(string $className, array $attributes, array $condition)
+    {
+        $instance = self::getInstance($className);
+        return Query::table($className)->selectInstance($instance)->condition($condition)->limit(1)->update($attributes);
+    }
+
+    /**
+     * @param string $className
+     * @param array  $attributes
+     * @param array  $condition
+     *
+     * @return ResultInterface
+     */
+    public static function updateAll(string $className, array $attributes, array $condition)
+    {
+        $instance = self::getInstance($className);
+        return Query::table($className)->selectInstance($instance)->condition($condition)->update($attributes);
     }
 
     /**
@@ -115,12 +161,12 @@ class Executor
         list($tableName, , , $fields) = self::getFields($entity, 3);
         $instance = self::getInstance(get_class($entity));
 
-        $query = Query::table($tableName)->select('*')->selectInstance($instance);
+        $query = Query::table($tableName)->selectInstance($instance);
         foreach ($fields ?? [] as $column => $value) {
             $query->where($column, $value);
         }
 
-        return $query->execute();
+        return $query->get();
     }
 
     /**
@@ -134,9 +180,9 @@ class Executor
         list($tableName, , $columnId) = self::getTable($className);
         $instance = self::getInstance($className);
 
-        $query = Query::table($tableName)->select("*")->where($columnId, $id)->limit(1)->selectInstance($instance);
+        $query = Query::table($tableName)->where($columnId, $id)->limit(1)->selectInstance($instance);
 
-        return $query->execute();
+        return $query->get();
     }
 
     /**
@@ -150,9 +196,57 @@ class Executor
         list($tableName, , $columnId) = self::getTable($className);
         $instance = self::getInstance($className);
 
-        $query = Query::table($tableName)->select("*")->whereIn($columnId, $ids)->selectInstance($instance);
+        $query = Query::table($tableName)->whereIn($columnId, $ids)->selectInstance($instance);
 
-        return $query->execute();
+        return $query->get();
+    }
+
+    /**
+     * @param string $className
+     * @param array  $condition
+     * @param array  $orderBy
+     *
+     * @return \Swoft\Core\ResultInterface
+     */
+    public static function findOne(string $className, array $condition = [], array $orderBy = [])
+    {
+        $instance = self::getInstance($className);
+        $query = Query::table($className)->selectInstance($instance)->delete();
+
+        if (!empty($condition)) {
+            $query = $query->condition($condition);
+        }
+
+        foreach ($orderBy as $column => $order) {
+            $query = $query->orderBy($column, $order);
+        }
+
+        return $query->limit(1)->execute();
+    }
+
+    /**
+     * @param string $className
+     * @param array  $condition
+     * @param array  $orderBy
+     * @param int    $limit
+     * @param int    $offset
+     *
+     * @return ResultInterface
+     */
+    public function findAll(string $className, array $condition = [], array $orderBy = [], int $limit = 20, int $offset = 0)
+    {
+        $instance = self::getInstance($className);
+        $query = Query::table($className)->selectInstance($instance)->delete();
+
+        if (!empty($condition)) {
+            $query = $query->condition($condition);
+        }
+
+        foreach ($orderBy as $column => $order) {
+            $query = $query->orderBy($column, $order);
+        }
+
+        return $query->limit($limit, $offset)->execute();
     }
 
     /**
@@ -331,12 +425,13 @@ class Executor
      *
      * @return string
      */
-    private static function getInstance(string $className):string
+    private static function getInstance(string $className): string
     {
         $collector = EntityCollector::getCollector();
-        if(!isset($collector[$className]['instance'])){
+        if (!isset($collector[$className]['instance'])) {
             return Pool::INSTANCE;
         }
+
         return $collector[$className]['instance'];
     }
 }

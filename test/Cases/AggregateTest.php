@@ -1,0 +1,132 @@
+<?php
+
+namespace Swoft\Db\Test\Cases;
+
+use Swoft\Db\Query;
+use Swoft\Db\Test\Testing\Entity\User;
+
+/**
+ * AggregateTest
+ */
+class AggregateTest extends AbstractMysqlCase
+{
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testCount(array $ids)
+    {
+        $count    = Query::table(User::class)->count('id', 'userCount')->execute()->getResult();
+        $countNum = $count['userCount'];
+        $this->assertTrue($countNum >= 2);
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testCountByCo(array $ids)
+    {
+        go(function () use ($ids){
+            $this->testCount($ids);
+        });
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testSum(array $ids)
+    {
+        $ageNum    = Query::table(User::class)->sum('age', 'ageNum')->execute()->getResult();
+        $ageNum = $ageNum['ageNum'];
+        $this->assertTrue($ageNum >= 0);
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testSumByCo(array $ids)
+    {
+        go(function () use ($ids){
+            $this->testSum($ids);
+        });
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testMax(array $ids)
+    {
+        $maxAge    = Query::table(User::class)->max('age', 'maxAge')->execute()->getResult();
+        $maxAge = $maxAge['maxAge'];
+        $this->assertTrue($maxAge >= 0);
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testMaxByCo(array $ids)
+    {
+        go(function () use ($ids){
+            $this->testMax($ids);
+        });
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testMin(array $ids)
+    {
+        $minAge    = Query::table(User::class)->max('age', 'minAge')->execute()->getResult();
+        $minAge = $minAge['minAge'];
+        $this->assertTrue($minAge >= 0);
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testMinByCo(array $ids)
+    {
+        go(function () use ($ids){
+            $this->testMin($ids);
+        });
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testAvg(array $ids)
+    {
+        $avgAge    = Query::table(User::class)->avg('age', 'avgAge')->execute()->getResult();
+        $avgAge = $avgAge['avgAge'];
+        $this->assertTrue($avgAge >= 0);
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testAvgByCo(array $ids)
+    {
+        go(function () use ($ids){
+            $this->testAvg($ids);
+        });
+    }
+}

@@ -12,6 +12,11 @@ class Statement implements StatementInterface
      */
     protected $builder;
 
+    /**
+     * Statement constructor.
+     *
+     * @param \Swoft\Db\QueryBuilder $queryBuilder
+     */
     public function __construct(QueryBuilder $queryBuilder)
     {
         $this->builder = $queryBuilder;
@@ -25,7 +30,7 @@ class Statement implements StatementInterface
     public function getStatement(): string
     {
         $statement = '';
-        if ($this->isSelect()) {
+        if ($this->isSelect() || $this->isAggregate()) {
             $statement = $this->getSelectStatement();
         } elseif ($this->isInsert()) {
             $statement = $this->getInsertStatement();
@@ -46,7 +51,7 @@ class Statement implements StatementInterface
     protected function getSelectStatement(): string
     {
         $statement = '';
-        if (!$this->isSelect()) {
+        if (!$this->isSelect() && !$this->isAggregate()) {
             return $statement;
         }
 
@@ -101,9 +106,9 @@ class Statement implements StatementInterface
         // insert语句
         $statement .= $this->getInsertString();
 
-        // set语句
-        if ($this->builder->getSet()) {
-            $statement .= ' ' . $this->getSetString();
+        // values
+        if ($this->builder->getInsertValues()) {
+            $statement .= ' ' . $this->getInsertValuesString();
         }
 
         return $statement;
@@ -125,8 +130,8 @@ class Statement implements StatementInterface
         $statement .= $this->getUpdateString();
 
         // set语句
-        if ($this->builder->getSet()) {
-            $statement .= ' ' . $this->getSetString();
+        if ($this->builder->getUpdateValues()) {
+            $statement .= ' ' . $this->getUpdateValuesString();
         }
 
         // where语句
@@ -194,9 +199,12 @@ class Statement implements StatementInterface
     {
         $statement = '';
         $select    = $this->builder->getSelect();
-        if (empty($select)) {
+        $aggregate = $this->builder->getAggregate();
+        if (empty($select) && empty($aggregate)) {
             return $statement;
         }
+
+        $select = $this->getAggregateStatement($select, $aggregate);
 
         // 字段组拼
         foreach ($select as $column => $alias) {
@@ -214,6 +222,38 @@ class Statement implements StatementInterface
         }
 
         return $statement;
+    }
+
+    /**
+     * @param array $select
+     * @param array $aggregate
+     * @return array
+     */
+    protected function getAggregateStatement(array $select, array $aggregate): array
+    {
+        foreach ($aggregate as $func => $value) {
+            list($column, $alias) = $value;
+            switch ($func) {
+                case 'count':
+                    $column = sprintf('count(%s)', $column);
+                    break;
+                case 'max':
+                    $column = sprintf('max(%s)', $column);
+                    break;
+                case 'min':
+                    $column = sprintf('min(%s)', $column);
+                    break;
+                case 'avg':
+                    $column = sprintf('avg(%s)', $column);
+                    break;
+                case 'sum':
+                    $column = sprintf('sum(%s)', $column);
+                    break;
+            }
+            $select[$column] = $alias;
+        }
+
+        return $select;
     }
 
     /**
@@ -540,18 +580,38 @@ class Statement implements StatementInterface
     }
 
     /**
-     * set语句
-     *
      * @return string
      */
-    protected function getSetString(): string
+    protected function getInsertValuesString(): string
     {
-        $statement = '';
-        $sets      = $this->builder->getSet();
-        foreach ($sets as $set) {
-            $statement .= $set['column'] . ' ' . QueryBuilder::OPERATOR_EQ . ' ' . $this->getQuoteValue($set['value']) . ', ';
+        $statement    = ' ';
+        $values       = $this->builder->getInsertValues();
+        $columns      = $values['columns'];
+        $columnValues = $values['values'];
+
+        $statement .= sprintf('(%s)', implode(',', $columns));
+        $statement .= ' values ';
+        foreach ($columnValues as $row) {
+            foreach ($row as &$rowValue) {
+                $rowValue = $this->getQuoteValue($rowValue);
+            }
+            $statement .= sprintf('(%s)', implode(',', $row)) . ', ';
         }
 
+        $statement = substr($statement, 0, -2);
+        return $statement;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getUpdateValuesString(): string
+    {
+        $statement = '';
+        $values    = $this->builder->getUpdateValues();
+        foreach ($values as $column => $value) {
+            $statement .= $column . ' ' . QueryBuilder::OPERATOR_EQ . ' ' . $this->getQuoteValue($value) . ', ';
+        }
         $statement = substr($statement, 0, -2);
         if (!empty($statement)) {
             $statement = 'SET ' . $statement;
@@ -671,6 +731,14 @@ class Statement implements StatementInterface
     }
 
     /**
+     * @return bool
+     */
+    protected function isAggregate(): bool
+    {
+        return !empty($this->builder->getAggregate());
+    }
+
+    /**
      * 是否是insert
      *
      * @return bool
@@ -748,6 +816,7 @@ class Statement implements StatementInterface
     {
         $key = uniqid();
         $this->builder->setParameter($key, $value);
+
         return ":{$key}";
     }
 }

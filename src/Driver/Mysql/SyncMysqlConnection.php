@@ -54,6 +54,7 @@ class SyncMysqlConnection extends AbstractDbConnection
         $dsn              = "mysql:host=$host;port=$port;dbname=$dbName;charset=$charset";
         $this->connection = new \PDO($dsn, $user, $passwd, $pdoOptions);
         $this->connection->setAttribute(\PDO::ATTR_ERRMODE,\PDO::ERRMODE_EXCEPTION);
+        $this->originDb = $dbName;
     }
 
     /**
@@ -139,6 +140,7 @@ class SyncMysqlConnection extends AbstractDbConnection
     public function selectDb(string $db)
     {
         $this->connection->exec(sprintf('use %s', $db));
+        $this->currentDb = $db;
     }
 
     /**

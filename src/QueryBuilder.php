@@ -138,11 +138,21 @@ class QueryBuilder implements QueryBuilderInterface
     private $insert = '';
 
     /**
+     * @var array
+     */
+    private $insertValues = [];
+
+    /**
      * 更新表名
      *
      * @var string
      */
     private $update = '';
+
+    /**
+     * @var array
+     */
+    private $updateValues = [];
 
     /**
      * 是否是delete
@@ -223,16 +233,6 @@ class QueryBuilder implements QueryBuilderInterface
     protected $parameters = [];
 
     /**
-     * @var AbstractDbConnection
-     */
-    protected $connection;
-
-    /**
-     * @var string
-     */
-    protected $lastSql;
-
-    /**
      * @var array
      */
     protected $table = [];
@@ -255,37 +255,87 @@ class QueryBuilder implements QueryBuilderInterface
     protected $db = '';
 
     /**
-     * @return QueryBuilder
+     * @var array
+     */
+    protected $aggregate = [];
+
+    /**
+     * @param array $values
+     *
+     * @return ResultInterface
      * @throws DbException
      */
-    public function insert(): QueryBuilder
+    public function insert(array $values): ResultInterface
     {
-        $this->insert = $this->getTableName();
+        $this->insert                   = $this->getTableName();
+        $this->insertValues['columns']  = array_keys($values);
+        $this->insertValues['values'][] = array_values($values);
 
-        return $this;
+        return $this->execute();
     }
 
     /**
-     * @return QueryBuilder
+     * @param array $rows
+     *
+     * @return ResultInterface
      * @throws DbException
      */
-    public function update(): QueryBuilder
+    public function batchInsert(array $rows): ResultInterface
     {
-        $this->update = $this->getTableName();
+        $this->insert = $this->getTableName();
+        foreach ($rows as $row) {
+            ksort($row);
+            if (!isset($this->insertValues['columns'])) {
+                $this->insertValues['columns'] = array_keys($row);
+            }
+            $this->insertValues['values'][] = array_values($row);
+        }
 
-        return $this;
+        return $this->execute();
+    }
+
+    /**
+     * @param array $values
+     *
+     * @return ResultInterface
+     * @throws DbException
+     */
+    public function update(array $values): ResultInterface
+    {
+        $this->update       = $this->getTableName();
+        $this->updateValues = $values;
+
+        return $this->execute();
     }
 
     /**
      * delete语句
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
-    public function delete(): QueryBuilder
+    public function delete(): ResultInterface
     {
         $this->delete = true;
 
-        return $this;
+        return $this->execute();
+    }
+
+    /**
+     * @param array $columns
+     *
+     * @return ResultInterface
+     */
+    public function get(array $columns = ['*']): ResultInterface
+    {
+        foreach ($columns as $column => $alias) {
+            if (\is_int($column)) {
+                $this->select[$alias] = null;
+                continue;
+            }
+            $this->select[$column] = $alias;
+        }
+
+        return $this->execute();
     }
 
     /**
@@ -408,6 +458,41 @@ class QueryBuilder implements QueryBuilderInterface
     {
         $this->criteria($this->where, $column, $value, $operator, $connector);
 
+        return $this;
+    }
+
+    /**
+     * The $condition is array
+     *
+     * Format `['column1' => value1, 'column2' => value2, ...]`
+     * - ['name' => 'swoft', 'status' => 1] => ('name'='swoft' and 'status' = 1)
+     * - ['id' => [1, 2, 3], 'status' => 1] => ('id' in (1, 2, 3) and 'status' = 1)
+     * - ['status' => null] => ('status' is null)
+     *
+     * Format `[operator, operand1, operand2, ...]`
+     * - ['>', 'id', 12] / ['id' => ['$gt' => xxx ]]
+     * - ['<', 'id', 13]
+     * - ['>=', 'id', 13]
+     * - ['<=', 'id', 13]
+     * - ['<>', 'id', 13]
+     *
+     * - ['in', 'id', [1, 2, 3]]
+     * - ['not in', 'id', [1, 2, 3]]
+     *
+     * - ['between', 'id', 2, 3]
+     * - ['not between', 'id', 2, 3]
+     *
+     * - ['like', 'name', '%swoft%']
+     * - ['not like', 'name', '%swoft%']
+     *
+     *
+     * @param mixed  $condition
+     * @param string $connector
+     *
+     * @return \Swoft\Db\QueryBuilder
+     */
+    public function condition($condition, $connector = self::LOGICAL_AND)
+    {
         return $this;
     }
 
@@ -721,32 +806,6 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * set语句
-     *
-     * @param mixed $column
-     * @param mixed $value
-     *
-     * @return QueryBuilder
-     */
-    public function set($column, $value = null): QueryBuilder
-    {
-        if (!\is_array($column)) {
-            $this->set[] = array(
-                'column' => $column,
-                'value'  => $value,
-            );
-
-            return $this;
-        }
-
-        foreach ($column as $columnName => $columnValue) {
-            $this->set($columnName, $columnValue);
-        }
-
-        return $this;
-    }
-
-    /**
      * 设置参数
      *
      * @param mixed  $key   参数名称整数和字符串，(?n|:name)
@@ -811,14 +870,6 @@ class QueryBuilder implements QueryBuilderInterface
         }
 
         return $this;
-    }
-
-    /**
-     * @return \Swoft\Db\AbstractDbConnection
-     */
-    public function getConnection(): \Swoft\Db\AbstractDbConnection
-    {
-        return $this->connection;
     }
 
     /**
@@ -904,6 +955,7 @@ class QueryBuilder implements QueryBuilderInterface
     public function selectDb(string $db)
     {
         $this->db = $db;
+
         return $this;
     }
 
@@ -941,6 +993,63 @@ class QueryBuilder implements QueryBuilderInterface
         if ($master) {
             $this->node = Pool::MASTER;
         }
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     * @param string $alias
+     *
+     * @return QueryBuilder
+     */
+    public function count(string $column = '*', string $alias = 'count')
+    {
+        $this->aggregate['count'] = [$column, $alias];
+        $this->limit(1);
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     * @param string $alias
+     *
+     * @return QueryBuilder
+     */
+    public function max(string $column, string $alias = 'max')
+    {
+        $this->aggregate['max'] = [$column, $alias];
+        $this->limit(1);
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     * @param string $alias
+     *
+     * @return QueryBuilder
+     */
+    public function avg(string $column, string $alias = 'avg')
+    {
+        $this->aggregate['avg'] = [$column, $alias];
+        $this->limit(1);
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     * @param string $alias
+     *
+     * @return QueryBuilder
+     */
+    public function sum(string $column, string $alias = 'sum')
+    {
+        $this->aggregate['sum'] = [$column, $alias];
+        $this->limit(1);
+
         return $this;
     }
 
@@ -1155,5 +1264,29 @@ class QueryBuilder implements QueryBuilderInterface
     public function getParameters(): array
     {
         return $this->parameters;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAggregate(): array
+    {
+        return $this->aggregate;
+    }
+
+    /**
+     * @return array
+     */
+    public function getInsertValues(): array
+    {
+        return $this->insertValues;
+    }
+
+    /**
+     * @return array
+     */
+    public function getUpdateValues(): array
+    {
+        return $this->updateValues;
     }
 }

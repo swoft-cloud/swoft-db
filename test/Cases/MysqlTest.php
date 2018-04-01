@@ -252,7 +252,7 @@ class MysqlTest extends AbstractMysqlCase
      */
     public function testQuery(array $ids)
     {
-        $result = User::query()->select('*')->orderBy('id', QueryBuilder::ORDER_BY_DESC)->limit(2)->execute()->getResult();
+        $result = User::query()->orderBy('id', QueryBuilder::ORDER_BY_DESC)->limit(2)->get()->getResult();
         $this->assertCount(2, $result);
     }
 
