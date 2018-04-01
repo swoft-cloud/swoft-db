@@ -432,7 +432,7 @@ class QueryBuilder implements QueryBuilderInterface
      * - ['status' => null] => ('status' is null)
      *
      * Format `[operator, operand1, operand2, ...]`
-     * - ['>', 'id', 12] / ['id' => ['$gt' => xxx ]]
+     * - ['>', 'id', 12]
      * - ['<', 'id', 13]
      * - ['>=', 'id', 13]
      * - ['<=', 'id', 13]
@@ -448,14 +448,69 @@ class QueryBuilder implements QueryBuilderInterface
      * - ['not like', 'name', '%swoft%']
      *
      *
-     * @param mixed  $condition
+     * @param array  $condition
      * @param string $connector
      *
      * @return \Swoft\Db\QueryBuilder
      */
-    public function condition($condition, $connector = self::LOGICAL_AND)
+    public function condition(array $condition, $connector = self::LOGICAL_AND)
     {
+        $this->openWhere($connector);
+        foreach ($condition as $key => $value) {
+            if (\is_int($key)) {
+                $this->andCondition($condition);
+                break;
+            }
+            $this->operatorCondition($condition);
+            break;
+        }
+        $this->closeWhere();
+
         return $this;
+    }
+
+    /**
+     * @param array $condition
+     */
+    public function operatorCondition(array $condition)
+    {
+        foreach ($condition as $column => $value) {
+            if (is_array($value)) {
+                $this->whereIn($column, $value);
+                continue;
+            }
+            $this->andWhere($column, $value);
+        }
+    }
+
+    /**
+     * @param array $condition
+     */
+    public function andCondition(array $condition)
+    {
+        list($operator) = $condition;
+        $operator = strtoupper($operator);
+        switch ($operator) {
+            case self::OPERATOR_EQ:
+            case self::OPERATOR_GT:
+            case self::OPERATOR_NE:
+            case self::OPERATOR_LT:
+            case self::OPERATOR_LTE:
+            case self::OPERATOR_GTE:
+            case self::IN:
+            case self::NOT_IN:
+                list($operator, $column, $value) = $condition;
+                $this->andWhere($column, $value, $operator);
+                break;
+            case self::BETWEEN:
+                list(, $column, $min, $max) = $condition;
+                $this->whereBetween($column, $min, $max);
+                break;
+            case self::NOT_BETWEEN:
+                list(, $column, $min, $max) = $condition;
+                $this->whereNotBetween($column, $min, $max);
+                break;
+        }
     }
 
     /**
@@ -965,7 +1020,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return ResultInterface
      */
-    public function count(string $column = '*', string $alias = 'count'):ResultInterface
+    public function count(string $column = '*', string $alias = 'count'): ResultInterface
     {
         $this->aggregate['count'] = [$column, $alias];
         $this->limit(1);
@@ -979,7 +1034,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return ResultInterface
      */
-    public function max(string $column, string $alias = 'max'):ResultInterface
+    public function max(string $column, string $alias = 'max'): ResultInterface
     {
         $this->aggregate['max'] = [$column, $alias];
         $this->limit(1);
@@ -993,7 +1048,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return ResultInterface
      */
-    public function min(string $column, string $alias = 'min'):ResultInterface
+    public function min(string $column, string $alias = 'min'): ResultInterface
     {
         $this->aggregate['min'] = [$column, $alias];
         $this->limit(1);
@@ -1007,7 +1062,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return ResultInterface
      */
-    public function avg(string $column, string $alias = 'avg'):ResultInterface
+    public function avg(string $column, string $alias = 'avg'): ResultInterface
     {
         $this->aggregate['avg'] = [$column, $alias];
         $this->limit(1);
@@ -1021,7 +1076,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return ResultInterface
      */
-    public function sum(string $column, string $alias = 'sum'):ResultInterface
+    public function sum(string $column, string $alias = 'sum'): ResultInterface
     {
         $this->aggregate['sum'] = [$column, $alias];
         $this->limit(1);

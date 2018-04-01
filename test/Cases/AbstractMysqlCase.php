@@ -2,7 +2,6 @@
 
 namespace Swoft\Db\Test\Cases;
 
-use Swoft\Db\Pool;
 use Swoft\Db\Test\Testing\Entity\User;
 
 /**
