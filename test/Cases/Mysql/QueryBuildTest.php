@@ -1,15 +1,16 @@
 <?php
 
-namespace Swoft\Db\Test\Cases;
+namespace Swoft\Db\Test\Cases\Mysql;
 
 use Swoft\Db\Query;
 use Swoft\Db\Test\Testing\Entity\OtherUser;
 use Swoft\Db\Test\Testing\Entity\User;
+use Swoft\Db\Test\Cases\AbstractMysqlCase;
 
 /**
  * QueryTest
  */
-class QueryTest extends AbstractMysqlCase
+class QueryBuildTest extends AbstractMysqlCase
 {
     /**
      * @dataProvider mysqlProvider
@@ -29,7 +30,7 @@ class QueryTest extends AbstractMysqlCase
      */
     public function testDbSelectByCo(int $id)
     {
-        go(function ()use ($id){
+        go(function () use ($id) {
             $this->testDbSelect($id);
         });
     }
@@ -76,7 +77,7 @@ class QueryTest extends AbstractMysqlCase
      */
     public function testDbUpdateByCo(int $id)
     {
-        go(function ()use ($id){
+        go(function () use ($id) {
             $this->testDbUpdate($id);
         });
     }
@@ -97,7 +98,7 @@ class QueryTest extends AbstractMysqlCase
 
     public function testDbInsertByCo()
     {
-        go(function (){
+        go(function () {
             $this->testDbInsert();
         });
     }
@@ -118,9 +119,10 @@ class QueryTest extends AbstractMysqlCase
         $this->assertEquals($user2['description'], 'this my desc table');
         $this->assertEquals($user2['id'], $userid);
     }
+
     public function testSelectDbByCo()
     {
-        go(function (){
+        go(function () {
             $this->testSelectDb();
         });
     }
@@ -142,7 +144,7 @@ class QueryTest extends AbstractMysqlCase
 
     public function testSelectTableByCo()
     {
-        go(function (){
+        go(function () {
             $this->testSelectTable();
         });
     }

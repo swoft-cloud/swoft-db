@@ -1,8 +1,9 @@
 <?php
 
-namespace Swoft\Db\Test\Cases;
+namespace Swoft\Db\Test\Cases\Mysql;
 
 use Swoft\Db\Db;
+use Swoft\Db\Test\Cases\AbstractMysqlCase;
 use Swoft\Db\Test\Testing\Entity\User;
 
 class TrasactionTest extends AbstractMysqlCase

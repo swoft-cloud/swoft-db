@@ -1,14 +1,15 @@
 <?php
 
-namespace Swoft\Db\Test\Cases;
+namespace Swoft\Db\Test\Cases\Mysql;
 
 use Swoft\Db\QueryBuilder;
 use Swoft\Db\Test\Testing\Entity\User;
+use Swoft\Db\Test\Cases\AbstractMysqlCase;
 
 /**
  * MysqlTest
  */
-class MysqlTest extends AbstractMysqlCase
+class ActiveRecordTest extends AbstractMysqlCase
 {
     public function testSave()
     {
