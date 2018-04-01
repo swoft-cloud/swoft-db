@@ -17,7 +17,7 @@ class AggregateTest extends AbstractMysqlCase
      */
     public function testCount(array $ids)
     {
-        $count    = Query::table(User::class)->count('id', 'userCount')->execute()->getResult();
+        $count    = Query::table(User::class)->count('id', 'userCount')->getResult();
         $countNum = $count['userCount'];
         $this->assertTrue($countNum >= 2);
     }
@@ -41,7 +41,7 @@ class AggregateTest extends AbstractMysqlCase
      */
     public function testSum(array $ids)
     {
-        $ageNum    = Query::table(User::class)->sum('age', 'ageNum')->execute()->getResult();
+        $ageNum    = Query::table(User::class)->sum('age', 'ageNum')->getResult();
         $ageNum = $ageNum['ageNum'];
         $this->assertTrue($ageNum >= 0);
     }
@@ -65,7 +65,7 @@ class AggregateTest extends AbstractMysqlCase
      */
     public function testMax(array $ids)
     {
-        $maxAge    = Query::table(User::class)->max('age', 'maxAge')->execute()->getResult();
+        $maxAge    = Query::table(User::class)->max('age', 'maxAge')->getResult();
         $maxAge = $maxAge['maxAge'];
         $this->assertTrue($maxAge >= 0);
     }
@@ -89,7 +89,7 @@ class AggregateTest extends AbstractMysqlCase
      */
     public function testMin(array $ids)
     {
-        $minAge    = Query::table(User::class)->max('age', 'minAge')->execute()->getResult();
+        $minAge    = Query::table(User::class)->min('age', 'minAge')->getResult();
         $minAge = $minAge['minAge'];
         $this->assertTrue($minAge >= 0);
     }
@@ -113,7 +113,7 @@ class AggregateTest extends AbstractMysqlCase
      */
     public function testAvg(array $ids)
     {
-        $avgAge    = Query::table(User::class)->avg('age', 'avgAge')->execute()->getResult();
+        $avgAge    = Query::table(User::class)->avg('age', 'avgAge')->getResult();
         $avgAge = $avgAge['avgAge'];
         $this->assertTrue($avgAge >= 0);
     }

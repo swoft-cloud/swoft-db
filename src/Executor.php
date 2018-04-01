@@ -31,6 +31,18 @@ class Executor
     }
 
     /**
+     * @param string $className
+     * @param array $rows
+     *
+     * @return ResultInterface
+     */
+    public static function batchInsert(string $className, array $rows): ResultInterface
+    {
+        $instance = self::getInstance($className);
+        return Query::table($className)->selectInstance($instance)->batchInsert($rows);
+    }
+
+    /**
      * @param object $entity
      *
      * @return ResultInterface

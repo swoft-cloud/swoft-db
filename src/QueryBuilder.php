@@ -339,44 +339,6 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * select语句
-     *
-     * @param mixed  $column
-     * @param string $alias
-     *
-     * @return QueryBuilder
-     */
-    public function select($column, string $alias = null): QueryBuilder
-    {
-        if (is_array($column)) {
-            return $this->selects($column);
-        }
-        $this->select[$column] = $alias;
-
-        return $this;
-    }
-
-    /**
-     * select语句
-     *
-     * @param array $columns
-     *
-     * @return QueryBuilder
-     */
-    public function selects(array $columns): QueryBuilder
-    {
-        foreach ($columns as $key => $column) {
-            if (\is_int($key)) {
-                $this->select[$column] = null;
-                continue;
-            }
-            $this->select[$key] = $column;
-        }
-
-        return $this;
-    }
-
-    /**
      * @param string $table
      * @param string $alias
      *
@@ -1001,56 +963,70 @@ class QueryBuilder implements QueryBuilderInterface
      * @param string $column
      * @param string $alias
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
-    public function count(string $column = '*', string $alias = 'count')
+    public function count(string $column = '*', string $alias = 'count'):ResultInterface
     {
         $this->aggregate['count'] = [$column, $alias];
         $this->limit(1);
 
-        return $this;
+        return $this->execute();
     }
 
     /**
      * @param string $column
      * @param string $alias
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
-    public function max(string $column, string $alias = 'max')
+    public function max(string $column, string $alias = 'max'):ResultInterface
     {
         $this->aggregate['max'] = [$column, $alias];
         $this->limit(1);
 
-        return $this;
+        return $this->execute();
     }
 
     /**
      * @param string $column
      * @param string $alias
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
-    public function avg(string $column, string $alias = 'avg')
+    public function min(string $column, string $alias = 'min'):ResultInterface
+    {
+        $this->aggregate['min'] = [$column, $alias];
+        $this->limit(1);
+
+        return $this->execute();
+    }
+
+    /**
+     * @param string $column
+     * @param string $alias
+     *
+     * @return ResultInterface
+     */
+    public function avg(string $column, string $alias = 'avg'):ResultInterface
     {
         $this->aggregate['avg'] = [$column, $alias];
         $this->limit(1);
 
-        return $this;
+        return $this->execute();
     }
 
     /**
      * @param string $column
      * @param string $alias
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
-    public function sum(string $column, string $alias = 'sum')
+    public function sum(string $column, string $alias = 'sum'):ResultInterface
     {
         $this->aggregate['sum'] = [$column, $alias];
         $this->limit(1);
 
-        return $this;
+        return $this->execute();
     }
 
     /**

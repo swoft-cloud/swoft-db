@@ -32,7 +32,7 @@ class Model implements \ArrayAccess, \Iterator
      *
      * @return ResultInterface
      */
-    public function save()
+    public function save(): ResultInterface
     {
         return Executor::save($this);
     }
@@ -42,10 +42,20 @@ class Model implements \ArrayAccess, \Iterator
      *
      * @return ResultInterface
      */
-    public function delete()
+    public function delete(): ResultInterface
     {
 
         return Executor::delete($this);
+    }
+
+    /**
+     * @param array $rows
+     *
+     * @return ResultInterface
+     */
+    public static function batchInsert(array $rows): ResultInterface
+    {
+        return Executor::batchInsert(static::class, $rows);
     }
 
     /**
@@ -55,7 +65,7 @@ class Model implements \ArrayAccess, \Iterator
      *
      * @return ResultInterface
      */
-    public static function deleteById($id)
+    public static function deleteById($id): ResultInterface
     {
         return Executor::deleteById(static::class, $id);
     }
@@ -67,7 +77,7 @@ class Model implements \ArrayAccess, \Iterator
      *
      * @return ResultInterface
      */
-    public static function deleteByIds(array $ids)
+    public static function deleteByIds(array $ids): ResultInterface
     {
         return Executor::deleteByIds(static::class, $ids);
     }
@@ -82,7 +92,7 @@ class Model implements \ArrayAccess, \Iterator
      *
      * @return ResultInterface
      */
-    public function update()
+    public function update(): ResultInterface
     {
         return Executor::update($this);
     }
@@ -92,7 +102,7 @@ class Model implements \ArrayAccess, \Iterator
      *
      * @return ResultInterface
      */
-    public function find()
+    public function find(): ResultInterface
     {
         return Executor::find($this);
     }
@@ -104,7 +114,7 @@ class Model implements \ArrayAccess, \Iterator
      *
      * @return ResultInterface
      */
-    public static function findById($id)
+    public static function findById($id): ResultInterface
     {
         return Executor::findById(static::class, $id);
     }
@@ -116,7 +126,7 @@ class Model implements \ArrayAccess, \Iterator
      *
      * @return ResultInterface
      */
-    public static function findByIds(array $ids)
+    public static function findByIds(array $ids): ResultInterface
     {
         return Executor::findByIds(static::class, $ids);
     }
@@ -153,6 +163,7 @@ class Model implements \ArrayAccess, \Iterator
      * $attributes = [
      *     'name' => $value
      * ]
+     *
      * @return \Swoft\Db\Model
      */
     public function fill(array $attributes)
@@ -163,6 +174,7 @@ class Model implements \ArrayAccess, \Iterator
                 $this->$methodName($value);
             }
         }
+
         return $this;
     }
 

@@ -30,6 +30,35 @@ class MysqlTest extends AbstractMysqlCase
         });
     }
 
+
+    public function testBatchInsert()
+    {
+        $values = [
+            [
+                'name'        => 'stelin',
+                'sex'         => 1,
+                'description' => 'this my desc',
+                'age'         => 99,
+            ],
+            [
+                'name'        => 'stelin2',
+                'sex'         => 1,
+                'description' => 'this my desc2',
+                'age'         => 100,
+            ]
+        ];
+
+        $result = User::batchInsert($values)->getResult();
+        $this->assertTrue($result > 0);
+    }
+
+    public function testBatchInsertByCo()
+    {
+        go(function (){
+            $this->testBatchInsert();
+        });
+    }
+
     /**
      * @dataProvider mysqlProvider
      *
