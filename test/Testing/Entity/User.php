@@ -11,21 +11,12 @@ use Swoft\Db\Model;
 use Swoft\Db\Types;
 
 /**
- * 用户实体
- *
  * @Entity()
  * @Table(name="user")
- * @uses      User
- * @version   2017年08月23日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 Swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
  */
 class User extends Model
 {
     /**
-     * 主键ID
-     *
      * @Id()
      * @Column(name="id", type=Types::INT)
      * @var null|int
@@ -33,8 +24,6 @@ class User extends Model
     private $id;
 
     /**
-     * 名称
-     *
      * @Column(name="name", type=Types::STRING, length=20)
      * @Required()
      * @var null|string
@@ -42,8 +31,6 @@ class User extends Model
     private $name;
 
     /**
-     * 年龄
-     *
      * @Column(name="age", type=Types::INT)
      * @var int
      */
@@ -58,16 +45,12 @@ class User extends Model
     private $sex = 0;
 
     /**
-     * 描述
-     *
      * @Column(name="description", type="string")
      * @var string
      */
     private $desc = "";
 
     /**
-     * 非数据库字段，未定义映射关系
-     *
      * @var mixed
      */
     private $otherProperty;

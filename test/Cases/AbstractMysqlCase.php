@@ -2,6 +2,7 @@
 
 namespace Swoft\Db\Test\Cases;
 
+use Swoft\Db\Test\Testing\Entity\Count;
 use Swoft\Db\Test\Testing\Entity\User;
 
 /**
@@ -38,6 +39,26 @@ abstract class AbstractMysqlCase extends AbstractTestCase
         ];
     }
 
+    public function addUserAndCount()
+    {
+        $user = new User();
+        $user->setName('name');
+        $user->setSex(1);
+        $user->setDesc('this my desc');
+        $user->setAge(mt_rand(1, 100));
+        $id = $user->save()->getResult();
+
+        $count = new Count();
+        $count->setUid($id);
+        $count->setFans(mt_rand(1000, 10000));
+        $count->setFollows(mt_rand(1000, 10000));
+        $count->save()->getResult();
+
+        return [
+            [$id],
+        ];
+    }
+
     public function mysqlProviders()
     {
         return $this->addUsers();
@@ -46,5 +67,10 @@ abstract class AbstractMysqlCase extends AbstractTestCase
     public function mysqlProvider()
     {
         return $this->addUser();
+    }
+
+    public function relationProider()
+    {
+        return $this->addUserAndCount();
     }
 }
