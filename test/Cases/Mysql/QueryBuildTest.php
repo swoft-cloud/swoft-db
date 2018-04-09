@@ -113,7 +113,7 @@ class QueryBuildTest extends AbstractMysqlCase
         ];
         $userid = Query::table(User::class)->selectDb('test2')->insert($data)->getResult();
 
-        $user  = User::findById($userid)->getResult(User::class);
+        $user  = User::findById($userid)->getResult();
         $user2 = Query::table(User::class)->selectDb('test2')->where('id', $userid)->limit(1)->get()->getResult();
 
         $this->assertEquals($user2['description'], 'this my desc table');
@@ -136,10 +136,8 @@ class QueryBuildTest extends AbstractMysqlCase
             'age'         => mt_rand(1, 100),
         ];
         $result = Query::table('user2')->insert($data)->getResult();
-
-        /* @var User $user2 */
-        $user2 = Query::table('user2')->where('id', $result)->limit(1)->get()->getResult(User::class);
-        $this->assertEquals($user2->getId(), $result);
+        $user2 = Query::table('user2')->where('id', $result)->limit(1)->get()->getResult();
+        $this->assertEquals($user2['id'], $result);
     }
 
     public function testSelectTableByCo()
@@ -159,7 +157,7 @@ class QueryBuildTest extends AbstractMysqlCase
         ];
         $userid = Query::table(User::class)->selectInstance('other')->insert($data)->getResult();
 
-        $user  = OtherUser::findById($userid)->getResult(User::class);
+        $user  = OtherUser::findById($userid)->getResult();
         $user2 = Query::table(User::class)->selectInstance('other')->where('id', $userid)->limit(1)->get()->getResult();
         $this->assertEquals($user2['description'], 'this my desc instance');
         $this->assertEquals($user2['id'], $userid);

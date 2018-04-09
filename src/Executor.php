@@ -21,8 +21,9 @@ class Executor
      */
     public static function save($entity): ResultInterface
     {
+        $className = get_class($entity);
         list($table, , , $fields) = self::getFields($entity, 1);
-        $instance = self::getInstance(get_class($entity));
+        $instance = self::getInstance($className);
 
         $fields = $fields ?? [];
         $query = Query::table($table)->selectInstance($instance);
@@ -49,8 +50,9 @@ class Executor
      */
     public static function delete($entity): ResultInterface
     {
+        $className = get_class($entity);
         list($table, , , $fields) = self::getFields($entity, 3);
-        $instance = self::getInstance(get_class($entity));
+        $instance = self::getInstance($className);
 
         $query = Query::table($table)->selectInstance($instance);
         foreach ($fields ?? [] as $column => $value) {
@@ -123,14 +125,14 @@ class Executor
      */
     public static function update($entity): ResultInterface
     {
-        // 实体映射数据
+        $className = get_class($entity);
         list($table, $idColumn, $idValue, $fields) = self::getFields($entity, 2);
 
         if (empty($fields)) {
             return new DbDataResult(0);
         }
         // 构建update查询器
-        $instance = self::getInstance(get_class($entity));
+        $instance = self::getInstance($className);
         $fields = $fields ?? [];
         $query    = Query::table($table)->where($idColumn, $idValue)->selectInstance($instance);
 
@@ -170,10 +172,11 @@ class Executor
      */
     public static function find($entity): ResultInterface
     {
+        $className = get_class($entity);
         list($tableName, , , $fields) = self::getFields($entity, 3);
-        $instance = self::getInstance(get_class($entity));
+        $instance = self::getInstance($className);
 
-        $query = Query::table($tableName)->selectInstance($instance);
+        $query = Query::table($tableName)->className($className)->selectInstance($instance);
         foreach ($fields ?? [] as $column => $value) {
             $query->where($column, $value);
         }
@@ -192,7 +195,7 @@ class Executor
         list($tableName, , $columnId) = self::getTable($className);
         $instance = self::getInstance($className);
 
-        $query = Query::table($tableName)->where($columnId, $id)->limit(1)->selectInstance($instance);
+        $query = Query::table($tableName)->className($className)->where($columnId, $id)->limit(1)->selectInstance($instance);
 
         return $query->get();
     }
@@ -208,7 +211,7 @@ class Executor
         list($tableName, , $columnId) = self::getTable($className);
         $instance = self::getInstance($className);
 
-        $query = Query::table($tableName)->whereIn($columnId, $ids)->selectInstance($instance);
+        $query = Query::table($tableName)->className($className)->whereIn($columnId, $ids)->selectInstance($instance);
 
         return $query->get();
     }
@@ -223,7 +226,7 @@ class Executor
     public static function findOne(string $className, array $condition = [], array $orderBy = [])
     {
         $instance = self::getInstance($className);
-        $query = Query::table($className)->selectInstance($instance)->delete();
+        $query = Query::table($className)->className($className)->selectInstance($instance)->delete();
 
         if (!empty($condition)) {
             $query = $query->condition($condition);
@@ -248,7 +251,7 @@ class Executor
     public function findAll(string $className, array $condition = [], array $orderBy = [], int $limit = 20, int $offset = 0)
     {
         $instance = self::getInstance($className);
-        $query = Query::table($className)->selectInstance($instance)->delete();
+        $query = Query::table($className)->className($className)->selectInstance($instance)->delete();
 
         if (!empty($condition)) {
             $query = $query->condition($condition);

@@ -70,7 +70,7 @@ class EntityTest extends AbstractMysqlCase
      */
     public function testIterator($id)
     {
-        $user = User::findById($id)->getResult(User::class);
+        $user = User::findById($id)->getResult();
         $data = [];
         foreach ($user as $key => $value) {
             $data[$key] = $value;
@@ -94,7 +94,7 @@ class EntityTest extends AbstractMysqlCase
         $resultUser = User::findById($result)->getResult();
         $this->assertEquals('stelin', $resultUser['name']);
         $this->assertEquals(1, $resultUser['sex']);
-        $this->assertEquals('desc2', $resultUser['description']);
+        $this->assertEquals('desc2', $resultUser['desc']);
         $this->assertEquals(100, $resultUser['age']);
 
 
@@ -109,7 +109,7 @@ class EntityTest extends AbstractMysqlCase
 
         $this->assertEquals('stelin2', $resultUser2['name']);
         $this->assertEquals(1, $resultUser2['sex']);
-        $this->assertEquals('this my desc9', $resultUser2['description']);
+        $this->assertEquals('this my desc9', $resultUser2['desc']);
         $this->assertEquals(99, $resultUser2['age']);
     }
 }

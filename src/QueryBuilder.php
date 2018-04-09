@@ -260,6 +260,11 @@ class QueryBuilder implements QueryBuilderInterface
     protected $aggregate = [];
 
     /**
+     * @var string
+     */
+    protected $className = '';
+
+    /**
      * @param array $values
      *
      * @return ResultInterface
@@ -989,6 +994,18 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
+     * @param string $className
+     *
+     * @return QueryBuilder
+     */
+    public function className(string $className)
+    {
+        $this->className = $className;
+
+        return $this;
+    }
+
+    /**
      * @param string $instance
      *
      * @return QueryBuilder
@@ -1095,7 +1112,7 @@ class QueryBuilder implements QueryBuilderInterface
         $sql          = $statement->getStatement();
         $instanceName = $this->getInstanceName();
 
-        return Db::query($sql, $this->parameters, $instanceName);
+        return Db::query($sql, $this->parameters, $instanceName, $this->className);
     }
 
     /**

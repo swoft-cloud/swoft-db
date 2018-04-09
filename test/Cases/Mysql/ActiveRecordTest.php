@@ -68,7 +68,7 @@ class ActiveRecordTest extends AbstractMysqlCase
     public function testDelete(int $id)
     {
         /* @var User $user */
-        $user   = User::findById($id)->getResult(User::class);
+        $user   = User::findById($id)->getResult();
         $result = $user->delete()->getResult();
         $this->assertEquals(1, $result);
     }
@@ -141,12 +141,12 @@ class ActiveRecordTest extends AbstractMysqlCase
         $newName = 'swoft framewrok';
 
         /* @var User $user */
-        $user = User::findById($id)->getResult(User::class);
+        $user = User::findById($id)->getResult();
         $user->setName($newName);
         $user->update()->getResult();
 
         /* @var User $newUser */
-        $newUser = User::findById($id)->getResult(User::class);
+        $newUser = User::findById($id)->getResult();
         $this->assertEquals($newName, $newUser->getName());
     }
 
@@ -173,7 +173,7 @@ class ActiveRecordTest extends AbstractMysqlCase
         $user      = User::findById($id)->getResult();
         $userEmpty = User::findById(99999999999)->getResult();
         $this->assertEquals($id, $user['id']);
-        $this->assertEquals($userEmpty, []);
+        $this->assertEquals($userEmpty, null);
     }
 
     /**
@@ -196,8 +196,8 @@ class ActiveRecordTest extends AbstractMysqlCase
     public function testFindByIdClass(int $id)
     {
         /* @var User $user */
-        $user      = User::findById($id)->getResult(User::class);
-        $userEmpty = User::findById(99999999999)->getResult(User::class);
+        $user      = User::findById($id)->getResult();
+        $userEmpty = User::findById(99999999999)->getResult();
         $this->assertEquals($id, $user->getId());
         $this->assertEquals($userEmpty, null);
     }
@@ -251,8 +251,8 @@ class ActiveRecordTest extends AbstractMysqlCase
      */
     public function testFindByIdsByClass(array $ids)
     {
-        $users     = User::findByIds($ids)->getResult(User::class);
-        $userEmpty = User::findByIds([999999999999])->getResult(User::class);
+        $users     = User::findByIds($ids)->getResult();
+        $userEmpty = User::findByIds([999999999999])->getResult();
 
         $resultIds = [];
         /* @var User $user */

@@ -18,6 +18,11 @@ abstract class DbResult extends AbstractResult
     protected $type;
 
     /**
+     * @var string
+     */
+    protected $className = '';
+
+    /**
      * @param int $type
      */
     public function setType(int $type)
@@ -27,12 +32,20 @@ abstract class DbResult extends AbstractResult
 
     /**
      * @param string $className
-     *
+     */
+    public function setClassName(string $className)
+    {
+        $this->className = $className;
+    }
+
+    /**
      * @return mixed
      */
-    protected function getResultByClass(string $className)
+    protected function getResultByClassName()
     {
+        $className = $this->className;
         $result = $this->getResultByType();
+
         if (isset($result[0]) && !empty($className)) {
             $result = EntityHelper::listToEntity($result, $className);
         }
