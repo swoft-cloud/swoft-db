@@ -11,7 +11,7 @@ class TrasactionTest extends AbstractMysqlCase
     public function testCommit()
     {
         $data = [
-            'name' => 'stelin',
+            'name' => 'name',
             'sex'  => 1,
             'desc' => 'desc2',
             'age'  => 100,
@@ -46,7 +46,7 @@ class TrasactionTest extends AbstractMysqlCase
     public function testRollback()
     {
         $data = [
-            'name' => 'stelin',
+            'name' => 'name',
             'sex'  => 1,
             'desc' => 'desc2',
             'age'  => 100,

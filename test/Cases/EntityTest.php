@@ -13,7 +13,7 @@ class EntityTest extends AbstractMysqlCase
         $age  = mt_rand(1, 100);
         $user = new User();
         $user->setId(12);
-        $user->setName('stelin');
+        $user->setName('name');
         $user->setSex(1);
         $user->setDesc('this my desc');
         $user->setAge($age);
@@ -22,7 +22,7 @@ class EntityTest extends AbstractMysqlCase
 
         $data = [
             'id'   => 12,
-            'name' => 'stelin',
+            'name' => 'name',
             'sex'  => 1,
             'desc' => 'this my desc',
             'age'  => $age,
@@ -35,14 +35,14 @@ class EntityTest extends AbstractMysqlCase
         $age  = mt_rand(1, 100);
         $user = new User();
         $user->setId(12);
-        $user->setName('stelin');
+        $user->setName('name');
         $user->setSex(1);
         $user->setDesc('this my desc');
         $user->setAge($age);
 
         $json   = $user->toJson();
         $string = $user->__toString();
-        $data   = '{"id":12,"name":"stelin","age":' . $age . ',"sex":1,"desc":"this my desc"}';
+        $data   = '{"id":12,"name":"name","age":' . $age . ',"sex":1,"desc":"this my desc"}';
         $this->assertEquals($data, $json);
         $this->assertEquals($data, $string);
     }
@@ -52,13 +52,13 @@ class EntityTest extends AbstractMysqlCase
         $age  = mt_rand(1, 100);
         $user = new User();
         $user->setId(12);
-        $user->setName('stelin');
+        $user->setName('name');
         $user->setSex(1);
         $user->setDesc('this my desc');
 
         $user['age'] = $age;
 
-        $this->assertEquals('stelin', $user['name']);
+        $this->assertEquals('name', $user['name']);
         $this->assertEquals($age, $user['age']);
         $this->assertTrue(isset($user['sex']));
     }
@@ -82,7 +82,7 @@ class EntityTest extends AbstractMysqlCase
     public function testArrayAttr()
     {
         $data = [
-            'name' => 'stelin',
+            'name' => 'name',
             'sex'  => 1,
             'desc' => 'desc2',
             'age'  => 100,
@@ -92,14 +92,14 @@ class EntityTest extends AbstractMysqlCase
         $result = $user->fill($data)->save()->getResult();
 
         $resultUser = User::findById($result)->getResult();
-        $this->assertEquals('stelin', $resultUser['name']);
+        $this->assertEquals('name', $resultUser['name']);
         $this->assertEquals(1, $resultUser['sex']);
         $this->assertEquals('desc2', $resultUser['desc']);
         $this->assertEquals(100, $resultUser['age']);
 
 
         $user2         = new User();
-        $user2['name'] = 'stelin2';
+        $user2['name'] = 'name2';
         $user2['sex']  = 1;
         $user2['desc'] = 'this my desc9';
         $user2['age']  = 99;
@@ -107,7 +107,7 @@ class EntityTest extends AbstractMysqlCase
         $result2     = $user2->save()->getResult();
         $resultUser2 = User::findById($result2)->getResult();
 
-        $this->assertEquals('stelin2', $resultUser2['name']);
+        $this->assertEquals('name2', $resultUser2['name']);
         $this->assertEquals(1, $resultUser2['sex']);
         $this->assertEquals('this my desc9', $resultUser2['desc']);
         $this->assertEquals(99, $resultUser2['age']);

@@ -49,6 +49,26 @@ class Model implements \ArrayAccess, \Iterator
     }
 
     /**
+     * @param array $condition
+     *
+     * @return ResultInterface
+     */
+    public static function deleteOne(array $condition): ResultInterface
+    {
+        return Executor::deleteOne(static::class, $condition);
+    }
+
+    /**
+     * @param array $condition
+     *
+     * @return ResultInterface
+     */
+    public static function deleteAll(array $condition): ResultInterface
+    {
+        return Executor::deleteAll(static::class, $condition);
+    }
+
+    /**
      * @param array $rows
      *
      * @return ResultInterface
@@ -82,9 +102,26 @@ class Model implements \ArrayAccess, \Iterator
         return Executor::deleteByIds(static::class, $ids);
     }
 
-    public function updateOne(array $attributes, array $condition)
+    /**
+     * @param array $attributes
+     * @param array $condition
+     *
+     * @return ResultInterface
+     */
+    public static function updateOne(array $attributes, array $condition): ResultInterface
     {
+        return Executor::updateOne(static::class, $attributes, $condition);
+    }
 
+    /**
+     * @param array $attributes
+     * @param array $condition
+     *
+     * @return ResultInterface
+     */
+    public static function updateAll(array $attributes, array $condition): ResultInterface
+    {
+        return Executor::updateAll(static::class, $attributes, $condition);
     }
 
     /**
@@ -105,6 +142,30 @@ class Model implements \ArrayAccess, \Iterator
     public function find(): ResultInterface
     {
         return Executor::find($this);
+    }
+
+    /**
+     * @param array $condition
+     * @param array $orderBy
+     *
+     * @return ResultInterface
+     */
+    public static function findOne(array $condition, array $orderBy = []): ResultInterface
+    {
+        return Executor::findOne(static::class, $condition, $orderBy);
+    }
+
+    /**
+     * @param array $condition
+     * @param array $orderBy
+     * @param int   $limit
+     * @param int   $offset
+     *
+     * @return ResultInterface
+     */
+    public static function findAll(array $condition = [], array $orderBy = [], int $limit = 20, int $offset = 0): ResultInterface
+    {
+        return Executor::findAll(static::class, $condition, $orderBy, $limit, $offset);
     }
 
     /**
@@ -138,7 +199,7 @@ class Model implements \ArrayAccess, \Iterator
      */
     public static function query(): QueryBuilder
     {
-        return Query::table(static::class);
+        return Query::table(static::class)->className(static::class);
     }
 
     /**

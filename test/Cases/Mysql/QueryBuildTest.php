@@ -65,9 +65,9 @@ class QueryBuildTest extends AbstractMysqlCase
      */
     public function testDbUpdate(int $id)
     {
-        $result = Query::table(User::class)->where('id', $id)->update(['name' => 'stelin666'])->getResult();
+        $result = Query::table(User::class)->where('id', $id)->update(['name' => 'name666'])->getResult();
         $user   = User::findById($id)->getResult();
-        $this->assertEquals('stelin666', $user['name']);
+        $this->assertEquals('name666', $user['name']);
     }
 
     /**
@@ -85,7 +85,7 @@ class QueryBuildTest extends AbstractMysqlCase
     public function testDbInsert()
     {
         $values = [
-            'name'        => 'stelin',
+            'name'        => 'name',
             'sex'         => 1,
             'description' => 'this my desc',
             'age'         => 99,
@@ -106,7 +106,7 @@ class QueryBuildTest extends AbstractMysqlCase
     public function testSelectDb()
     {
         $data   = [
-            'name'        => 'stelin',
+            'name'        => 'name',
             'sex'         => 1,
             'description' => 'this my desc table',
             'age'         => mt_rand(1, 100),
@@ -130,7 +130,7 @@ class QueryBuildTest extends AbstractMysqlCase
     public function testSelectTable()
     {
         $data   = [
-            'name'        => 'stelin',
+            'name'        => 'name',
             'sex'         => 1,
             'description' => 'this my desc',
             'age'         => mt_rand(1, 100),
@@ -150,7 +150,7 @@ class QueryBuildTest extends AbstractMysqlCase
     public function testSelectinstance()
     {
         $data   = [
-            'name'        => 'stelin',
+            'name'        => 'name',
             'sex'         => 1,
             'description' => 'this my desc instance',
             'age'         => mt_rand(1, 100),
@@ -161,5 +161,112 @@ class QueryBuildTest extends AbstractMysqlCase
         $user2 = Query::table(User::class)->selectInstance('other')->where('id', $userid)->limit(1)->get()->getResult();
         $this->assertEquals($user2['description'], 'this my desc instance');
         $this->assertEquals($user2['id'], $userid);
+    }
+
+    public function testCondtionAndByF1()
+    {
+        $age = mt_rand(1, 100);
+        $data   = [
+            'name'        => 'nameQuery',
+            'sex'         => 1,
+            'description' => 'this my desc instance',
+            'age'         => $age,
+        ];
+        $userid = Query::table(User::class)->insert($data)->getResult();
+        $user = Query::table(User::class)->condition(['name' => 'nameQuery', 'age'=> $age])->limit(1)->get()->getResult();
+
+        $this->assertEquals('nameQuery', $user['name']);
+        $this->assertEquals($age, $user['age']);
+
+        $user2 = Query::table(User::class)->where('id', $userid)->condition(['name' => 'nameQuery', 'age'=> $age])->limit(1)->get()->getResult();
+        $this->assertEquals('nameQuery', $user2['name']);
+        $this->assertEquals($age, $user2['age']);
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testCondtion2AndByF1(array $ids)
+    {
+        $users = Query::table(User::class)->condition(['sex' => 1, 'id' => $ids])->get()->getResult();
+        $this->assertCount(2, $users);
+    }
+
+    public function testCondtion1AndByF3()
+    {
+        $age = mt_rand(1, 100);
+        $data   = [
+            'name'        => 'nameQuery',
+            'sex'         => 1,
+            'description' => 'this my desc instance',
+            'age'         => $age-1,
+        ];
+
+        $userid = Query::table(User::class)->insert($data)->getResult();
+        $user = Query::table(User::class)->condition(['age', '<',$age])->limit(1)->orderBy('id', 'desc')->get()->getResult();
+        $this->assertEquals($userid, $user['id']);
+    }
+
+    public function testCondtion2AndByF3()
+    {
+        $age = mt_rand(1, 100);
+        $data   = [
+            'name'        => 'nameQuery',
+            'sex'         => 1,
+            'description' => 'this my desc instance',
+            'age'         => $age-1,
+        ];
+
+        $userid = Query::table(User::class)->insert($data)->getResult();
+        $users = Query::table(User::class)->condition(['age', 'between', $age, $age+1])->orderBy('id', 'desc')->get()->getResult();
+
+        $this->assertTrue(count($users) > 1);
+    }
+
+    /**
+     * @dataProvider mysqlProvider
+     *
+     * @param int $id
+     */
+    public function testCondtion3AndByF3(int $id)
+    {
+        $age = mt_rand(1, 100);
+        $data   = [
+            'name'        => 'nameQuery',
+            'sex'         => 1,
+            'description' => 'this my desc instance',
+            'age'         => $age-1,
+        ];
+
+        $userid = Query::table(User::class)->insert($data)->getResult();
+        $users = Query::table(User::class)->condition(['age', 'not between', $age, $age+1])->orderBy('id', 'desc')->get()->getResult();
+
+        $this->assertTrue(count($users) > 1);
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testCondtion4AndByF3(array $ids)
+    {
+        $users = Query::table(User::class)->condition(['id', 'in', $ids])->orderBy('id', 'desc')->get()->getResult();
+
+        $this->assertCount(2, $users);
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testCondtion5AndByF3(array $ids)
+    {
+        $users = Query::table(User::class)->condition(['id', 'not in', $ids])->orderBy('id', 'desc')->get()->getResult();
+
+        $this->assertTrue(count($users) > 2);
     }
 }

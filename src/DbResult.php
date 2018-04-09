@@ -47,11 +47,11 @@ abstract class DbResult extends AbstractResult
         $result = $this->getResultByType();
 
         if (isset($result[0]) && !empty($className)) {
-            $result = EntityHelper::listToEntity($result, $className);
+            return EntityHelper::listToEntity($result, $className);
         }
 
         if (is_array($result) && !empty($result) && !empty($className)) {
-            $result = EntityHelper::arrayToEntity($result, $className);
+            return EntityHelper::arrayToEntity($result, $className);
         }
 
         if (!empty($className) && $this->type == Db::RETURN_FETCH && empty($result)) {

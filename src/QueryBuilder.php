@@ -434,33 +434,30 @@ class QueryBuilder implements QueryBuilderInterface
      * Format `['column1' => value1, 'column2' => value2, ...]`
      * - ['name' => 'swoft', 'status' => 1] => ('name'='swoft' and 'status' = 1)
      * - ['id' => [1, 2, 3], 'status' => 1] => ('id' in (1, 2, 3) and 'status' = 1)
-     * - ['status' => null] => ('status' is null)
      *
      * Format `[operator, operand1, operand2, ...]`
-     * - ['>', 'id', 12]
-     * - ['<', 'id', 13]
-     * - ['>=', 'id', 13]
-     * - ['<=', 'id', 13]
-     * - ['<>', 'id', 13]
+     * - ['id', '>', 12]
+     * - ['id', '<', 13]
+     * - ['id', '>=', 13]
+     * - ['id', '<=', 13]
+     * - ['id', '<>', 13]
      *
-     * - ['in', 'id', [1, 2, 3]]
-     * - ['not in', 'id', [1, 2, 3]]
+     * - ['id', 'in', [1, 2, 3]]
+     * - ['id', 'not in', [1, 2, 3]]
      *
-     * - ['between', 'id', 2, 3]
-     * - ['not between', 'id', 2, 3]
+     * - ['id', 'between', 2, 3]
+     * - ['id', 'not between', 2, 3]
      *
-     * - ['like', 'name', '%swoft%']
-     * - ['not like', 'name', '%swoft%']
+     * - ['name', 'like', '%swoft%']
+     * - ['name', 'not like', '%swoft%']
      *
      *
      * @param array  $condition
-     * @param string $connector
      *
      * @return \Swoft\Db\QueryBuilder
      */
-    public function condition(array $condition, $connector = self::LOGICAL_AND)
+    public function condition(array $condition)
     {
-        $this->openWhere($connector);
         foreach ($condition as $key => $value) {
             if (\is_int($key)) {
                 $this->andCondition($condition);
@@ -469,7 +466,6 @@ class QueryBuilder implements QueryBuilderInterface
             $this->operatorCondition($condition);
             break;
         }
-        $this->closeWhere();
 
         return $this;
     }
@@ -493,7 +489,7 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function andCondition(array $condition)
     {
-        list($operator) = $condition;
+        list(, $operator) = $condition;
         $operator = strtoupper($operator);
         switch ($operator) {
             case self::OPERATOR_EQ:
@@ -502,17 +498,23 @@ class QueryBuilder implements QueryBuilderInterface
             case self::OPERATOR_LT:
             case self::OPERATOR_LTE:
             case self::OPERATOR_GTE:
-            case self::IN:
-            case self::NOT_IN:
-                list($operator, $column, $value) = $condition;
+                list($column, $operator, $value) = $condition;
                 $this->andWhere($column, $value, $operator);
                 break;
+            case self::IN:
+                list($column, $operator, $value) = $condition;
+                $this->whereIn($column, $value, $operator);
+                break;
+            case self::NOT_IN:
+                list($column, $operator, $value) = $condition;
+                $this->whereNotIn($column, $value, $operator);
+                break;
             case self::BETWEEN:
-                list(, $column, $min, $max) = $condition;
+                list($column, , $min, $max) = $condition;
                 $this->whereBetween($column, $min, $max);
                 break;
             case self::NOT_BETWEEN:
-                list(, $column, $min, $max) = $condition;
+                list($column, , $min, $max) = $condition;
                 $this->whereNotBetween($column, $min, $max);
                 break;
         }

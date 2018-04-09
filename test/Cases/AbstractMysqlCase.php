@@ -12,7 +12,7 @@ abstract class AbstractMysqlCase extends AbstractTestCase
     public function addUsers()
     {
         $user = new User();
-        $user->setName('stelin');
+        $user->setName('name');
         $user->setSex(1);
         $user->setDesc('this my desc');
         $user->setAge(mt_rand(1, 100));
@@ -27,7 +27,7 @@ abstract class AbstractMysqlCase extends AbstractTestCase
     public function addUser()
     {
         $user = new User();
-        $user->setName('stelin');
+        $user->setName('name');
         $user->setSex(1);
         $user->setDesc('this my desc');
         $user->setAge(mt_rand(1, 100));

@@ -100,7 +100,7 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function deleteOne(string $className, array $condition)
+    public static function deleteOne(string $className, array $condition)
     {
         $instance = self::getInstance($className);
         return Query::table($className)->selectInstance($instance)->condition($condition)->limit(1)->delete();
@@ -112,7 +112,7 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function deleteAll(string $className, array $condition)
+    public static function deleteAll(string $className, array $condition)
     {
         $instance = self::getInstance($className);
         return Query::table($className)->selectInstance($instance)->condition($condition)->delete();
@@ -226,7 +226,7 @@ class Executor
     public static function findOne(string $className, array $condition = [], array $orderBy = [])
     {
         $instance = self::getInstance($className);
-        $query = Query::table($className)->className($className)->selectInstance($instance)->delete();
+        $query = Query::table($className)->className($className)->selectInstance($instance);
 
         if (!empty($condition)) {
             $query = $query->condition($condition);
@@ -236,7 +236,7 @@ class Executor
             $query = $query->orderBy($column, $order);
         }
 
-        return $query->limit(1)->execute();
+        return $query->limit(1)->get();
     }
 
     /**
@@ -248,10 +248,10 @@ class Executor
      *
      * @return ResultInterface
      */
-    public function findAll(string $className, array $condition = [], array $orderBy = [], int $limit = 20, int $offset = 0)
+    public static function findAll(string $className, array $condition = [], array $orderBy = [], int $limit = 20, int $offset = 0)
     {
         $instance = self::getInstance($className);
-        $query = Query::table($className)->className($className)->selectInstance($instance)->delete();
+        $query = Query::table($className)->className($className)->selectInstance($instance);
 
         if (!empty($condition)) {
             $query = $query->condition($condition);
@@ -261,7 +261,7 @@ class Executor
             $query = $query->orderBy($column, $order);
         }
 
-        return $query->limit($limit, $offset)->execute();
+        return $query->limit($limit, $offset)->get();
     }
 
     /**

@@ -573,9 +573,15 @@ class Statement implements StatementInterface
             return $statement;
         }
 
+        $isUpdateOrDelete = $this->isDelete() || $this->isUpdate();
+        if ($isUpdateOrDelete && $limit['limit']) {
+            return sprintf('LIMIT %d', $limit['limit']);
+        }
+
         $limit     = $limit['limit'];
         $offset    = $limit['offset'];
         $statement = sprintf('LIMIT %d,%d', $offset, $limit);
+
         return $statement;
     }
 
