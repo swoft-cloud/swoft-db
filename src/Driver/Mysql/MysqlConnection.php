@@ -223,15 +223,20 @@ class MysqlConnection extends AbstractDbConnection
             return;
         }
 
+        $newParams = [];
         foreach ($params as $key => &$value){
             $value = "'{$value}'";
+            if(is_int($key)){
+                $key = sprintf('?%d', $key);
+            }
+            $newParams[$key] = $value;
         }
 
         // ?方式传递参数
         if (strpos($this->sql, '?') !== false) {
             $this->transferQuestionMark();
         }
-        $this->sql = strtr($this->sql, $params);
+        $this->sql = strtr($this->sql, $newParams);
     }
     /**
      * 格式化?标记

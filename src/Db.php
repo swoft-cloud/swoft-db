@@ -7,6 +7,7 @@ use Swoft\Core\RequestContext;
 use Swoft\Core\ResultInterface;
 use Swoft\Db\Exception\DbException;
 use Swoft\Db\Helper\DbHelper;
+use Swoft\Db\Helper\EntityHelper;
 use Swoft\Helper\PoolHelper;
 use Swoft\Pool\ConnectionInterface;
 use Swoft\Db\Pool\Config\DbPoolProperties;
@@ -57,7 +58,7 @@ class Db
         /* @var AbstractDbConnection $connection */
         $connection = self::getConnection($instance, $node);
 
-        if(!empty($db)){
+        if (!empty($db)) {
             $connection->selectDb($db);
         }
 
@@ -71,6 +72,7 @@ class Db
             $connection->setDefer();
         }
         $connection->prepare($sql);
+        $params = self::transferParams($params);
         $result = $connection->execute($params);
 
         $dbResult = self::getResult($result, $connection, $profileKey);
@@ -171,6 +173,7 @@ class Db
 
         return self::RETURN_FETCH;
     }
+
     /**
      * @param string $instance
      * @param string $node
@@ -206,6 +209,7 @@ class Db
         }
         $cntId      = $tsStack->offsetGet(0);
         $connection = RequestContext::getContextDataByChildKey($contextCntKey, $cntId, null);
+
         return $connection;
     }
 
@@ -259,4 +263,20 @@ class Db
         return new DbDataResult($result, $connection, $profileKey);
     }
 
+    /**
+     * @param $params
+     *
+     * @throws DbException
+     * @return array
+     */
+    private static function transferParams($params)
+    {
+        $newParams = [];
+        foreach ($params as $key => $value) {
+            list($nkey, $nvalue) = EntityHelper::transferParameter($key, $value, null);
+            $newParams[$nkey] = $nvalue;
+        }
+
+        return $newParams;
+    }
 }

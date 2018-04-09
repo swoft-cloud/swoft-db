@@ -841,7 +841,7 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function setParameter($key, $value, $type = null): QueryBuilder
     {
-        list($key, $value) = $this->transferParameter($key, $value, $type);
+        list($key, $value) = EntityHelper::transferParameter($key, $value, $type);
         $this->parameters[$key] = $value;
 
         return $this;
@@ -1151,32 +1151,6 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * 参数个数转换
-     *
-     * @param mixed  $key
-     * @param mixed  $value
-     * @param string $type
-     *
-     * @throws DbException
-     *
-     * @return array
-     */
-    private function transferParameter($key, $value, $type): array
-    {
-        if (!\is_int($key) && !\is_string($key)) {
-            throw new DbException('参数key,只能是字符串和整数');
-        }
-        $key = $this->formatParamsKey($key);
-
-        // 参数值类型转换
-        if ($type !== null) {
-            $value = EntityHelper::trasferTypes($type, $value);
-        }
-
-        return [$key, $value];
-    }
-
-    /**
      * @return string
      * @throws \Swoft\Db\Exception\MysqlException
      */
@@ -1190,22 +1164,6 @@ class QueryBuilder implements QueryBuilderInterface
         return $table;
     }
 
-    /**
-     * @param mixed $key
-     *
-     * @return string
-     */
-    private function formatParamsKey($key): string
-    {
-        if (\is_string($key) && strpos($key, ':') === false) {
-            return ':' . $key;
-        }
-        if (is_int($key) && App::isCoContext()) {
-            return '?' . $key;
-        }
-
-        return $key;
-    }
 
     /**
      * @return string
