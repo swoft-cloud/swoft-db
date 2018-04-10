@@ -6,12 +6,14 @@
         "swoole",
         "swoft",
         "db",
-        "orm"
+        "orm",
+        "active record"
     ],
     "description": "microservice framework base on swoole",
     "license": "Apache-2.0",
     "require": {
-        "swoft/framework": "^1.0",
+        "ext-pdo": "*",
+        "swoft/framework": "dev-feature as 1.0",
         "swoft/console": "^1.0",
         "swoft/service-governance": "^1.0"
     },
