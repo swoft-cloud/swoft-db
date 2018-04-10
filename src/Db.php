@@ -200,7 +200,7 @@ class Db
     private static function getTransactionConnection(string $instance)
     {
         $contextTsKey  = DbHelper::getContextTransactionsKey();
-        $contextCntKey = PoolHelper::getContextConnKey();
+        $contextCntKey = PoolHelper::getContextCntKey();
         $instanceKey   = DbHelper::getTsInstanceKey($instance);
         /* @var \SplStack $tsStack */
         $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $instanceKey, new \SplStack());
