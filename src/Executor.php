@@ -497,15 +497,8 @@ class Executor
             }
         }
 
-        $limit  = null;
-        $offset = 0;
-        if (isset($options['limit'])) {
-            $limit = $options['limit'];
-        }
-
-        if (isset($options['offset'])) {
-            $offset = $options['offset'];
-        }
+        $limit = $options['limit'] ?? null;
+        $offset = $options['offset'] ?? 0;
 
         if ($limit !== null) {
             $query = $query->limit($limit, $offset);
