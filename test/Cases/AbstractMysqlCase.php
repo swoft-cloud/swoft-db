@@ -1,9 +1,16 @@
 <?php
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
+namespace SwoftTest\Db\Cases;
 
-namespace Swoft\Db\Test\Cases;
-
-use Swoft\Db\Test\Testing\Entity\Count;
-use Swoft\Db\Test\Testing\Entity\User;
+use SwoftTest\Db\Testing\Entity\Count;
+use SwoftTest\Db\Testing\Entity\User;
 
 /**
  * DbTestCache

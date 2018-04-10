@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db;
 
 use Swoft\App;
@@ -174,7 +181,6 @@ class QueryBuilder implements QueryBuilderInterface
      * @var array
      */
     private $set = [];
-
 
     /**
      * from语句
@@ -623,7 +629,7 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function whereBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
-        $this->criteria($this->where, $column, array($min, $max), self::BETWEEN, $connector);
+        $this->criteria($this->where, $column, [$min, $max], self::BETWEEN, $connector);
 
         return $this;
     }
@@ -640,7 +646,7 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function whereNotBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
-        $this->criteria($this->where, $column, array($min, $max), self::NOT_BETWEEN, $connector);
+        $this->criteria($this->where, $column, [$min, $max], self::NOT_BETWEEN, $connector);
 
         return $this;
     }
@@ -738,7 +744,7 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function havingBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
-        $this->criteria($this->having, $column, array($min, $max), self::BETWEEN, $connector);
+        $this->criteria($this->having, $column, [$min, $max], self::BETWEEN, $connector);
 
         return $this;
     }
@@ -755,7 +761,7 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function havingNotBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
-        $this->criteria($this->having, $column, array($min, $max), self::NOT_BETWEEN, $connector);
+        $this->criteria($this->having, $column, [$min, $max], self::NOT_BETWEEN, $connector);
 
         return $this;
     }
@@ -792,10 +798,10 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function groupBy(string $column, string $order = null): QueryBuilder
     {
-        $this->groupBy[] = array(
+        $this->groupBy[] = [
             'column' => $column,
             'order'  => $order,
-        );
+        ];
 
         return $this;
     }
@@ -810,10 +816,10 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function orderBy(string $column, string $order = self::ORDER_BY_ASC): QueryBuilder
     {
-        $this->orderBy[] = array(
+        $this->orderBy[] = [
             'column' => $column,
             'order'  => $order,
-        );
+        ];
 
         return $this;
     }
@@ -949,10 +955,10 @@ class QueryBuilder implements QueryBuilderInterface
      */
     private function bracketCriteria(array &$criteria, string $bracket = self::BRACKET_OPEN, string $connector = self::LOGICAL_AND): QueryBuilder
     {
-        $criteria[] = array(
+        $criteria[] = [
             'bracket'   => $bracket,
             'connector' => $connector,
-        );
+        ];
 
         return $this;
     }
@@ -972,15 +978,15 @@ class QueryBuilder implements QueryBuilderInterface
         // 是否存在判断...
 
         if (\is_string($criteria)) {
-            $criteria = array($criteria);
+            $criteria = [$criteria];
         }
 
-        $this->join[] = array(
+        $this->join[] = [
             'table'    => $table,
             'criteria' => $criteria,
             'type'     => $type,
             'alias'    => $alias,
-        );
+        ];
 
         return $this;
     }
@@ -1003,12 +1009,12 @@ class QueryBuilder implements QueryBuilderInterface
         string $operator = self::OPERATOR_EQ,
         string $connector = self::LOGICAL_AND
     ): QueryBuilder {
-        $criteria[] = array(
+        $criteria[] = [
             'column'    => $column,
             'value'     => $value,
             'operator'  => $operator,
             'connector' => $connector,
-        );
+        ];
 
         return $this;
     }
@@ -1167,7 +1173,6 @@ class QueryBuilder implements QueryBuilderInterface
         return sprintf('%s.%s.%s', $this->instance, $this->node, $this->db);
     }
 
-
     /**
      * 实体类名获取表名
      *
@@ -1205,7 +1210,6 @@ class QueryBuilder implements QueryBuilderInterface
 
         return $table;
     }
-
 
     /**
      * @return string

@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Bean\Collector;
 
 use Swoft\Bean\CollectorInterface;
@@ -25,7 +32,7 @@ class ConnectionCollector implements CollectorInterface
      * @param null   $propertyValue
      * @return void
      */
-    public static function collect(string $className, $objectAnnotation = null, string $propertyName = "", string $methodName = "", $propertyValue = null)
+    public static function collect(string $className, $objectAnnotation = null, string $propertyName = '', string $methodName = '', $propertyValue = null)
     {
         if ($objectAnnotation instanceof Connection) {
             $type   = $objectAnnotation->getType();
@@ -41,5 +48,4 @@ class ConnectionCollector implements CollectorInterface
     {
         return self::$connects;
     }
-
 }

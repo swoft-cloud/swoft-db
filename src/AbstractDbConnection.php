@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db;
 
 use Swoft\Core\RequestContext;
@@ -35,7 +42,7 @@ abstract class AbstractDbConnection extends AbstractConnection implements DbConn
      */
     public function release($release = false)
     {
-        if(!empty($this->currentDb) && $this->currentDb != $this->originDb){
+        if (!empty($this->currentDb) && $this->currentDb != $this->originDb) {
             $this->selectDb($this->originDb);
         }
         parent::release($release);

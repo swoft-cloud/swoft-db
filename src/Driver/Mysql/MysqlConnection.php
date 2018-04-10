@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
@@ -223,9 +230,9 @@ class MysqlConnection extends AbstractDbConnection
         }
 
         $newParams = [];
-        foreach ($params as $key => &$value){
+        foreach ($params as $key => &$value) {
             $value = "'{$value}'";
-            if(is_int($key)){
+            if (is_int($key)) {
                 $key = sprintf('?%d', $key);
             }
             $newParams[$key] = $value;
@@ -237,6 +244,7 @@ class MysqlConnection extends AbstractDbConnection
         }
         $this->sql = strtr($this->sql, $newParams);
     }
+
     /**
      * 格式化?标记
      */

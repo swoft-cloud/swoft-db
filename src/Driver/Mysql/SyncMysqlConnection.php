@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
@@ -53,7 +60,7 @@ class SyncMysqlConnection extends AbstractDbConnection
         ];
         $dsn              = "mysql:host=$host;port=$port;dbname=$dbName;charset=$charset";
         $this->connection = new \PDO($dsn, $user, $passwd, $pdoOptions);
-        $this->connection->setAttribute(\PDO::ATTR_ERRMODE,\PDO::ERRMODE_EXCEPTION);
+        $this->connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         $this->originDb = $dbName;
     }
 
@@ -62,7 +69,7 @@ class SyncMysqlConnection extends AbstractDbConnection
      */
     public function prepare(string $sql)
     {
-        $this->sql  = $sql . " Params:";
+        $this->sql  = $sql . ' Params:';
         $this->stmt = $this->connection->prepare($sql);
     }
 

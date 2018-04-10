@@ -1,10 +1,17 @@
 <?php
-
-namespace Swoft\Db\Test\Cases\Mysql;
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
+namespace SwoftTest\Db\Cases\Mysql;
 
 use Swoft\Db\QueryBuilder;
-use Swoft\Db\Test\Cases\AbstractMysqlCase;
-use Swoft\Db\Test\Testing\Entity\User;
+use SwoftTest\Db\Cases\AbstractMysqlCase;
+use SwoftTest\Db\Testing\Entity\User;
 
 /**
  * MysqlTest
@@ -31,7 +38,6 @@ class ActiveRecordTest extends AbstractMysqlCase
         });
     }
 
-
     public function testBatchInsert()
     {
         $values = [
@@ -55,7 +61,7 @@ class ActiveRecordTest extends AbstractMysqlCase
 
     public function testBatchInsertByCo()
     {
-        go(function (){
+        go(function () {
             $this->testBatchInsert();
         });
     }
@@ -151,12 +157,12 @@ class ActiveRecordTest extends AbstractMysqlCase
         $this->assertEquals($newName, $newUser->getName());
 
         $userObj=User::findById($id)->getResult();
-        $userObj->setName("update");
+        $userObj->setName('update');
 
         $result= $userObj->update()->getResult();
 
         $userObj=User::findById($id)->getResult();
-        $userObj->setName("update");
+        $userObj->setName('update');
 
         $result2= $userObj->update()->getResult();
 
@@ -175,7 +181,6 @@ class ActiveRecordTest extends AbstractMysqlCase
             $this->testUpdate($id);
         });
     }
-
 
     /**
      * @dataProvider mysqlProvider
@@ -253,7 +258,7 @@ class ActiveRecordTest extends AbstractMysqlCase
         $this->assertEquals($userEmpty, []);
 
         $queryIds = [];
-        foreach ($users2 as $user){
+        foreach ($users2 as $user) {
             $queryIds[] = $user['id'];
             $this->assertEquals(null, $user['name']);
         }
@@ -349,7 +354,7 @@ class ActiveRecordTest extends AbstractMysqlCase
     public function testDeleteAll(array $ids)
     {
         $result = User::deleteAll(['name' => 'name', 'id' => $ids])->getResult();
-        $this->assertEquals(2,$result);
+        $this->assertEquals(2, $result);
     }
 
     /**
@@ -374,10 +379,9 @@ class ActiveRecordTest extends AbstractMysqlCase
     {
         $result = User::updateAll(['name' => 'testUpdateAll'], ['id' => $ids])->getResult();
         $count = User::findAll(['name' => 'testUpdateAll', 'id' => $ids])->getResult();
-        $this->assertEquals(2,$result);
-        $this->assertCount(2,$count);
+        $this->assertEquals(2, $result);
+        $this->assertCount(2, $count);
     }
-
 
     /**
      * @dataProvider mysqlProvider
@@ -409,11 +413,11 @@ class ActiveRecordTest extends AbstractMysqlCase
             'fields'  => ['id', 'name'],
         ];
         $result = User::findAll(['name' => 'name'], $options)->getResult();
-        $this->assertCount(2,$result);
+        $this->assertCount(2, $result);
 
         $ids = [];
         /* @var User $user */
-        foreach ($result as $key => $user){
+        foreach ($result as $key => $user) {
             $ids[$key] = $user->getId();
             $this->assertEquals($user->getName(), 'name');
             $this->assertEquals($user->getDesc(), null);
@@ -429,5 +433,4 @@ class ActiveRecordTest extends AbstractMysqlCase
         $this->assertTrue(User::exist($id)->getResult());
         $this->assertFalse(User::exist('NotExistId')->getResult());
     }
-
 }

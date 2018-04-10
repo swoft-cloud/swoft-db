@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db;
 
 use Swoft\Core\AbstractResult;
@@ -89,7 +96,7 @@ abstract class DbResult extends AbstractResult
      */
     private function getResultByType()
     {
-        if($this->connection === null){
+        if ($this->connection === null) {
             return $this->result;
         }
 
@@ -97,7 +104,8 @@ abstract class DbResult extends AbstractResult
         $connection = $this->connection;
 
         if ($this->type == Db::RETURN_INSERTID) {
-            return $this->connection->getInsertId();;
+            return $this->connection->getInsertId();
+            ;
         }
 
         if ($this->type == Db::RETURN_ROWS) {

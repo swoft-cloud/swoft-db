@@ -1,10 +1,17 @@
 <?php
-
-namespace Swoft\Db\Test\Cases\Mysql;
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
+namespace SwoftTest\Db\Cases\Mysql;
 
 use Swoft\Db\Query;
-use Swoft\Db\Test\Cases\AbstractMysqlCase;
-use Swoft\Db\Test\Testing\Entity\User;
+use SwoftTest\Db\Cases\AbstractMysqlCase;
+use SwoftTest\Db\Testing\Entity\User;
 
 /**
  * AggregateTest
@@ -30,7 +37,7 @@ class AggregateTest extends AbstractMysqlCase
      */
     public function testCountByCo(array $ids)
     {
-        go(function () use ($ids){
+        go(function () use ($ids) {
             $this->testCount($ids);
         });
     }
@@ -54,7 +61,7 @@ class AggregateTest extends AbstractMysqlCase
      */
     public function testSumByCo(array $ids)
     {
-        go(function () use ($ids){
+        go(function () use ($ids) {
             $this->testSum($ids);
         });
     }
@@ -78,7 +85,7 @@ class AggregateTest extends AbstractMysqlCase
      */
     public function testMaxByCo(array $ids)
     {
-        go(function () use ($ids){
+        go(function () use ($ids) {
             $this->testMax($ids);
         });
     }
@@ -102,7 +109,7 @@ class AggregateTest extends AbstractMysqlCase
      */
     public function testMinByCo(array $ids)
     {
-        go(function () use ($ids){
+        go(function () use ($ids) {
             $this->testMin($ids);
         });
     }
@@ -126,7 +133,7 @@ class AggregateTest extends AbstractMysqlCase
      */
     public function testAvgByCo(array $ids)
     {
-        go(function () use ($ids){
+        go(function () use ($ids) {
             $this->testAvg($ids);
         });
     }

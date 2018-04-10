@@ -1,6 +1,13 @@
 <?php
-
-namespace Swoft\Db\Test\Testing\Entity;
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
+namespace SwoftTest\Db\Testing\Entity;
 
 use Swoft\Db\Bean\Annotation\Id;
 use Swoft\Db\Bean\Annotation\Required;
@@ -58,7 +65,7 @@ class OtherUser extends Model
      * @Column(name="description", type="string")
      * @var string
      */
-    private $desc = "";
+    private $desc = '';
 
     /**
      * 非数据库字段，未定义映射关系

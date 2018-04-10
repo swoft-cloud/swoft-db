@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Command;
 
 use Swoft\App;
@@ -7,7 +14,6 @@ use Swoft\Console\Bean\Annotation\Command;
 use Swoft\Db\Entity\Generator;
 use Swoft\Db\Entity\Mysql\Schema;
 use Swoft\Db\Pool\DbPool;
-use Swoft\Db\Pool\DbSlavePool;
 
 /**
  * the group command list of database entity

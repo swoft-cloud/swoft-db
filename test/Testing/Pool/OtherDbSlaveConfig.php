@@ -1,6 +1,13 @@
 <?php
-
-namespace Swoft\Db\Test\Testing\Pool;
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
+namespace SwoftTest\Db\Testing\Pool;
 
 use Swoft\Bean\Annotation\Bean;
 use Swoft\Bean\Annotation\Value;
@@ -25,6 +32,7 @@ class OtherDbSlaveConfig extends DbPoolProperties
      * @var int
      */
     protected $minActive = 5;
+
     /**
      * @Value(name="${config.db.other.slave.maxActive}", env="${DB_OTHER_SLAVE_MAX_ACTIVE}")
      * @var int

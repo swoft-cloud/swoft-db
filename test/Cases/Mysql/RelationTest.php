@@ -1,12 +1,19 @@
 <?php
-
-namespace Swoft\Db\Test\Cases\Mysql;
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
+namespace SwoftTest\Db\Cases\Mysql;
 
 use Swoft\Db\Query;
 use Swoft\Db\QueryBuilder;
-use Swoft\Db\Test\Cases\AbstractMysqlCase;
-use Swoft\Db\Test\Testing\Entity\Count;
-use Swoft\Db\Test\Testing\Entity\User;
+use SwoftTest\Db\Cases\AbstractMysqlCase;
+use SwoftTest\Db\Testing\Entity\Count;
+use SwoftTest\Db\Testing\Entity\User;
 
 /**
  * RelationTest
@@ -37,9 +44,8 @@ class RelationTest extends AbstractMysqlCase
      */
     public function testJoinByCo(int $uid)
     {
-        go(function ()use ($uid){
+        go(function () use ($uid) {
             $this->testJoin($uid);
         });
     }
-
 }

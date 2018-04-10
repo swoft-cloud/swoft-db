@@ -1,11 +1,18 @@
 <?php
-
-namespace Swoft\Db\Test\Cases\Mysql;
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
+namespace SwoftTest\Db\Cases\Mysql;
 
 use Swoft\Db\Query;
-use Swoft\Db\Test\Cases\AbstractMysqlCase;
-use Swoft\Db\Test\Testing\Entity\OtherUser;
-use Swoft\Db\Test\Testing\Entity\User;
+use SwoftTest\Db\Cases\AbstractMysqlCase;
+use SwoftTest\Db\Testing\Entity\OtherUser;
+use SwoftTest\Db\Testing\Entity\User;
 
 /**
  * QueryTest
@@ -94,7 +101,6 @@ class QueryBuilderTest extends AbstractMysqlCase
         $user   = User::findById($result)->getResult();
         $this->assertCount(5, $user);
     }
-
 
     public function testDbInsertByCo()
     {
@@ -260,7 +266,7 @@ class QueryBuilderTest extends AbstractMysqlCase
 
     public function testCondtion2AndByF3ByCo()
     {
-        go(function (){
+        go(function () {
             $this->testCondtion2AndByF3();
         });
     }
@@ -293,7 +299,7 @@ class QueryBuilderTest extends AbstractMysqlCase
      */
     public function testCondtion3AndByF3ByCo(int $id)
     {
-        go(function ()use ($id){
+        go(function () use ($id) {
             $this->testCondtion3AndByF3($id);
         });
     }
@@ -317,7 +323,7 @@ class QueryBuilderTest extends AbstractMysqlCase
      */
     public function testCondtion4AndByF3ByCo(array $ids)
     {
-        go(function ()use ($ids){
+        go(function () use ($ids) {
             $this->testCondtion4AndByF3($ids);
         });
     }
@@ -341,9 +347,8 @@ class QueryBuilderTest extends AbstractMysqlCase
      */
     public function testCondtion5AndByF3ByCo(array $ids)
     {
-        go(function ()use ($ids){
+        go(function () use ($ids) {
             $this->testCondtion5AndByF3($ids);
         });
     }
-
 }

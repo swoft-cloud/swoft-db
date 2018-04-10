@@ -1,10 +1,17 @@
 <?php
-
-namespace Swoft\Db\Test\Cases\Mysql;
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
+namespace SwoftTest\Db\Cases\Mysql;
 
 use Swoft\Db\Db;
-use Swoft\Db\Test\Testing\Entity\User;
-use Swoft\Db\Test\Cases\AbstractMysqlCase;
+use SwoftTest\Db\Testing\Entity\User;
+use SwoftTest\Db\Cases\AbstractMysqlCase;
 
 /**
  * SqlMysqlTest
@@ -13,7 +20,7 @@ class SqlTest extends AbstractMysqlCase
 {
     public function testInsert()
     {
-        $name   = "swoft insert";
+        $name   = 'swoft insert';
         $result = Db::query('insert into user(name, sex,description, age) values("' . $name . '", 1, "xxxx", 99)')->getResult();
         $user   = User::findById($result)->getResult();
 
@@ -77,7 +84,7 @@ class SqlTest extends AbstractMysqlCase
      */
     public function testSelect2ByCo($id)
     {
-        go(function ()use ($id){
+        go(function () use ($id) {
             $this->testSelect2($id);
         });
     }
