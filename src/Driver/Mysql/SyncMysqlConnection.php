@@ -34,7 +34,7 @@ class SyncMysqlConnection extends AbstractDbConnection
     /**
      * @var string
      */
-    private $sql;
+    private $sql = '';
 
     /**
      * Create connection
@@ -102,8 +102,8 @@ class SyncMysqlConnection extends AbstractDbConnection
         }
 
         foreach ($params as $key => $value) {
-            if (is_int($key)) {
-                $key = $key + 1;
+            if (\is_int($key)) {
+                ++$key;
             }
             $this->stmt->bindValue($key, $value);
         }
@@ -191,9 +191,9 @@ class SyncMysqlConnection extends AbstractDbConnection
     }
 
     /**
-     * Destory sql
+     * Destroy sql
      */
-    public function destory()
+    public function destroy()
     {
         $this->sql  = '';
         $this->stmt = null;
@@ -202,7 +202,7 @@ class SyncMysqlConnection extends AbstractDbConnection
     /**
      * @return string
      */
-    public function getSql()
+    public function getSql(): string
     {
         return $this->sql;
     }

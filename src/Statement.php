@@ -346,7 +346,7 @@ class Statement implements StatementInterface
         foreach ($criteria as $x => $criterion) {
             // 多个条件连接使用and逻辑符号
             if ($x !== 0) {
-                $statement .= ' ' . self::LOGICAL_AND . ' ';
+                $statement .= ' ' . QueryBuilder::LOGICAL_AND . ' ';
             }
 
             // 条件里面不包含'='符号,默认关联上一个join表
@@ -801,9 +801,8 @@ class Statement implements StatementInterface
     protected function getFrom(): string
     {
         $from  = $this->builder->getFrom();
-        $table = $from['table']??'';
 
-        return $table;
+        return $from['table'] ?? '';
     }
 
     /**
@@ -814,9 +813,8 @@ class Statement implements StatementInterface
     protected function getFromAlias(): string
     {
         $from  = $this->builder->getFrom();
-        $alias = $from['alias']??'';
 
-        return $alias;
+        return $from['alias']??'';
     }
 
     /**

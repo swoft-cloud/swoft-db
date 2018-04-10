@@ -18,7 +18,7 @@ use Swoft\Exception\ValidatorException;
 class StringValidator implements ValidatorInterface
 {
     /**
-     * @param string $column    Colunm name
+     * @param string $column    Column name
      * @param mixed  $value     Column value
      * @param array  ...$params Other parameters
      * @throws ValidatorException When validation failures, will throw an Exception

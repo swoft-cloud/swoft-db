@@ -85,12 +85,12 @@ class EntityCollector implements CollectorInterface
     }
 
     /**
-     * @param Entity $objectAnnotationstring
+     * @param Entity $objectAnnotation
      * @param string $className
      */
-    private static function collectEntity(Entity $objectAnnotationstring, string $className)
+    private static function collectEntity(Entity $objectAnnotation, string $className)
     {
-        $instance = $objectAnnotationstring->getInstance();
+        $instance = $objectAnnotation->getInstance();
         self::$entities[$className]['instance'] = $instance;
     }
 

@@ -53,7 +53,7 @@ class ResourceReleaseBeforeListener implements EventHandlerInterface
                 if ($connection instanceof AbstractDbConnection) {
                     $connection->rollback();
 
-                    Log::error(sprintf('%s transaction is not committed or rollbacked', get_class($connection)));
+                    Log::error(sprintf('%s transaction is not committed or rollbacked', \get_class($connection)));
                 }
             }
         }

@@ -211,11 +211,13 @@ class Generator extends AbstractGenerator implements GeneratorInterface
         $method = 'get' . ucfirst($name);
         if (method_exists($this, $method)) {
             return $this->$method();
-        } elseif (method_exists($this, 'set' . ucfirst($name))) {
-            throw new \RunTimeException('the property only access write' . get_class($this) . '::' . $name);
-        } else {
-            throw new \RunTimeException('unknow the property' . get_class($this) . '::' . $name);
         }
+
+        if (method_exists($this, 'set' . ucfirst($name))) {
+            throw new \RunTimeException('the property only access write' . \get_class($this) . '::' . $name);
+        }
+
+        throw new \RunTimeException('unknown the property' . \get_class($this) . '::' . $name);
     }
 
     /**
@@ -233,12 +235,14 @@ class Generator extends AbstractGenerator implements GeneratorInterface
     {
         // TODO add pair method __isset()
         $method = 'set' . ucfirst($name);
-        if (method_exists($this, $method)) {
+        if (\method_exists($this, $method)) {
             return $this->$method($value);
-        } elseif (method_exists($this, 'get' . ucfirst($name))) {
-            throw new \RunTimeException('the property only access read' . get_class($this) . '::' . $name);
-        } else {
-            throw new \RunTimeException('unknow the property' . get_class($this) . '::' . $name);
         }
+
+        if (\method_exists($this, 'get' . ucfirst($name))) {
+            throw new \RunTimeException('the property only access read' . \get_class($this) . '::' . $name);
+        }
+
+        throw new \RunTimeException('unknown the property' . \get_class($this) . '::' . $name);
     }
 }

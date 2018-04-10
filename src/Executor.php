@@ -28,7 +28,7 @@ class Executor
      */
     public static function save($entity): ResultInterface
     {
-        $className = get_class($entity);
+        $className = \get_class($entity);
         list($table, , , $fields) = self::getFields($entity, 1);
         $instance = self::getInstance($className);
 
@@ -57,7 +57,7 @@ class Executor
      */
     public static function delete($entity): ResultInterface
     {
-        $className = get_class($entity);
+        $className = \get_class($entity);
         list($table, , , $fields) = self::getFields($entity, 3);
         $instance = self::getInstance($className);
 
@@ -132,7 +132,7 @@ class Executor
      */
     public static function update($entity): ResultInterface
     {
-        $className = get_class($entity);
+        $className = \get_class($entity);
         list($table, $idColumn, $idValue, $fields) = self::getFields($entity, 2);
 
         if (empty($fields)) {
@@ -179,7 +179,7 @@ class Executor
      */
     public static function find($entity): ResultInterface
     {
-        $className = get_class($entity);
+        $className = \get_class($entity);
         list($tableName, , , $fields) = self::getFields($entity, 3);
         $instance = self::getInstance($className);
 
@@ -429,18 +429,18 @@ class Executor
      */
     private static function getEntityProValue($entity, string $proName)
     {
-        $proName      = explode('_', $proName);
-        $proName      = array_map(function ($word) {
-            return ucfirst($word);
-        }, $proName);
-        $proName      = implode('', $proName);
+        $tmpNodes      = \explode('_', $proName);
+        $tmpNodes      = \array_map(function ($word) {
+            return \ucfirst($word);
+        }, $tmpNodes);
+        $proName      = \implode('', $tmpNodes);
         $getterMethod = 'get' . $proName;
-        if (!method_exists($entity, $getterMethod)) {
-            throw new \InvalidArgumentException('实体对象属性getter方法不存在，properName=' . $proName);
-        }
-        $proValue = $entity->$getterMethod();
 
-        return $proValue;
+        if (!\method_exists($entity, $getterMethod)) {
+            throw new \InvalidArgumentException('Entity object property getter method does not exist, properName=' . $proName);
+        }
+
+        return $entity->$getterMethod();
     }
 
     /**
@@ -453,14 +453,14 @@ class Executor
     {
         // 不是对象
         if (!\is_object($entity) && !class_exists($entity)) {
-            throw new \InvalidArgumentException('实体不是对象');
+            throw new \InvalidArgumentException('Entity is not an object');
         }
 
         // 对象实例不是实体
         $entities  = EntityCollector::getCollector();
         $className = \is_string($entity) ? $entity : \get_class($entity);
         if (!isset($entities[$className]['table']['name'])) {
-            throw new \InvalidArgumentException('对象不是实体对象，className=' . $className);
+            throw new \InvalidArgumentException('Object is not an entity object, className=' . $className);
         }
 
         return self::getTable($className);

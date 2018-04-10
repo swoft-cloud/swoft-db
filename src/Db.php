@@ -53,7 +53,8 @@ class Db
      * @param string $instance
      * @param string $className
      * @param array $resultDecorators
-     * @return \Swoft\Core\ResultInterface
+     * @return \Swoft\Core\ResultInterface|DbResult
+     * @throws DbException
      */
     public static function query(string $sql, array $params = [], string $instance = Pool::INSTANCE, string $className = '', array $resultDecorators = []): ResultInterface
     {
@@ -113,7 +114,7 @@ class Db
         /* @var AbstractDbConnection $connection */
         $connection = self::getTransactionConnection($instance);
         if ($connection === null) {
-            throw new DbException('No transaction needs to be rollbacked');
+            throw new DbException('No transaction needs to be rolled back');
         }
 
         $connection->rollback();
@@ -150,7 +151,7 @@ class Db
             return [$instance, $node];
         }
 
-        if ($type === Db::RETURN_ROWS || $type == Db::RETURN_INSERTID) {
+        if ($type === self::RETURN_ROWS || $type === self::RETURN_INSERTID) {
             return [$instance, Pool::MASTER];
         }
 
@@ -277,7 +278,7 @@ class Db
      * @throws DbException
      * @return array
      */
-    private static function transferParams($params)
+    private static function transferParams($params): array
     {
         $newParams = [];
         foreach ($params as $key => $value) {

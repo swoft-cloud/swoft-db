@@ -43,7 +43,7 @@ class SetGetGenerator
     private $propertyStubFile = 'Property.stub';
 
     /**
-     * @var string $setterStub SettrStub
+     * @var string $setterStub SetterStub
      */
     private $setterStubFile = 'Setter.stub';
 
