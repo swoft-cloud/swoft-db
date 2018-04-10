@@ -55,7 +55,7 @@ class DbHelper
 
     public static function getStatementClassNameByInstance(string $instance): string
     {
-        $pool = DbHelper::getPool($instance, Pool::MASTER);
+        $pool = self::getPool($instance, Pool::MASTER);
         /* @var \Swoft\Db\Pool\Config\DbPoolProperties $poolConfig */
         $poolConfig = $pool->getPoolConfig();
         $driver     = $poolConfig->getDriver();
@@ -87,7 +87,7 @@ class DbHelper
 
     public static function getDriverByInstance(string $instance): string
     {
-        $pool = DbHelper::getPool($instance, Pool::MASTER);
+        $pool = self::getPool($instance, Pool::MASTER);
         /* @var DbPoolProperties $poolConfig */
         $poolConfig = $pool->getPoolConfig();
 
@@ -103,7 +103,7 @@ class DbHelper
     private static function getPoolName(string $group, string $node): string
     {
         $groupNode = explode(self::GROUP_NODE_DELIMITER, $group);
-        if (count($groupNode) == 2) {
+        if (\count($groupNode) == 2) {
             return $group;
         }
 

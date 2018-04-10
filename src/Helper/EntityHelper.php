@@ -111,7 +111,7 @@ class EntityHelper
 
         // 参数值类型转换
         if ($type !== null) {
-            $value = EntityHelper::trasferTypes($type, $value);
+            $value = self::trasferTypes($type, $value);
         }
 
         return [$key, $value];

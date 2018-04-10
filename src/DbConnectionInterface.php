@@ -39,7 +39,7 @@ interface DbConnectionInterface
     /**
      * @return int
      */
-    public function getAffectedRows();
+    public function getAffectedRows(): int;
 
     /**
      * @return mixed
@@ -64,7 +64,7 @@ interface DbConnectionInterface
     public function selectDb(string $db);
 
     /**
-     * Destory
+     * Destroy
      */
-    public function destory();
+    public function destroy();
 }

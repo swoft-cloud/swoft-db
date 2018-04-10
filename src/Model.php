@@ -14,7 +14,7 @@ use Swoft\Core\ResultInterface;
 use Swoft\Db\Bean\Collector\EntityCollector;
 
 /**
- * Activerecord
+ * ActiveRecord
  */
 class Model implements \ArrayAccess, \Iterator, Arrayable
 {
@@ -257,7 +257,7 @@ class Model implements \ArrayAccess, \Iterator, Arrayable
      *
      * @return \Swoft\Db\Model
      */
-    public function fill(array $attributes)
+    public function fill(array $attributes): self
     {
         foreach ($attributes as $name => $value) {
             $methodName = sprintf('set%s', ucfirst($name));
@@ -288,7 +288,7 @@ class Model implements \ArrayAccess, \Iterator, Arrayable
         $data = [];
         foreach ($columns as $propertyName => $column) {
             $methodName = sprintf('get%s', ucfirst($propertyName));
-            if (!method_exists($this, $methodName) || !isset($column['column'])) {
+            if (!isset($column['column']) || !\method_exists($this, $methodName)) {
                 continue;
             }
 
@@ -330,9 +330,8 @@ class Model implements \ArrayAccess, \Iterator, Arrayable
     public function offsetGet($offset)
     {
         $data  = $this->toArray();
-        $value = $data[$offset]??null;
 
-        return $value;
+        return $data[$offset]??null;
     }
 
     /**
@@ -391,7 +390,7 @@ class Model implements \ArrayAccess, \Iterator, Arrayable
      * @return boolean The return value will be casted to boolean and then evaluated.
      * Returns true on success or false on failure.
      */
-    public function valid()
+    public function valid(): bool
     {
         return ($this->current() !== false);
     }

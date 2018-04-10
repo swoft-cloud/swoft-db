@@ -104,7 +104,7 @@ class EntityCommand
     private function parseDatabaseCommand(string &$database)
     {
         if (input()->hasSOpt('d') || input()->hasLOpt('database')) {
-            $database = input()->hasSOpt('d') ? input()->getShortOpt('d') : input()->getLongOpt('database');
+            $database = (string)\input()->getSameOpt(['d','database']);
         }
     }
 

@@ -20,7 +20,7 @@ class Query
      *
      * @return QueryBuilder
      */
-    public static function table(string $tableName, string $alias = null)
+    public static function table(string $tableName, string $alias = null): QueryBuilder
     {
         $query = new QueryBuilder();
         $query = $query->table($tableName, $alias);

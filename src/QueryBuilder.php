@@ -279,7 +279,7 @@ class QueryBuilder implements QueryBuilderInterface
      * @param array $values
      *
      * @return ResultInterface
-     * @throws DbException
+     * @throws MysqlException
      */
     public function insert(array $values): ResultInterface
     {
@@ -294,7 +294,7 @@ class QueryBuilder implements QueryBuilderInterface
      * @param array $rows
      *
      * @return ResultInterface
-     * @throws DbException
+     * @throws MysqlException
      */
     public function batchInsert(array $rows): ResultInterface
     {
@@ -314,7 +314,7 @@ class QueryBuilder implements QueryBuilderInterface
      * @param array $values
      *
      * @return ResultInterface
-     * @throws DbException
+     * @throws MysqlException
      */
     public function update(array $values): ResultInterface
     {
@@ -359,8 +359,9 @@ class QueryBuilder implements QueryBuilderInterface
      * @param string $alias
      *
      * @return QueryBuilder
+     * @throws DbException
      */
-    public function table(string $table, string $alias = null)
+    public function table(string $table, string $alias = null): self
     {
         $this->table['table'] = $this->getTableNameByClassName($table);
         $this->table['alias'] = $alias;
@@ -467,7 +468,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return \Swoft\Db\QueryBuilder
      */
-    public function condition(array $condition)
+    public function condition(array $condition): self
     {
         foreach ($condition as $key => $value) {
             if (\is_int($key)) {
@@ -487,7 +488,7 @@ class QueryBuilder implements QueryBuilderInterface
     public function operatorCondition(array $condition)
     {
         foreach ($condition as $column => $value) {
-            if (is_array($value)) {
+            if (\is_array($value)) {
                 $this->whereIn($column, $value);
                 continue;
             }
@@ -880,25 +881,23 @@ class QueryBuilder implements QueryBuilderInterface
      * @throws \Swoft\Db\Exception\DbException
      * @return $this
      */
-    public function setParameters(array $parameters)
+    public function setParameters(array $parameters): self
     {
         // 循环设置每个参数
         foreach ($parameters as $index => $parameter) {
-            $key   = null;
-            $type  = null;
-            $value = null;
+            $key = $type = $value = null;
 
             if (\count($parameter) >= 3) {
                 list($key, $value, $type) = $parameter;
             } elseif (\count($parameter) == 2) {
                 list($key, $value) = $parameter;
-            } elseif (!is_array($parameter)) {
+            } elseif (!\is_array($parameter)) {
                 $key   = $index;
                 $value = $parameter;
             }
 
             if ($key === null || $value === null) {
-                App::warning('sql参数设置格式错误，parameters=' . json_encode($parameters));
+                App::warning('Sql parameter formatting error, parameters=' . \json_encode($parameters));
                 continue;
             }
             $this->setParameter($key, $value, $type);
@@ -911,7 +910,7 @@ class QueryBuilder implements QueryBuilderInterface
      * @param \Closure $closure
      * @return $this
      */
-    public function addDecorator(\Closure $closure)
+    public function addDecorator(\Closure $closure): self
     {
         $this->decorators[] = $closure;
         return $this;
@@ -920,7 +919,7 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * @return $this
      */
-    public function clearDecorators()
+    public function clearDecorators(): self
     {
         $this->decorators = [];
         return $this;
@@ -930,7 +929,7 @@ class QueryBuilder implements QueryBuilderInterface
      * @param array $decorators
      * @return $this
      */
-    public function setDecorators(array $decorators)
+    public function setDecorators(array $decorators): self
     {
         $this->decorators = $decorators;
         return $this;
@@ -1024,7 +1023,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return QueryBuilder
      */
-    public function selectDb(string $db)
+    public function selectDb(string $db): self
     {
         $this->db = $db;
 
@@ -1036,7 +1035,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return QueryBuilder
      */
-    public function selectNode(string $node = Pool::MASTER)
+    public function selectNode(string $node = Pool::MASTER): self
     {
         $this->node = $node;
 
@@ -1048,7 +1047,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return QueryBuilder
      */
-    public function className(string $className)
+    public function className(string $className): self
     {
         $this->className = $className;
 
@@ -1060,7 +1059,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return QueryBuilder
      */
-    public function selectInstance(string $instance)
+    public function selectInstance(string $instance): self
     {
         $this->instance = $instance;
 
@@ -1072,7 +1071,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return QueryBuilder
      */
-    public function force(bool $master = true)
+    public function force(bool $master = true): self
     {
         if ($master) {
             $this->node = Pool::MASTER;
@@ -1168,7 +1167,7 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * @return string
      */
-    private function getInstanceName()
+    private function getInstanceName(): string
     {
         return sprintf('%s.%s.%s', $this->instance, $this->node, $this->db);
     }
@@ -1190,11 +1189,10 @@ class QueryBuilder implements QueryBuilderInterface
 
         $entities = EntityCollector::getCollector();
         if (!isset($entities[$tableName]['table']['name'])) {
-            throw new DbException('类不是实体，className=' . $tableName);
+            throw new DbException('Class is not an entity，className=' . $tableName);
         }
-        $name = $entities[$tableName]['table']['name'];
 
-        return $name;
+        return $entities[$tableName]['table']['name'];
     }
 
     /**
@@ -1204,11 +1202,10 @@ class QueryBuilder implements QueryBuilderInterface
     private function getTableName(): string
     {
         if (empty($this->table)) {
-            throw new MysqlException('Table name must be setted!');
+            throw new MysqlException('Table name must be setting!');
         }
-        $table = $this->table['table'];
 
-        return $table;
+        return $this->table['table'];
     }
 
     /**
@@ -1258,7 +1255,7 @@ class QueryBuilder implements QueryBuilderInterface
     public function getFrom(): array
     {
         if (empty($this->table)) {
-            throw new MysqlException('Table name must be setted!');
+            throw new MysqlException('Table name must be set!');
         }
 
         return $this->table;

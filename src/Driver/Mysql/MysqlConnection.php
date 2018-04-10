@@ -25,7 +25,7 @@ class MysqlConnection extends AbstractDbConnection
     /**
      * @var Mysql
      */
-    private $connection = null;
+    private $connection;
 
     /**
      * @var string
@@ -211,9 +211,9 @@ class MysqlConnection extends AbstractDbConnection
     }
 
     /**
-     * Destory sql
+     * Destroy sql
      */
-    public function destory()
+    public function destroy()
     {
         $this->sql = '';
     }
@@ -230,9 +230,9 @@ class MysqlConnection extends AbstractDbConnection
         }
 
         $newParams = [];
-        foreach ($params as $key => &$value) {
+        foreach ($params as $key => $value) {
             $value = "'{$value}'";
-            if (is_int($key)) {
+            if (\is_int($key)) {
                 $key = sprintf('?%d', $key);
             }
             $newParams[$key] = $value;
