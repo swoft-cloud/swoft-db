@@ -330,7 +330,7 @@ class Executor
      *
      * @throws ValidatorException
      */
-    private function validate(array $columnAry, $propertyValue)
+    private static function validate(array $columnAry, $propertyValue)
     {
         // 验证信息
         $column    = $columnAry['column'];
@@ -380,7 +380,7 @@ class Executor
      * @return mixed
      * @throws \InvalidArgumentException
      */
-    private function getEntityProValue($entity, string $proName)
+    private static function getEntityProValue($entity, string $proName)
     {
         $proName      = explode('_', $proName);
         $proName      = array_map(function ($word) {
