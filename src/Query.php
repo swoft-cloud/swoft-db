@@ -16,7 +16,7 @@ class Query
     public static function table(string $tableName, string $alias = null)
     {
         $query = new QueryBuilder();
-        $query = $query->table($tableName);
+        $query = $query->table($tableName, $alias);
 
         return $query;
     }

@@ -3,9 +3,9 @@
 namespace Swoft\Db\Test\Cases\Mysql;
 
 use Swoft\Db\Query;
+use Swoft\Db\Test\Cases\AbstractMysqlCase;
 use Swoft\Db\Test\Testing\Entity\OtherUser;
 use Swoft\Db\Test\Testing\Entity\User;
-use Swoft\Db\Test\Cases\AbstractMysqlCase;
 
 /**
  * QueryTest
@@ -136,7 +136,7 @@ class QueryBuildTest extends AbstractMysqlCase
             'age'         => mt_rand(1, 100),
         ];
         $result = Query::table('user2')->insert($data)->getResult();
-        $user2 = Query::table('user2')->where('id', $result)->limit(1)->get()->getResult();
+        $user2  = Query::table('user2')->where('id', $result)->limit(1)->get()->getResult();
         $this->assertEquals($user2['id'], $result);
     }
 
@@ -163,9 +163,16 @@ class QueryBuildTest extends AbstractMysqlCase
         $this->assertEquals($user2['id'], $userid);
     }
 
+    public function testSelectinstanceByCo()
+    {
+        go(function () {
+            $this->testSelectinstance();
+        });
+    }
+
     public function testCondtionAndByF1()
     {
-        $age = mt_rand(1, 100);
+        $age    = mt_rand(1, 100);
         $data   = [
             'name'        => 'nameQuery',
             'sex'         => 1,
@@ -173,14 +180,21 @@ class QueryBuildTest extends AbstractMysqlCase
             'age'         => $age,
         ];
         $userid = Query::table(User::class)->insert($data)->getResult();
-        $user = Query::table(User::class)->condition(['name' => 'nameQuery', 'age'=> $age])->limit(1)->get()->getResult();
+        $user   = Query::table(User::class)->condition(['name' => 'nameQuery', 'age' => $age])->limit(1)->get()->getResult();
 
         $this->assertEquals('nameQuery', $user['name']);
         $this->assertEquals($age, $user['age']);
 
-        $user2 = Query::table(User::class)->where('id', $userid)->condition(['name' => 'nameQuery', 'age'=> $age])->limit(1)->get()->getResult();
+        $user2 = Query::table(User::class)->where('id', $userid)->condition(['name' => 'nameQuery', 'age' => $age])->limit(1)->get()->getResult();
         $this->assertEquals('nameQuery', $user2['name']);
         $this->assertEquals($age, $user2['age']);
+    }
+
+    public function testCondtionAndByF1ByCo()
+    {
+        go(function () {
+            $this->testCondtionAndByF1();
+        });
     }
 
     /**
@@ -194,35 +208,61 @@ class QueryBuildTest extends AbstractMysqlCase
         $this->assertCount(2, $users);
     }
 
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testCondtion2AndByF1ByCo(array $ids)
+    {
+        go(function () use ($ids) {
+            $this->testCondtion2AndByF1($ids);
+        });
+    }
+
     public function testCondtion1AndByF3()
     {
-        $age = mt_rand(1, 100);
-        $data   = [
+        $age  = mt_rand(1, 100);
+        $data = [
             'name'        => 'nameQuery',
             'sex'         => 1,
             'description' => 'this my desc instance',
-            'age'         => $age-1,
+            'age'         => $age - 1,
         ];
 
         $userid = Query::table(User::class)->insert($data)->getResult();
-        $user = Query::table(User::class)->condition(['age', '<',$age])->limit(1)->orderBy('id', 'desc')->get()->getResult();
+        $user   = Query::table(User::class)->condition(['age', '<', $age])->andWhere('id', $userid)->limit(1)->orderBy('id', 'desc')->get()->getResult();
         $this->assertEquals($userid, $user['id']);
+    }
+
+    public function testCondtion1AndByF3ByCo()
+    {
+        go(function () {
+            $this->testCondtion1AndByF3();
+        });
     }
 
     public function testCondtion2AndByF3()
     {
-        $age = mt_rand(1, 100);
-        $data   = [
+        $age  = mt_rand(1, 100);
+        $data = [
             'name'        => 'nameQuery',
             'sex'         => 1,
             'description' => 'this my desc instance',
-            'age'         => $age-1,
+            'age'         => $age - 1,
         ];
 
         $userid = Query::table(User::class)->insert($data)->getResult();
-        $users = Query::table(User::class)->condition(['age', 'between', $age, $age+1])->orderBy('id', 'desc')->get()->getResult();
+        $users  = Query::table(User::class)->condition(['age', 'between', $age, $age + 1])->orderBy('id', 'desc')->get()->getResult();
 
         $this->assertTrue(count($users) > 1);
+    }
+
+    public function testCondtion2AndByF3ByCo()
+    {
+        go(function (){
+            $this->testCondtion2AndByF3();
+        });
     }
 
     /**
@@ -232,18 +272,30 @@ class QueryBuildTest extends AbstractMysqlCase
      */
     public function testCondtion3AndByF3(int $id)
     {
-        $age = mt_rand(1, 100);
-        $data   = [
+        $age  = mt_rand(1, 100);
+        $data = [
             'name'        => 'nameQuery',
             'sex'         => 1,
             'description' => 'this my desc instance',
-            'age'         => $age-1,
+            'age'         => $age - 1,
         ];
 
         $userid = Query::table(User::class)->insert($data)->getResult();
-        $users = Query::table(User::class)->condition(['age', 'not between', $age, $age+1])->orderBy('id', 'desc')->get()->getResult();
+        $users  = Query::table(User::class)->condition(['age', 'not between', $age, $age + 1])->orderBy('id', 'desc')->get()->getResult();
 
         $this->assertTrue(count($users) > 1);
+    }
+
+    /**
+     * @dataProvider mysqlProvider
+     *
+     * @param int $id
+     */
+    public function testCondtion3AndByF3ByCo(int $id)
+    {
+        go(function ()use ($id){
+            $this->testCondtion3AndByF3($id);
+        });
     }
 
     /**
@@ -263,10 +315,34 @@ class QueryBuildTest extends AbstractMysqlCase
      *
      * @param array $ids
      */
+    public function testCondtion4AndByF3ByCo(array $ids)
+    {
+        go(function ()use ($ids){
+            $this->testCondtion4AndByF3($ids);
+        });
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
     public function testCondtion5AndByF3(array $ids)
     {
         $users = Query::table(User::class)->condition(['id', 'not in', $ids])->orderBy('id', 'desc')->get()->getResult();
 
         $this->assertTrue(count($users) > 2);
+    }
+
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testCondtion5AndByF3ByCo(array $ids)
+    {
+        go(function ()use ($ids){
+            $this->testCondtion5AndByF3($ids);
+        });
     }
 }

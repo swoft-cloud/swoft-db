@@ -3,6 +3,7 @@
 namespace Swoft\Db\Helper;
 
 use Swoft\Db\Bean\Collector\EntityCollector;
+use Swoft\Db\Exception\DbException;
 use Swoft\Db\Types;
 
 /**
@@ -83,5 +84,43 @@ class EntityHelper
         }
 
         return $value;
+    }
+
+    /**
+     * @param mixed  $key
+     * @param mixed  $value
+     * @param string $type
+     *
+     * @throws DbException
+     *
+     * @return array
+     */
+    public static function transferParameter($key, $value, $type): array
+    {
+        if (!\is_int($key) && !\is_string($key)) {
+            throw new DbException('Key must to be int Or string! ');
+        }
+        $key = self::formatParamsKey($key);
+
+        // 参数值类型转换
+        if ($type !== null) {
+            $value = EntityHelper::trasferTypes($type, $value);
+        }
+
+        return [$key, $value];
+    }
+
+    /**
+     * @param mixed $key
+     *
+     * @return string
+     */
+    private static function formatParamsKey($key): string
+    {
+        if (\is_string($key) && strpos($key, ':') === false) {
+            return ':' . $key;
+        }
+
+        return $key;
     }
 }

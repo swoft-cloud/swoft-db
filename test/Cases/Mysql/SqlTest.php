@@ -62,6 +62,31 @@ class SqlTest extends AbstractMysqlCase
      *
      * @param $id
      */
+    public function testSelect2($id)
+    {
+        $result = Db::query('select * from user where id=:id and name=:name', ['id' => $id, ':name'=>'name'])->getResult();
+        $result2 = Db::query('select * from user where id=? and name=?', [$id, 'name'])->getResult();
+        $this->assertEquals($id, $result[0]['id']);
+        $this->assertEquals($id, $result2[0]['id']);
+    }
+
+    /**
+     * @dataProvider mysqlProvider
+     *
+     * @param $id
+     */
+    public function testSelect2ByCo($id)
+    {
+        go(function ()use ($id){
+            $this->testSelect2($id);
+        });
+    }
+
+    /**
+     * @dataProvider mysqlProvider
+     *
+     * @param $id
+     */
     public function testDelete($id)
     {
         $result = Db::query('delete from user where id=' . $id)->getResult();
