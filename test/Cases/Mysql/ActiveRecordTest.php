@@ -430,4 +430,15 @@ class ActiveRecordTest extends AbstractMysqlCase
         $this->assertFalse(User::exist('NotExistId')->getResult());
     }
 
+    /**
+     * @dataProvider mysqlProviders
+     *
+     * @param array $ids
+     */
+    public function testCount(array $ids)
+    {
+        $count = User::count('id', ['id' => $ids])->getResult();
+        $this->assertEquals(2, $count);
+    }
+
 }

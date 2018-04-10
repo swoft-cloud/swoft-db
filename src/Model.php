@@ -149,11 +149,23 @@ class Model implements \ArrayAccess, \Iterator, Arrayable
      * Determine if Entity exist ?
      *
      * @param mixed $id
+     *
      * @return ResultInterface
      */
     public static function exist($id): ResultInterface
     {
         return Executor::exist(static::class, $id);
+    }
+
+    /**
+     * @param string $column
+     * @param array  $condition
+     *
+     * @return ResultInterface
+     */
+    public static function count(string $column = '*', array $condition = []): ResultInterface
+    {
+        return Executor::count(static::class, $column, $condition);
     }
 
     /**

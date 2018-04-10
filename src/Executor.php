@@ -185,23 +185,40 @@ class Executor
     }
 
     /**
-     * @param $className
-     * @param $id
-     * @return \Swoft\Core\ResultInterface
+     * @param string $className
+     * @param mixed  $id
+     *
+     * @return ResultInterface
      */
-    public static function exist($className, $id): ResultInterface
+    public static function exist(string $className, $id): ResultInterface
     {
         list($tableName, , $idColumn) = self::getTable($className);
         $instance = self::getInstance($className);
-        $query = Query::table($tableName)
-            ->where($idColumn, $id)
-            ->limit(1)
-            ->selectInstance($instance)
-            ->addDecorator(function ($result) {
-                return (bool)$result;
-            });
+        $query = Query::table($tableName)->where($idColumn, $id)->limit(1)->selectInstance($instance)->addDecorator(function ($result) {
+            return (bool)$result;
+        });
 
         return $query->get([$idColumn]);
+    }
+
+    /**
+     * @param string $className
+     * @param string $column
+     * @param array  $condition
+     *
+     * @return ResultInterface
+     */
+    public static function count(string $className, string $column, array $condition): ResultInterface
+    {
+        $instance = self::getInstance($className);
+        $query = Query::table($className)->selectInstance($instance)->condition($condition)->addDecorator(function ($result){
+            if(isset($result['count'])){
+                return $result['count'];
+            }
+            return 0;
+        });
+
+        return $query->count($column);
     }
 
     /**
