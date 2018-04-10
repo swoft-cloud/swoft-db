@@ -1,21 +1,28 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Bean\Wrapper;
 
 use Swoft\Bean\Wrapper\AbstractWrapper;
-use Swoft\Db\Bean\Annotation\Builder;
+use Swoft\Db\Bean\Annotation\Statement;
 
 /**
- * BuilderWrapper
+ * StatementWrapper
  */
-class BuilderWrapper extends AbstractWrapper
+class StatementWrapper extends AbstractWrapper
 {
     /**
      * @var array
      */
     protected $classAnnotations
         = [
-            Builder::class,
+            Statement::class,
         ];
 
     /**
@@ -25,7 +32,7 @@ class BuilderWrapper extends AbstractWrapper
      */
     public function isParseClassAnnotations(array $annotations): bool
     {
-        return isset($annotations[Builder::class]);
+        return isset($annotations[Statement::class]);
     }
 
     /**

@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Entity;
 
 use Swoft\App;
@@ -36,7 +43,7 @@ class SetGetGenerator
     private $propertyStubFile = 'Property.stub';
 
     /**
-     * @var string $setterStub SettrStub
+     * @var string $setterStub SetterStub
      */
     private $setterStubFile = 'Setter.stub';
 

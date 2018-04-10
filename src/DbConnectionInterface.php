@@ -1,11 +1,18 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db;
 
 /**
  * Database interface
  */
-interface DbConnectInterface
+interface DbConnectionInterface
 {
     /**
      * @param string $sql
@@ -32,7 +39,7 @@ interface DbConnectInterface
     /**
      * @return int
      */
-    public function getAffectedRows();
+    public function getAffectedRows(): int;
 
     /**
      * @return mixed
@@ -50,8 +57,14 @@ interface DbConnectInterface
     public function commit();
 
     /**
-     * Destory
+     * @param string $db
+     *
+     * @return void
      */
-    public function destory();
+    public function selectDb(string $db);
 
+    /**
+     * Destroy
+     */
+    public function destroy();
 }

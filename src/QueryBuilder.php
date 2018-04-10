@@ -1,21 +1,26 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db;
 
 use Swoft\App;
-use Swoft\Core\RequestContext;
 use Swoft\Db\Bean\Collector\EntityCollector;
 use Swoft\Db\Exception\DbException;
 use Swoft\Db\Exception\MysqlException;
 use Swoft\Db\Helper\DbHelper;
 use Swoft\Db\Helper\EntityHelper;
-use Swoft\Helper\PoolHelper;
-use Swoft\Pool\ConnectionInterface;
+use Swoft\Core\ResultInterface;
 
 /**
  * 查询器
  */
-abstract class QueryBuilder implements QueryBuilderInterface
+class QueryBuilder implements QueryBuilderInterface
 {
     /**
      * 升序
@@ -133,23 +138,28 @@ abstract class QueryBuilder implements QueryBuilderInterface
     const IS_NOT = 'IS NOT';
 
     /**
-     * SQL语句
-     */
-    use Statement;
-
-    /**
      * 插入表名
      *
      * @var string
      */
-    private $insert;
+    private $insert = '';
+
+    /**
+     * @var array
+     */
+    private $insertValues = [];
 
     /**
      * 更新表名
      *
      * @var string
      */
-    private $update;
+    private $update = '';
+
+    /**
+     * @var array
+     */
+    private $updateValues = [];
 
     /**
      * 是否是delete
@@ -171,7 +181,6 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * @var array
      */
     private $set = [];
-
 
     /**
      * from语句
@@ -230,146 +239,132 @@ abstract class QueryBuilder implements QueryBuilderInterface
     protected $parameters = [];
 
     /**
-     * sql语句
+     * @var array
+     */
+    protected $table = [];
+
+    /**
+     * @var string
+     */
+    protected $instance = Pool::INSTANCE;
+
+    /**
+     * @var string
+     */
+    protected $node = '';
+
+    /**
+     * Selected database
      *
      * @var string
      */
-    protected $sql = '';
+    protected $db = '';
 
     /**
-     * @var AbstractDbConnection
+     * @var array
      */
-    protected $connection;
+    protected $aggregate = [];
+
+    /**
+     * @var array
+     */
+    protected $decorators = [];
 
     /**
      * @var string
      */
-    protected $lastSql;
+    protected $className = '';
 
     /**
-     * @var string
-     */
-    protected $table;
-
-    /**
-     * @var string
-     */
-    protected $group = Pool::GROUP;
-
-    /**
-     * QueryBuilder constructor.
+     * @param array $values
      *
-     * @param string              $group
-     * @param string              $sql
-     * @param string              $table
-     * @param ConnectionInterface $connection
+     * @return ResultInterface
+     * @throws MysqlException
      */
-    public function __construct(string $group = Pool::GROUP, string $sql = '', string $table = null, ConnectionInterface $connection = null)
+    public function insert(array $values): ResultInterface
     {
-        if ($table != null) {
-            $this->from($table);
+        $this->insert                   = $this->getTableName();
+        $this->insertValues['columns']  = array_keys($values);
+        $this->insertValues['values'][] = array_values($values);
+
+        return $this->execute();
+    }
+
+    /**
+     * @param array $rows
+     *
+     * @return ResultInterface
+     * @throws MysqlException
+     */
+    public function batchInsert(array $rows): ResultInterface
+    {
+        $this->insert = $this->getTableName();
+        foreach ($rows as $row) {
+            ksort($row);
+            if (!isset($this->insertValues['columns'])) {
+                $this->insertValues['columns'] = array_keys($row);
+            }
+            $this->insertValues['values'][] = array_values($row);
         }
-        $this->sql   = $sql;
-        $this->table = $table;
-        $this->group = $group;
 
-        $this->connection = $connection;
+        return $this->execute();
     }
 
     /**
-     * insert语句
+     * @param array $values
      *
-     * @param string $tableName
-     *
-     * @return QueryBuilder
-     * @throws \Swoft\Db\Exception\DbException
+     * @return ResultInterface
+     * @throws MysqlException
      */
-    public function insert(string $tableName = null): QueryBuilder
+    public function update(array $values): ResultInterface
     {
-        $this->insert = $this->getTableName($tableName);
+        $this->update       = $this->getTableName();
+        $this->updateValues = $values;
 
-        return $this;
-    }
-
-    /**
-     * update语句
-     *
-     * @param string $tableName
-     *
-     * @return QueryBuilder
-     * @throws \Swoft\Db\Exception\DbException
-     */
-    public function update(string $tableName = null): QueryBuilder
-    {
-        $this->update = $this->getTableName($tableName);
-
-        return $this;
+        return $this->execute();
     }
 
     /**
      * delete语句
      *
-     * @return QueryBuilder
+     * @return ResultInterface
      */
-    public function delete(): QueryBuilder
+    public function delete(): ResultInterface
     {
         $this->delete = true;
 
-        return $this;
+        return $this->execute();
     }
 
     /**
-     * select语句
+     * @param array $columns
      *
-     * @param mixed $column
+     * @return ResultInterface
+     */
+    public function get(array $columns = ['*']): ResultInterface
+    {
+        foreach ($columns as $column => $alias) {
+            if (\is_int($column)) {
+                $this->select[$alias] = null;
+                continue;
+            }
+            $this->select[$column] = $alias;
+        }
+
+        return $this->execute();
+    }
+
+    /**
+     * @param string $table
      * @param string $alias
      *
      * @return QueryBuilder
+     * @throws DbException
      */
-    public function select($column, string $alias = null): QueryBuilder
+    public function table(string $table, string $alias = null): self
     {
-        if (is_array($column)) {
-            return $this->selects($column);
-        }
-        $this->select[$column] = $alias;
-
-        return $this;
-    }
-
-    /**
-     * select语句
-     *
-     * @param array $columns
-     *
-     * @return QueryBuilder
-     */
-    public function selects(array $columns): QueryBuilder
-    {
-        foreach ($columns as $key => $column) {
-            if (\is_int($key)) {
-                $this->select[$column] = null;
-                continue;
-            }
-            $this->select[$key] = $column;
-        }
-
-        return $this;
-    }
-
-
-    /**
-     * from语句
-     *
-     * @param string      $table
-     * @param string|null $alias
-     *
-     * @return QueryBuilder
-     * @throws \Swoft\Db\Exception\DbException
-     */
-    public function from(string $table, string $alias = null): QueryBuilder
-    {
-        $this->from['table'] = $this->getTableNameByClassName($table);
-        $this->from['alias'] = $alias;
+        $this->table['table'] = $this->getTableNameByClassName($table);
+        $this->table['alias'] = $alias;
 
         return $this;
     }
@@ -443,6 +438,98 @@ abstract class QueryBuilder implements QueryBuilderInterface
         $this->criteria($this->where, $column, $value, $operator, $connector);
 
         return $this;
+    }
+
+    /**
+     * The $condition is array
+     *
+     * Format `['column1' => value1, 'column2' => value2, ...]`
+     * - ['name' => 'swoft', 'status' => 1] => ('name'='swoft' and 'status' = 1)
+     * - ['id' => [1, 2, 3], 'status' => 1] => ('id' in (1, 2, 3) and 'status' = 1)
+     *
+     * Format `[operator, operand1, operand2, ...]`
+     * - ['id', '>', 12]
+     * - ['id', '<', 13]
+     * - ['id', '>=', 13]
+     * - ['id', '<=', 13]
+     * - ['id', '<>', 13]
+     *
+     * - ['id', 'in', [1, 2, 3]]
+     * - ['id', 'not in', [1, 2, 3]]
+     *
+     * - ['id', 'between', 2, 3]
+     * - ['id', 'not between', 2, 3]
+     *
+     * - ['name', 'like', '%swoft%']
+     * - ['name', 'not like', '%swoft%']
+     *
+     *
+     * @param array  $condition
+     *
+     * @return \Swoft\Db\QueryBuilder
+     */
+    public function condition(array $condition): self
+    {
+        foreach ($condition as $key => $value) {
+            if (\is_int($key)) {
+                $this->andCondition($condition);
+                break;
+            }
+            $this->operatorCondition($condition);
+            break;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array $condition
+     */
+    public function operatorCondition(array $condition)
+    {
+        foreach ($condition as $column => $value) {
+            if (\is_array($value)) {
+                $this->whereIn($column, $value);
+                continue;
+            }
+            $this->andWhere($column, $value);
+        }
+    }
+
+    /**
+     * @param array $condition
+     */
+    public function andCondition(array $condition)
+    {
+        list(, $operator) = $condition;
+        $operator = strtoupper($operator);
+        switch ($operator) {
+            case self::OPERATOR_EQ:
+            case self::OPERATOR_GT:
+            case self::OPERATOR_NE:
+            case self::OPERATOR_LT:
+            case self::OPERATOR_LTE:
+            case self::OPERATOR_GTE:
+                list($column, $operator, $value) = $condition;
+                $this->andWhere($column, $value, $operator);
+                break;
+            case self::IN:
+                list($column, $operator, $value) = $condition;
+                $this->whereIn($column, $value, $operator);
+                break;
+            case self::NOT_IN:
+                list($column, $operator, $value) = $condition;
+                $this->whereNotIn($column, $value, $operator);
+                break;
+            case self::BETWEEN:
+                list($column, , $min, $max) = $condition;
+                $this->whereBetween($column, $min, $max);
+                break;
+            case self::NOT_BETWEEN:
+                list($column, , $min, $max) = $condition;
+                $this->whereNotBetween($column, $min, $max);
+                break;
+        }
     }
 
     /**
@@ -543,7 +630,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      */
     public function whereBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
-        $this->criteria($this->where, $column, array($min, $max), self::BETWEEN, $connector);
+        $this->criteria($this->where, $column, [$min, $max], self::BETWEEN, $connector);
 
         return $this;
     }
@@ -560,7 +647,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      */
     public function whereNotBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
-        $this->criteria($this->where, $column, array($min, $max), self::NOT_BETWEEN, $connector);
+        $this->criteria($this->where, $column, [$min, $max], self::NOT_BETWEEN, $connector);
 
         return $this;
     }
@@ -658,7 +745,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      */
     public function havingBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
-        $this->criteria($this->having, $column, array($min, $max), self::BETWEEN, $connector);
+        $this->criteria($this->having, $column, [$min, $max], self::BETWEEN, $connector);
 
         return $this;
     }
@@ -675,7 +762,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      */
     public function havingNotBetween(string $column, $min, $max, string $connector = self::LOGICAL_AND): QueryBuilder
     {
-        $this->criteria($this->having, $column, array($min, $max), self::NOT_BETWEEN, $connector);
+        $this->criteria($this->having, $column, [$min, $max], self::NOT_BETWEEN, $connector);
 
         return $this;
     }
@@ -712,10 +799,10 @@ abstract class QueryBuilder implements QueryBuilderInterface
      */
     public function groupBy(string $column, string $order = null): QueryBuilder
     {
-        $this->groupBy[] = array(
+        $this->groupBy[] = [
             'column' => $column,
             'order'  => $order,
-        );
+        ];
 
         return $this;
     }
@@ -730,10 +817,10 @@ abstract class QueryBuilder implements QueryBuilderInterface
      */
     public function orderBy(string $column, string $order = self::ORDER_BY_ASC): QueryBuilder
     {
-        $this->orderBy[] = array(
+        $this->orderBy[] = [
             'column' => $column,
             'order'  => $order,
-        );
+        ];
 
         return $this;
     }
@@ -755,32 +842,6 @@ abstract class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * set语句
-     *
-     * @param mixed $column
-     * @param mixed $value
-     *
-     * @return QueryBuilder
-     */
-    public function set($column, $value = null): QueryBuilder
-    {
-        if (!\is_array($column)) {
-            $this->set[] = array(
-                'column' => $column,
-                'value'  => $value,
-            );
-
-            return $this;
-        }
-
-        foreach ($column as $columnName => $columnValue) {
-            $this->set($columnName, $columnValue);
-        }
-
-        return $this;
-    }
-
-    /**
      * 设置参数
      *
      * @param mixed  $key   参数名称整数和字符串，(?n|:name)
@@ -792,7 +853,7 @@ abstract class QueryBuilder implements QueryBuilderInterface
      */
     public function setParameter($key, $value, $type = null): QueryBuilder
     {
-        list($key, $value) = $this->transferParameter($key, $value, $type);
+        list($key, $value) = EntityHelper::transferParameter($key, $value, $type);
         $this->parameters[$key] = $value;
 
         return $this;
@@ -820,25 +881,23 @@ abstract class QueryBuilder implements QueryBuilderInterface
      * @throws \Swoft\Db\Exception\DbException
      * @return $this
      */
-    public function setParameters(array $parameters)
+    public function setParameters(array $parameters): self
     {
         // 循环设置每个参数
         foreach ($parameters as $index => $parameter) {
-            $key   = null;
-            $type  = null;
-            $value = null;
+            $key = $type = $value = null;
 
             if (\count($parameter) >= 3) {
                 list($key, $value, $type) = $parameter;
             } elseif (\count($parameter) == 2) {
                 list($key, $value) = $parameter;
-            } elseif (!is_array($parameter)) {
+            } elseif (!\is_array($parameter)) {
                 $key   = $index;
                 $value = $parameter;
             }
 
             if ($key === null || $value === null) {
-                App::warning('sql参数设置格式错误，parameters=' . json_encode($parameters));
+                App::warning('Sql parameter formatting error, parameters=' . \json_encode($parameters));
                 continue;
             }
             $this->setParameter($key, $value, $type);
@@ -848,11 +907,40 @@ abstract class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * @return \Swoft\Db\AbstractDbConnection
+     * @param \Closure $closure
+     * @return $this
      */
-    public function getConnection(): \Swoft\Db\AbstractDbConnection
+    public function addDecorator(\Closure $closure): self
     {
-        return $this->connection;
+        $this->decorators[] = $closure;
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function clearDecorators(): self
+    {
+        $this->decorators = [];
+        return $this;
+    }
+
+    /**
+     * @param array $decorators
+     * @return $this
+     */
+    public function setDecorators(array $decorators): self
+    {
+        $this->decorators = $decorators;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDecorators(): array
+    {
+        return $this->decorators;
     }
 
     /**
@@ -866,10 +954,10 @@ abstract class QueryBuilder implements QueryBuilderInterface
      */
     private function bracketCriteria(array &$criteria, string $bracket = self::BRACKET_OPEN, string $connector = self::LOGICAL_AND): QueryBuilder
     {
-        $criteria[] = array(
+        $criteria[] = [
             'bracket'   => $bracket,
             'connector' => $connector,
-        );
+        ];
 
         return $this;
     }
@@ -889,15 +977,15 @@ abstract class QueryBuilder implements QueryBuilderInterface
         // 是否存在判断...
 
         if (\is_string($criteria)) {
-            $criteria = array($criteria);
+            $criteria = [$criteria];
         }
 
-        $this->join[] = array(
+        $this->join[] = [
             'table'    => $table,
             'criteria' => $criteria,
             'type'     => $type,
             'alias'    => $alias,
-        );
+        ];
 
         return $this;
     }
@@ -920,14 +1008,168 @@ abstract class QueryBuilder implements QueryBuilderInterface
         string $operator = self::OPERATOR_EQ,
         string $connector = self::LOGICAL_AND
     ): QueryBuilder {
-        $criteria[] = array(
+        $criteria[] = [
             'column'    => $column,
             'value'     => $value,
             'operator'  => $operator,
             'connector' => $connector,
-        );
+        ];
 
         return $this;
+    }
+
+    /**
+     * @param string $db
+     *
+     * @return QueryBuilder
+     */
+    public function selectDb(string $db): self
+    {
+        $this->db = $db;
+
+        return $this;
+    }
+
+    /**
+     * @param string $node
+     *
+     * @return QueryBuilder
+     */
+    public function selectNode(string $node = Pool::MASTER): self
+    {
+        $this->node = $node;
+
+        return $this;
+    }
+
+    /**
+     * @param string $className
+     *
+     * @return QueryBuilder
+     */
+    public function className(string $className): self
+    {
+        $this->className = $className;
+
+        return $this;
+    }
+
+    /**
+     * @param string $instance
+     *
+     * @return QueryBuilder
+     */
+    public function selectInstance(string $instance): self
+    {
+        $this->instance = $instance;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $master
+     *
+     * @return QueryBuilder
+     */
+    public function force(bool $master = true): self
+    {
+        if ($master) {
+            $this->node = Pool::MASTER;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     * @param string $alias
+     *
+     * @return ResultInterface
+     */
+    public function count(string $column = '*', string $alias = 'count'): ResultInterface
+    {
+        $this->aggregate['count'] = [$column, $alias];
+        $this->limit(1);
+
+        return $this->execute();
+    }
+
+    /**
+     * @param string $column
+     * @param string $alias
+     *
+     * @return ResultInterface
+     */
+    public function max(string $column, string $alias = 'max'): ResultInterface
+    {
+        $this->aggregate['max'] = [$column, $alias];
+        $this->limit(1);
+
+        return $this->execute();
+    }
+
+    /**
+     * @param string $column
+     * @param string $alias
+     *
+     * @return ResultInterface
+     */
+    public function min(string $column, string $alias = 'min'): ResultInterface
+    {
+        $this->aggregate['min'] = [$column, $alias];
+        $this->limit(1);
+
+        return $this->execute();
+    }
+
+    /**
+     * @param string $column
+     * @param string $alias
+     *
+     * @return ResultInterface
+     */
+    public function avg(string $column, string $alias = 'avg'): ResultInterface
+    {
+        $this->aggregate['avg'] = [$column, $alias];
+        $this->limit(1);
+
+        return $this->execute();
+    }
+
+    /**
+     * @param string $column
+     * @param string $alias
+     *
+     * @return ResultInterface
+     */
+    public function sum(string $column, string $alias = 'sum'): ResultInterface
+    {
+        $this->aggregate['sum'] = [$column, $alias];
+        $this->limit(1);
+
+        return $this->execute();
+    }
+
+    /**
+     * @return ResultInterface
+     */
+    public function execute()
+    {
+        $statementClassName = DbHelper::getStatementClassNameByInstance($this->instance);
+        /* @var StatementInterface $statement */
+        $statement    = new $statementClassName($this);
+        $sql          = $statement->getStatement();
+        $instanceName = $this->getInstanceName();
+
+        return Db::query($sql, $this->parameters, $instanceName, $this->className, $this->getDecorators());
+    }
+
+    /**
+     * @return string
+     */
+    private function getInstanceName(): string
+    {
+        return sprintf('%s.%s.%s', $this->instance, $this->node, $this->db);
     }
 
     /**
@@ -947,87 +1189,155 @@ abstract class QueryBuilder implements QueryBuilderInterface
 
         $entities = EntityCollector::getCollector();
         if (!isset($entities[$tableName]['table']['name'])) {
-            throw new DbException('类不是实体，className=' . $tableName);
+            throw new DbException('Class is not an entity，className=' . $tableName);
         }
-        $name = $entities[$tableName]['table']['name'];
 
-        return $name;
+        return $entities[$tableName]['table']['name'];
     }
 
     /**
-     * 参数个数转换
-     *
-     * @param mixed  $key
-     * @param mixed  $value
-     * @param string $type
-     *
-     * @throws DbException
-     *
-     * @return array
-     */
-    private function transferParameter($key, $value, $type): array
-    {
-        if (!\is_int($key) && !\is_string($key)) {
-            throw new DbException('参数key,只能是字符串和整数');
-        }
-        $key = $this->formatParamsKey($key);
-
-        // 参数值类型转换
-        if ($type !== null) {
-            $value = EntityHelper::trasferTypes($type, $value);
-        }
-
-        return [$key, $value];
-    }
-
-    /**
-     * @return ConnectionInterface
-     */
-    protected function selectConnection(): ConnectionInterface
-    {
-        if (!empty($this->connection)) {
-            return $this->connection;
-        }
-
-        $contextTsKey  = PoolHelper::getContextTsKey();
-        $contextCntKey = PoolHelper::getContextCntKey();
-        $groupKey      = PoolHelper::getGroupKey($this->group);
-
-        /* @var \SplStack $tsStack */
-        $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $groupKey, new \SplStack());
-        if (!$tsStack->isEmpty()) {
-            $cntId      = $tsStack->offsetGet(0);
-            $connection = RequestContext::getContextDataByChildKey($contextCntKey, $cntId, null);
-
-            return $connection;
-        }
-
-        $node = Pool::SLAVE;
-        if ($this->isInsert() || $this->isDelete() || $this->isUpdate()) {
-            $node = Pool::MASTER;
-        }
-
-        $pool = DbHelper::getPool($this->group, $node);
-
-        return $pool->getConnection();
-    }
-
-    /**
-     * @param string $tableName
-     *
      * @return string
      * @throws \Swoft\Db\Exception\MysqlException
      */
-    private function getTableName(string $tableName = null): string
+    private function getTableName(): string
     {
-        if ($tableName != null) {
-            return $this->getTableNameByClassName($tableName);
+        if (empty($this->table)) {
+            throw new MysqlException('Table name must be setting!');
         }
-        if ($this->table != null) {
-            return $this->table;
-        }
-        throw new MysqlException('Table name must be setted by use insert()!');
+
+        return $this->table['table'];
     }
 
-    abstract protected function formatParamsKey($key): string;
+    /**
+     * @return string
+     */
+    public function getInsert(): string
+    {
+        return $this->insert;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUpdate(): string
+    {
+        return $this->update;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDelete(): bool
+    {
+        return $this->delete;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSelect(): array
+    {
+        return $this->select;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSet(): array
+    {
+        return $this->set;
+    }
+
+    /**
+     * @return array
+     * @throws MysqlException
+     */
+    public function getFrom(): array
+    {
+        if (empty($this->table)) {
+            throw new MysqlException('Table name must be set!');
+        }
+
+        return $this->table;
+    }
+
+    /**
+     * @return array
+     */
+    public function getJoin(): array
+    {
+        return $this->join;
+    }
+
+    /**
+     * @return array
+     */
+    public function getWhere(): array
+    {
+        return $this->where;
+    }
+
+    /**
+     * @return array
+     */
+    public function getGroupBy(): array
+    {
+        return $this->groupBy;
+    }
+
+    /**
+     * @return array
+     */
+    public function getHaving(): array
+    {
+        return $this->having;
+    }
+
+    /**
+     * @return array
+     */
+    public function getOrderBy(): array
+    {
+        return $this->orderBy;
+    }
+
+    /**
+     * @return array
+     */
+    public function getLimit(): array
+    {
+        return $this->limit;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParameters(): array
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAggregate(): array
+    {
+        return $this->aggregate;
+    }
+
+    /**
+     * @return array
+     */
+    public function getInsertValues(): array
+    {
+        return $this->insertValues;
+    }
+
+    /**
+     * @return array
+     */
+    public function getUpdateValues(): array
+    {
+        return $this->updateValues;
+    }
 }

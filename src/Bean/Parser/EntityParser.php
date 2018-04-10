@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Bean\Parser;
 
 use Swoft\Bean\Parser\AbstractParser;
@@ -7,13 +14,7 @@ use Swoft\Db\Bean\Annotation\Entity;
 use Swoft\Db\Bean\Collector\EntityCollector;
 
 /**
- * Entity注解解析器
- *
- * @uses      EntityParser
- * @version   2017年09月04日
- * @author    stelin <phpcrazy@126.com>
- * @copyright Copyright 2010-2016 swoft software
- * @license   PHP Version 7.x {@link http://www.php.net/license/3_0.txt}
+ * EntityParser
  */
 class EntityParser extends AbstractParser
 {

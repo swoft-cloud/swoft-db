@@ -1,10 +1,17 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
-use Swoft\Db\Bean\Annotation\Connection;
 use Swoft\Db\AbstractDbConnection;
+use Swoft\Db\Bean\Annotation\Connection;
 use Swoft\Db\Exception\MysqlException;
 use Swoole\Coroutine\Mysql;
 
@@ -18,12 +25,17 @@ class MysqlConnection extends AbstractDbConnection
     /**
      * @var Mysql
      */
-    private $connection = null;
+    private $connection;
 
     /**
      * @var string
      */
     private $sql = '';
+
+    /**
+     * @var mixed
+     */
+    private $result;
 
     /**
      * Prepare
@@ -33,6 +45,38 @@ class MysqlConnection extends AbstractDbConnection
     public function prepare(string $sql)
     {
         $this->sql  = $sql;
+    }
+
+    /**
+     * Create connection
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function createConnection()
+    {
+        $uri                = $this->pool->getConnectionAddress();
+        $options            = $this->parseUri($uri);
+        $options['timeout'] = $this->pool->getTimeout();
+
+        // init
+        $mysql = new MySQL();
+        $mysql->connect([
+            'host'     => $options['host'],
+            'port'     => $options['port'],
+            'user'     => $options['user'],
+            'password' => $options['password'],
+            'database' => $options['database'],
+            'timeout'  => $options['timeout'],
+            'charset'  => $options['charset'],
+        ]);
+
+        // error
+        if ($mysql->connected === false) {
+            throw new MysqlException('Database connection error，error=' . $mysql->connect_error);
+        }
+
+        $this->originDb = $options['database'];
+        $this->connection = $mysql;
     }
 
     /**
@@ -61,11 +105,20 @@ class MysqlConnection extends AbstractDbConnection
     {
         $result = $this->connection->recv();
         $this->connection->setDefer(false);
+
         $this->recv = true;
+        $this->result = $result;
 
         return $result;
     }
 
+    /**
+     * @return mixed
+     */
+    public function fetch()
+    {
+        return $this->result;
+    }
 
     /**
      * @return mixed
@@ -97,7 +150,8 @@ class MysqlConnection extends AbstractDbConnection
     public function rollback()
     {
         if (!$this->recv) {
-            throw new MysqlException('You forget to getResult() before rollback !');
+            $this->receive();
+            App::error('You forget to getResult() before rollback !');
         }
         $this->connection->query('rollback;');
     }
@@ -108,39 +162,19 @@ class MysqlConnection extends AbstractDbConnection
     public function commit()
     {
         if (!$this->recv) {
-            throw new MysqlException('You forget to getResult() before commit !');
+            $this->receive();
+            App::error('You forget to getResult() before commit !');
         }
         $this->connection->query('commit;');
     }
 
     /**
-     * Create connection
-     *
-     * @throws \InvalidArgumentException
+     * @param string $db
      */
-    public function createConnection()
+    public function selectDb(string $db)
     {
-        $uri                = $this->pool->getConnectionAddress();
-        $options            = $this->parseUri($uri);
-        $options['timeout'] = $this->pool->getTimeout();
-
-        // init
-        $mysql = new MySQL();
-        $mysql->connect([
-            'host'     => $options['host'],
-            'port'     => $options['port'],
-            'user'     => $options['user'],
-            'password' => $options['password'],
-            'database' => $options['database'],
-            'timeout'  => $options['timeout'],
-            'charset'  => $options['charset'],
-        ]);
-
-        // error
-        if ($mysql->connected === false) {
-            throw new MysqlException('Database connection error，error=' . $mysql->connect_error);
-        }
-        $this->connection = $mysql;
+        $this->connection->query(sprintf('use %s', $db));
+        $this->currentDb = $db;
     }
 
     /**
@@ -149,9 +183,8 @@ class MysqlConnection extends AbstractDbConnection
     public function setDefer($defer = true)
     {
         $this->recv = false;
-        $this->connection->setDefer($defer);
+        $result = $this->connection->setDefer($defer);
     }
-
 
     /**
      * @return void
@@ -178,9 +211,9 @@ class MysqlConnection extends AbstractDbConnection
     }
 
     /**
-     * Destory sql
+     * Destroy sql
      */
-    public function destory()
+    public function destroy()
     {
         $this->sql = '';
     }
@@ -196,16 +229,22 @@ class MysqlConnection extends AbstractDbConnection
             return;
         }
 
-        foreach ($params as $key => &$value){
+        $newParams = [];
+        foreach ($params as $key => $value) {
             $value = "'{$value}'";
+            if (\is_int($key)) {
+                $key = sprintf('?%d', $key);
+            }
+            $newParams[$key] = $value;
         }
 
         // ?方式传递参数
         if (strpos($this->sql, '?') !== false) {
             $this->transferQuestionMark();
         }
-        $this->sql = strtr($this->sql, $params);
+        $this->sql = strtr($this->sql, $newParams);
     }
+
     /**
      * 格式化?标记
      */

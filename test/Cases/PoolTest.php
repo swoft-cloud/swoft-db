@@ -1,12 +1,19 @@
 <?php
-
-namespace Swoft\Db\Test\Cases;
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
+namespace SwoftTest\Db\Cases;
 
 use Swoft\App;
-use Swoft\Db\Test\Testing\Pool\DbEnvPoolConfig;
-use Swoft\Db\Test\Testing\Pool\DbPptPoolConfig;
-use Swoft\Db\Test\Testing\Pool\DbSlaveEnvPoolConfig;
-use Swoft\Db\Test\Testing\Pool\DbSlavePptConfig;
+use SwoftTest\Db\Testing\Pool\DbEnvPoolConfig;
+use SwoftTest\Db\Testing\Pool\DbPptPoolConfig;
+use SwoftTest\Db\Testing\Pool\DbSlaveEnvPoolConfig;
+use SwoftTest\Db\Testing\Pool\DbSlavePptConfig;
 
 /**
  * PoolTest

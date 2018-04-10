@@ -1,10 +1,18 @@
 <?php
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 return [
-    "version"           => '1.0',
+    'version'           => '1.0',
     'autoInitBean'      => true,
-    'beanScan'          => [
-        'Swoft\\Db\\Test\\Testing' => BASE_PATH."/Testing",
-        'Swoft\\Db' => BASE_PATH."/../src",
+    'beanScan' => [
+        'SwoftTest\\Db\\Testing' => BASE_PATH . '/Testing',
+        'Swoft\\Db'              => BASE_PATH . '/../src',
     ],
     'I18n'              => [
         'sourceLanguage' => '@root/resources/messages/',
@@ -16,5 +24,5 @@ return [
             'timeout' => 3000
         ]
     ],
-    'db' => require dirname(__FILE__) . DS . "db.php",
+    'db' => require dirname(__FILE__) . DS . 'db.php',
 ];

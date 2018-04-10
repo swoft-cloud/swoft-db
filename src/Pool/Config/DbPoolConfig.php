@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Pool\Config;
 
 use Swoft\Bean\Annotation\Bean;
@@ -84,7 +91,7 @@ class DbPoolConfig extends DbPoolProperties
      * @Value(name="${config.db.master.balancer}", env="${DB_BALANCER}")
      * @var string
      */
-    protected $balancer = "";
+    protected $balancer = '';
 
     /**
      * the default provider is consul provider
@@ -92,7 +99,7 @@ class DbPoolConfig extends DbPoolProperties
      * @Value(name="${config.db.master.provider}", env="${DB_PROVIDER}")
      * @var string
      */
-    protected $provider = "";
+    protected $provider = '';
 
     /**
      * the default driver is consul mysql

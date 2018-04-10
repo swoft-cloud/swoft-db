@@ -1,41 +1,30 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db;
 
-use Swoft\Core\AbstractDataResult;
-use Swoft\Db\Helper\EntityHelper;
-
 /**
- * Class DbDataResult
- *
- * @package Swoft\Db
+ * DbDataResult
  */
-class DbDataResult extends AbstractDataResult
+class DbDataResult extends DbResult
 {
     /**
      * @param array ...$params
-     *
      * @return mixed
      */
     public function getResult(...$params)
     {
-        $className = '';
-        $result    = $this->data;
-        if (!empty($params)) {
-            list($className) = $params;
-        }
-
-        // Fill data to Entity
-        if (\is_array($result) && !empty($result) && !empty($className)) {
-            $result = EntityHelper::resultToEntity($result, $className);
-        }
-
-        if (empty($result) && !empty($className)) {
-            return null;
-        }
-
+        $result = $this->getResultByClassName();
         $this->release();
-
+        foreach ($this->decorators ?? [] as $decorator) {
+            $result = value($decorator($result));
+        }
         return $result;
     }
 }

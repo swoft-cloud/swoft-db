@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Pool\Config;
 
 use Swoft\Bean\Annotation\Bean;
@@ -24,6 +31,7 @@ class DbSlavePoolConfig extends DbPoolProperties
      * @var int
      */
     protected $minActive = 5;
+
     /**
      * @Value(name="${config.db.slave.maxActive}", env="${DB_SLAVE_MAX_ACTIVE}")
      * @var int

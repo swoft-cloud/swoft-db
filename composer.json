@@ -6,12 +6,14 @@
         "swoole",
         "swoft",
         "db",
-        "orm"
+        "orm",
+        "active record"
     ],
     "description": "microservice framework base on swoole",
     "license": "Apache-2.0",
     "require": {
-        "swoft/framework": "^1.0",
+        "ext-pdo": "*",
+        "swoft/framework": "dev-feature as 1.0",
         "swoft/console": "^1.0",
         "swoft/service-governance": "^1.0"
     },
@@ -23,9 +25,14 @@
             "src/Helper/Functions.php"
         ]
     },
+    "require-dev": {
+        "eaglewu/swoole-ide-helper": "dev-master",
+        "phpunit/phpunit": "^5.7",
+        "friendsofphp/php-cs-fixer": "^2.10"
+    },
     "autoload-dev": {
         "psr-4": {
-            "Swoft\\Db\\Test\\": "test"
+            "SwoftTest\\Db\\": "test"
         }
     },
     "repositories": [
@@ -34,11 +41,8 @@
             "url": "https://packagist.phpcomposer.com"
         }
     ],
-    "require-dev": {
-        "eaglewu/swoole-ide-helper": "dev-master",
-        "phpunit/phpunit": "^5.7"
-    },
     "scripts": {
-        "test": "./vendor/bin/phpunit -c phpunit.xml"
+        "test": "./vendor/bin/phpunit -c phpunit.xml",
+        "cs-fix": "./vendor/bin/php-cs-fixer fix $1"
     }
 }

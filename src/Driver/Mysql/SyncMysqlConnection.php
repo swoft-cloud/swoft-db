@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
@@ -27,7 +34,7 @@ class SyncMysqlConnection extends AbstractDbConnection
     /**
      * @var string
      */
-    private $sql;
+    private $sql = '';
 
     /**
      * Create connection
@@ -53,7 +60,8 @@ class SyncMysqlConnection extends AbstractDbConnection
         ];
         $dsn              = "mysql:host=$host;port=$port;dbname=$dbName;charset=$charset";
         $this->connection = new \PDO($dsn, $user, $passwd, $pdoOptions);
-        $this->connection->setAttribute(\PDO::ATTR_ERRMODE,\PDO::ERRMODE_EXCEPTION);
+        $this->connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $this->originDb = $dbName;
     }
 
     /**
@@ -61,7 +69,7 @@ class SyncMysqlConnection extends AbstractDbConnection
      */
     public function prepare(string $sql)
     {
-        $this->sql  = $sql . " Params:";
+        $this->sql  = $sql . ' Params:';
         $this->stmt = $this->connection->prepare($sql);
     }
 
@@ -94,8 +102,8 @@ class SyncMysqlConnection extends AbstractDbConnection
         }
 
         foreach ($params as $key => $value) {
-            if (is_int($key)) {
-                $key = $key + 1;
+            if (\is_int($key)) {
+                ++$key;
             }
             $this->stmt->bindValue($key, $value);
         }
@@ -131,6 +139,15 @@ class SyncMysqlConnection extends AbstractDbConnection
     public function beginTransaction()
     {
         $this->connection->beginTransaction();
+    }
+
+    /**
+     * @param string $db
+     */
+    public function selectDb(string $db)
+    {
+        $this->connection->exec(sprintf('use %s', $db));
+        $this->currentDb = $db;
     }
 
     /**
@@ -174,9 +191,9 @@ class SyncMysqlConnection extends AbstractDbConnection
     }
 
     /**
-     * Destory sql
+     * Destroy sql
      */
-    public function destory()
+    public function destroy()
     {
         $this->sql  = '';
         $this->stmt = null;
@@ -185,7 +202,7 @@ class SyncMysqlConnection extends AbstractDbConnection
     /**
      * @return string
      */
-    public function getSql()
+    public function getSql(): string
     {
         return $this->sql;
     }

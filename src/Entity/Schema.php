@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db\Entity;
 
 /**
@@ -16,8 +23,11 @@ abstract class Schema
 {
     // PHP类型
     const TYPE_INT    = 'int';
+
     const TYPE_STRING = 'string';
+
     const TYPE_FLOAT  = 'float';
+
     const TYPE_BOOL   = 'bool';
 
     /**

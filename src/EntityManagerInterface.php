@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://doc.swoft.org
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
 namespace Swoft\Db;
 
 /**
@@ -9,36 +16,4 @@ namespace Swoft\Db;
  */
 interface EntityManagerInterface
 {
-    /**
-     * Create a EntityManager instance
-     *
-     * @param string $poolId
-     * @return EntityManager
-     */
-    public static function create(string $poolId): EntityManager;
-
-
-    /**
-     * Rollback transaction
-     */
-    public function rollback();
-
-    /**
-     * Begin transaction
-     */
-    public function beginTransaction();
-
-    /**
-     * Commit transaction
-     */
-    public function commit();
-
-
-    /**
-     * Create a Query Builder
-     *
-     * @param string $sql
-     * @return QueryBuilder
-     */
-    public function createQuery(string $sql = ''): QueryBuilder;
 }
