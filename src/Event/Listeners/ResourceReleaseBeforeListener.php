@@ -24,8 +24,8 @@ class ResourceReleaseBeforeListener implements EventHandlerInterface
      */
     public function handle(EventInterface $event)
     {
-        $contextTsKey  = DbHelper::getContextTsKey();
-        $contextCntKey = PoolHelper::getContextCntKey();
+        $contextTsKey  = DbHelper::getContextTransactionsKey();
+        $contextCntKey = PoolHelper::getContextConnKey();
         $transactions  = RequestContext::getContextDataByKey($contextTsKey, []);
         $connections   = RequestContext::getContextDataByKey($contextCntKey, []);
 

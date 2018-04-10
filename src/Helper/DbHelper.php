@@ -65,7 +65,7 @@ class DbHelper
     /**
      * @return string
      */
-    public static function getContextTsKey(): string
+    public static function getContextTransactionsKey(): string
     {
         return sprintf('transactions');
     }

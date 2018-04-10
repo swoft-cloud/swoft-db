@@ -2,13 +2,14 @@
 
 namespace Swoft\Db;
 
+use Swoft\Contract\Arrayable;
 use Swoft\Core\ResultInterface;
 use Swoft\Db\Bean\Collector\EntityCollector;
 
 /**
  * Activerecord
  */
-class Model implements \ArrayAccess, \Iterator
+class Model implements \ArrayAccess, \Iterator, Arrayable
 {
     /**
      * Old data

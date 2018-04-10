@@ -196,8 +196,8 @@ class Db
      */
     private static function getTransactionConnection(string $instance)
     {
-        $contextTsKey  = DbHelper::getContextTsKey();
-        $contextCntKey = PoolHelper::getContextCntKey();
+        $contextTsKey  = DbHelper::getContextTransactionsKey();
+        $contextCntKey = PoolHelper::getContextConnKey();
         $instanceKey   = DbHelper::getTsInstanceKey($instance);
         /* @var \SplStack $tsStack */
         $tsStack = RequestContext::getContextDataByChildKey($contextTsKey, $instanceKey, new \SplStack());
@@ -216,7 +216,7 @@ class Db
     private static function beginTransactionContext(ConnectionInterface $connection, string $instance = Pool::INSTANCE)
     {
         $cntId        = $connection->getConnectionId();
-        $contextTsKey = DbHelper::getContextTsKey();
+        $contextTsKey = DbHelper::getContextTransactionsKey();
         $instanceKey  = DbHelper::getTsInstanceKey($instance);
 
         /* @var \SplStack $tsStack */
@@ -231,7 +231,7 @@ class Db
      */
     private static function closetTransactionContext(AbstractDbConnection $connection, string $instance = Pool::INSTANCE)
     {
-        $contextTsKey = DbHelper::getContextTsKey();
+        $contextTsKey = DbHelper::getContextTransactionsKey();
         $instanceKey  = DbHelper::getTsInstanceKey($instance);
 
         /* @var \SplStack $tsStack */

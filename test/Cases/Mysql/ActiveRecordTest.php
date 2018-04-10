@@ -144,7 +144,8 @@ class ActiveRecordTest extends AbstractMysqlCase
         /* @var User $user */
         $user = User::findById($id)->getResult();
         $user->setName($newName);
-        $user->update()->getResult();
+        $updateResult = $user->update()->getResult();
+        $this->assertGreaterThanOrEqual(1, $updateResult);
 
         /* @var User $newUser */
         $newUser = User::findById($id)->getResult();
