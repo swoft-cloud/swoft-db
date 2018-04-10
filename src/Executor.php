@@ -219,7 +219,7 @@ class Executor
         $query = Query::table($tableName)->className($className)->where($columnId, $id)->selectInstance($instance);
 
         $options['limit'] = 1;
-        $query = self::addOptions($query, $options);
+        $query = self::applyOptions($query, $options);
         $fields = self::getFieldsFromOptions($options);
 
         return $query->get($fields);
@@ -238,7 +238,7 @@ class Executor
         $instance = self::getInstance($className);
 
         $query = Query::table($tableName)->className($className)->whereIn($columnId, $ids)->selectInstance($instance);
-        $query = self::addOptions($query, $options);
+        $query = self::applyOptions($query, $options);
         $fields = self::getFieldsFromOptions($options);
         return $query->get($fields);
     }
@@ -260,7 +260,7 @@ class Executor
         }
 
         $options['limit'] = 1;
-        $query = self::addOptions($query, $options);
+        $query = self::applyOptions($query, $options);
         $fields = self::getFieldsFromOptions($options);
         return $query->get($fields);
     }
@@ -281,7 +281,7 @@ class Executor
             $query = $query->condition($condition);
         }
 
-        $query = self::addOptions($query, $options);
+        $query = self::applyOptions($query, $options);
         $fields = self::getFieldsFromOptions($options);
 
         return $query->get($fields);
@@ -488,7 +488,7 @@ class Executor
      * @param array        $options
      * @return QueryBuilder
      */
-    private static function addOptions(QueryBuilder $query, array $options)
+    private static function applyOptions(QueryBuilder $query, array $options)
     {
         if (isset($options['orderby'])) {
             $option = $options['orderby'];
