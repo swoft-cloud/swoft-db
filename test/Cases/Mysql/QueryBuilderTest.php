@@ -259,8 +259,7 @@ class QueryBuilderTest extends AbstractMysqlCase
         ];
 
         $userid = Query::table(User::class)->insert($data)->getResult();
-        $users  = Query::table(User::class)->condition(['age', 'between', $age, $age + 1])->orderBy('id', 'desc')->get()->getResult();
-
+        $users  = Query::table(User::class)->condition(['age', 'between', $age-1, $age + 1])->orderBy('id', 'desc')->get()->getResult();
         $this->assertTrue(count($users) > 1);
     }
 
