@@ -42,13 +42,13 @@ class Db
      * Query by sql
      *
      * @param string $sql
-     * @param array  $params
+     * @param array $params
      * @param string $instance
      * @param string $className
-     *
-     * @return ResultInterface
+     * @param array $resultDecorators
+     * @return \Swoft\Core\ResultInterface
      */
-    public static function query(string $sql, array $params = [], string $instance = Pool::INSTANCE, string $className = ''): ResultInterface
+    public static function query(string $sql, array $params = [], string $instance = Pool::INSTANCE, string $className = '', array $resultDecorators = []): ResultInterface
     {
         $type     = self::getOperation($sql);
         $instance = explode('.', $instance);
@@ -78,6 +78,7 @@ class Db
         $dbResult = self::getResult($result, $connection, $profileKey);
         $dbResult->setType($type);
         $dbResult->setClassName($className);
+        $dbResult->setDecorators($resultDecorators);
 
         return $dbResult;
     }

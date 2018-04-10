@@ -185,6 +185,26 @@ class Executor
     }
 
     /**
+     * @param $className
+     * @param $id
+     * @return \Swoft\Core\ResultInterface
+     */
+    public static function exist($className, $id): ResultInterface
+    {
+        list($tableName, , $idColumn) = self::getTable($className);
+        $instance = self::getInstance($className);
+        $query = Query::table($tableName)
+            ->where($idColumn, $id)
+            ->limit(1)
+            ->selectInstance($instance)
+            ->addDecorator(function ($result) {
+                return (bool)$result;
+            });
+
+        return $query->get([$idColumn]);
+    }
+
+    /**
      * @param string $className
      * @param mixed  $id
      *

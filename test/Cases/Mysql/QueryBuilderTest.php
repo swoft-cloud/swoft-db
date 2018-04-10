@@ -10,7 +10,7 @@ use Swoft\Db\Test\Testing\Entity\User;
 /**
  * QueryTest
  */
-class QueryBuildTest extends AbstractMysqlCase
+class QueryBuilderTest extends AbstractMysqlCase
 {
     /**
      * @dataProvider mysqlProvider
@@ -345,4 +345,5 @@ class QueryBuildTest extends AbstractMysqlCase
             $this->testCondtion5AndByF3($ids);
         });
     }
+
 }

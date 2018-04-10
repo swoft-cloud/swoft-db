@@ -260,6 +260,11 @@ class QueryBuilder implements QueryBuilderInterface
     protected $aggregate = [];
 
     /**
+     * @var array
+     */
+    protected $decorators = [];
+
+    /**
      * @var string
      */
     protected $className = '';
@@ -897,6 +902,43 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
+     * @param \Closure $closure
+     * @return $this
+     */
+    public function addDecorator(\Closure $closure)
+    {
+        $this->decorators[] = $closure;
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function clearDecorators()
+    {
+        $this->decorators = [];
+        return $this;
+    }
+
+    /**
+     * @param array $decorators
+     * @return $this
+     */
+    public function setDecorators(array $decorators)
+    {
+        $this->decorators = $decorators;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDecorators(): array
+    {
+        return $this->decorators;
+    }
+
+    /**
      * 括号条件组拼
      *
      * @param array  $criteria
@@ -1114,7 +1156,7 @@ class QueryBuilder implements QueryBuilderInterface
         $sql          = $statement->getStatement();
         $instanceName = $this->getInstanceName();
 
-        return Db::query($sql, $this->parameters, $instanceName, $this->className);
+        return Db::query($sql, $this->parameters, $instanceName, $this->className, $this->getDecorators());
     }
 
     /**

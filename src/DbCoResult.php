@@ -12,7 +12,6 @@ class DbCoResult extends DbResult
 
     /**
      * @param array ...$params
-     *
      * @return mixed
      */
     public function getResult(...$params)
@@ -21,6 +20,9 @@ class DbCoResult extends DbResult
         $result = $this->getResultByClassName();
         $this->release();
 
+        foreach ($this->decorators ?? [] as $decorator) {
+            $result = value($decorator($result));
+        }
         return $result;
     }
 }

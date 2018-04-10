@@ -372,4 +372,13 @@ class ActiveRecordTest extends AbstractMysqlCase
         $result = User::findAll(['name' => 'name', 'id' => $ids], ['id' => 'desc'], 2, 0)->getResult();
         $this->assertCount(2,$result);
     }
+
+    public function testExist()
+    {
+        $user = new User();
+        $id = $user->fill(['name' => 'existTest'])->save()->getResult();
+        $this->assertTrue(User::exist($id)->getResult());
+        $this->assertFalse(User::exist('NotExistId')->getResult());
+    }
+
 }

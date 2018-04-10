@@ -23,19 +23,38 @@ abstract class DbResult extends AbstractResult
     protected $className = '';
 
     /**
+     * @var array
+     */
+    protected $decorators = [];
+
+    /**
      * @param int $type
+     * @return $this
      */
     public function setType(int $type)
     {
         $this->type = $type;
+        return $this;
     }
 
     /**
      * @param string $className
+     * @return $this
      */
     public function setClassName(string $className)
     {
         $this->className = $className;
+        return $this;
+    }
+
+    /**
+     * @param array $decorators
+     * @return $this
+     */
+    public function setDecorators(array $decorators)
+    {
+        $this->decorators = $decorators;
+        return $this;
     }
 
     /**
