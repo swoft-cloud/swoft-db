@@ -89,6 +89,10 @@ abstract class DbResult extends AbstractResult
      */
     private function getResultByType()
     {
+        if($this->connection === null){
+            return $this->result;
+        }
+
         /* @var AbstractDbConnection $connection */
         $connection = $this->connection;
 

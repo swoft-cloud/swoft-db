@@ -207,43 +207,50 @@ class Executor
     /**
      * @param string $className
      * @param mixed  $id
+     * @param array  $options
      *
      * @return ResultInterface
      */
-    public static function findById($className, $id): ResultInterface
+    public static function findById($className, $id, array $options): ResultInterface
     {
         list($tableName, , $columnId) = self::getTable($className);
         $instance = self::getInstance($className);
 
-        $query = Query::table($tableName)->className($className)->where($columnId, $id)->limit(1)->selectInstance($instance);
+        $query = Query::table($tableName)->className($className)->where($columnId, $id)->selectInstance($instance);
 
-        return $query->get();
+        $options['limit'] = 1;
+        $query = self::addOptions($query, $options);
+        $fields = self::getFieldsFromOptions($options);
+
+        return $query->get($fields);
     }
 
     /**
      * @param string $className
      * @param array  $ids
+     * @param array  $options
      *
      * @return ResultInterface
      */
-    public static function findByIds($className, array $ids): ResultInterface
+    public static function findByIds($className, array $ids, array $options): ResultInterface
     {
         list($tableName, , $columnId) = self::getTable($className);
         $instance = self::getInstance($className);
 
         $query = Query::table($tableName)->className($className)->whereIn($columnId, $ids)->selectInstance($instance);
-
-        return $query->get();
+        $query = self::addOptions($query, $options);
+        $fields = self::getFieldsFromOptions($options);
+        return $query->get($fields);
     }
 
     /**
      * @param string $className
      * @param array  $condition
-     * @param array  $orderBy
+     * @param array  $options
      *
      * @return \Swoft\Core\ResultInterface
      */
-    public static function findOne(string $className, array $condition = [], array $orderBy = [])
+    public static function findOne(string $className, array $condition = [], array $options = [])
     {
         $instance = self::getInstance($className);
         $query = Query::table($className)->className($className)->selectInstance($instance);
@@ -252,23 +259,20 @@ class Executor
             $query = $query->condition($condition);
         }
 
-        foreach ($orderBy as $column => $order) {
-            $query = $query->orderBy($column, $order);
-        }
-
-        return $query->limit(1)->get();
+        $options['limit'] = 1;
+        $query = self::addOptions($query, $options);
+        $fields = self::getFieldsFromOptions($options);
+        return $query->get($fields);
     }
 
     /**
      * @param string $className
      * @param array  $condition
-     * @param array  $orderBy
-     * @param int    $limit
-     * @param int    $offset
+     * @param array  $options
      *
      * @return ResultInterface
      */
-    public static function findAll(string $className, array $condition = [], array $orderBy = [], int $limit = 20, int $offset = 0)
+    public static function findAll(string $className, array $condition = [], array $options = [])
     {
         $instance = self::getInstance($className);
         $query = Query::table($className)->className($className)->selectInstance($instance);
@@ -277,11 +281,10 @@ class Executor
             $query = $query->condition($condition);
         }
 
-        foreach ($orderBy as $column => $order) {
-            $query = $query->orderBy($column, $order);
-        }
+        $query = self::addOptions($query, $options);
+        $fields = self::getFieldsFromOptions($options);
 
-        return $query->limit($limit, $offset)->get();
+        return $query->get($fields);
     }
 
     /**
@@ -468,5 +471,46 @@ class Executor
         }
 
         return $collector[$className]['instance'];
+    }
+
+    /**
+     * @param array $options
+     *
+     * @return array
+     */
+    private static function getFieldsFromOptions(array $options):array
+    {
+        return $options['fields']?? ['*'];
+    }
+
+    /**
+     * @param QueryBuilder $query
+     * @param array        $options
+     * @return QueryBuilder
+     */
+    private static function addOptions(QueryBuilder $query, array $options)
+    {
+        if (isset($options['orderby'])) {
+            $option = $options['orderby'];
+            foreach ($option as $column => $order) {
+                $query = $query->orderBy($column, $order);
+            }
+        }
+
+        $limit  = null;
+        $offset = 0;
+        if (isset($options['limit'])) {
+            $limit = $options['limit'];
+        }
+
+        if (isset($options['offset'])) {
+            $offset = $options['offset'];
+        }
+
+        if ($limit !== null) {
+            $query = $query->limit($limit, $offset);
+        }
+
+        return $query;
     }
 }

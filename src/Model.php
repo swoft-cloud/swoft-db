@@ -158,50 +158,50 @@ class Model implements \ArrayAccess, \Iterator, Arrayable
 
     /**
      * @param array $condition
-     * @param array $orderBy
+     * @param array $options
      *
      * @return ResultInterface
      */
-    public static function findOne(array $condition, array $orderBy = []): ResultInterface
+    public static function findOne(array $condition, array $options = []): ResultInterface
     {
-        return Executor::findOne(static::class, $condition, $orderBy);
+        return Executor::findOne(static::class, $condition, $options);
     }
 
     /**
      * @param array $condition
-     * @param array $orderBy
-     * @param int   $limit
-     * @param int   $offset
+     * @param array $options
      *
      * @return ResultInterface
      */
-    public static function findAll(array $condition = [], array $orderBy = [], int $limit = 20, int $offset = 0): ResultInterface
+    public static function findAll(array $condition = [], array $options = []): ResultInterface
     {
-        return Executor::findAll(static::class, $condition, $orderBy, $limit, $offset);
+        return Executor::findAll(static::class, $condition, $options);
     }
 
     /**
      * Find by id
      *
      * @param mixed $id
+     * @param array $options
      *
      * @return ResultInterface
      */
-    public static function findById($id): ResultInterface
+    public static function findById($id, array $options = []): ResultInterface
     {
-        return Executor::findById(static::class, $id);
+        return Executor::findById(static::class, $id, $options);
     }
 
     /**
      * Find by ids
      *
      * @param array $ids
+     * @param array $options
      *
      * @return ResultInterface
      */
-    public static function findByIds(array $ids): ResultInterface
+    public static function findByIds(array $ids, array $options = []): ResultInterface
     {
-        return Executor::findByIds(static::class, $ids);
+        return Executor::findByIds(static::class, $ids, $options);
     }
 
     /**

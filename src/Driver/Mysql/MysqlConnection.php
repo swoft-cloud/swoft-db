@@ -3,10 +3,9 @@
 namespace Swoft\Db\Driver\Mysql;
 
 use Swoft\App;
-use Swoft\Db\Bean\Annotation\Connection;
 use Swoft\Db\AbstractDbConnection;
+use Swoft\Db\Bean\Annotation\Connection;
 use Swoft\Db\Exception\MysqlException;
-use Swoft\Log\Log;
 use Swoole\Coroutine\Mysql;
 
 /**

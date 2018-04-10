@@ -2,10 +2,9 @@
 
 namespace Swoft\Db\Test\Cases\Mysql;
 
-use Swoft\Db\Query;
 use Swoft\Db\QueryBuilder;
-use Swoft\Db\Test\Testing\Entity\User;
 use Swoft\Db\Test\Cases\AbstractMysqlCase;
+use Swoft\Db\Test\Testing\Entity\User;
 
 /**
  * MysqlTest
@@ -150,6 +149,19 @@ class ActiveRecordTest extends AbstractMysqlCase
         /* @var User $newUser */
         $newUser = User::findById($id)->getResult();
         $this->assertEquals($newName, $newUser->getName());
+
+        $userObj=User::findById($id)->getResult();
+        $userObj->setName("update");
+
+        $result= $userObj->update()->getResult();
+
+        $userObj=User::findById($id)->getResult();
+        $userObj->setName("update");
+
+        $result2= $userObj->update()->getResult();
+
+        $this->assertEquals(1, $result);
+        $this->assertEquals(0, $result2);
     }
 
     /**
@@ -174,8 +186,12 @@ class ActiveRecordTest extends AbstractMysqlCase
     {
         $user      = User::findById($id)->getResult();
         $userEmpty = User::findById(99999999999)->getResult();
+        $user2     = User::findById($id, ['fields' => ['id']])->getResult();
         $this->assertEquals($id, $user['id']);
         $this->assertEquals($userEmpty, null);
+
+        $this->assertEquals($id, $user2['id']);
+        $this->assertEquals(null, $user2['name']);
     }
 
     /**
@@ -225,13 +241,25 @@ class ActiveRecordTest extends AbstractMysqlCase
     {
         $users     = User::findByIds($ids)->getResult();
         $userEmpty = User::findByIds([999999999999])->getResult();
+        $users2     = User::findByIds($ids, ['fields' => ['id'], 'orderby' => ['id' => 'asc'], 'limit' => 2])->getResult();
 
+        sort($ids);
         $resultIds = [];
         foreach ($users as $user) {
             $resultIds[] = $user['id'];
         }
-        $this->assertEquals(sort($resultIds), sort($ids));
+        sort($resultIds);
+        $this->assertEquals($resultIds, $ids);
         $this->assertEquals($userEmpty, []);
+
+        $queryIds = [];
+        foreach ($users2 as $user){
+            $queryIds[] = $user['id'];
+            $this->assertEquals(null, $user['name']);
+        }
+
+
+        $this->assertEquals($ids, $queryIds);
     }
 
     /**
@@ -359,7 +387,10 @@ class ActiveRecordTest extends AbstractMysqlCase
     public function testFindOne(int $id)
     {
         $user = User::findOne(['id' => $id, 'name' => 'name'], ['id'=> 'desc', 'age' => 'desc'])->getResult();
+        $user2 = User::findOne(['id' => $id], ['fields' => ['id', 'name']])->getResult();
         $this->assertEquals($id, $user['id']);
+        $this->assertEquals($id, $user2['id']);
+        $this->assertEquals(null, $user2['desc']);
     }
 
     /**
@@ -369,8 +400,26 @@ class ActiveRecordTest extends AbstractMysqlCase
      */
     public function testFindAll(array $ids)
     {
-        $result = User::findAll(['name' => 'name', 'id' => $ids], ['id' => 'desc'], 2, 0)->getResult();
+        $options = [
+            'orderby' => [
+                'id' => 'desc',
+            ],
+            'limit'   => 2,
+            'offset'  => 0,
+            'fields'  => ['id', 'name'],
+        ];
+        $result = User::findAll(['name' => 'name'], $options)->getResult();
         $this->assertCount(2,$result);
+
+        $ids = [];
+        /* @var User $user */
+        foreach ($result as $key => $user){
+            $ids[$key] = $user->getId();
+            $this->assertEquals($user->getName(), 'name');
+            $this->assertEquals($user->getDesc(), null);
+        }
+
+        $this->assertTrue($ids[0] > $ids[1]);
     }
 
     public function testExist()
