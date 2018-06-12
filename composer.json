@@ -12,6 +12,7 @@
     "description": "microservice framework base on swoole",
     "license": "Apache-2.0",
     "require": {
+        "php": ">=7.0",
         "ext-pdo": "*",
         "swoft/framework": "^1.0.15",
         "swoft/console": "^1.0",
