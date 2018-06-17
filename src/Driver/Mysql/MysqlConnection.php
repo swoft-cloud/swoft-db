@@ -238,6 +238,8 @@ class MysqlConnection extends AbstractDbConnection
         foreach ($params as $key => $value) {
             if ($value === null) {
                 $value = " null ";
+            } else if (\is_numeric($value)) {
+                $value = "{$value}";
             } else {
                 $value = "'" . addslashes($value) . "'";
             }
