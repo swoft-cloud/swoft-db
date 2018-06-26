@@ -244,6 +244,29 @@ class Generator extends AbstractGenerator implements GeneratorInterface
     }
 
     /**
+     * 设置实体基类
+     *
+     * @param string $extends 实体基类
+     *
+     * @return $this
+     */
+    public function setExtends(string $extends): self
+    {
+        $this->extends = $extends;
+        return $this;
+    }
+
+    /**
+     * 返回实体基类
+     *
+     * @retrun string
+     */
+    public function getExtends(): string
+    {
+        return $this->extends;
+    }
+
+    /**
      * __get()
      *
      * @override
