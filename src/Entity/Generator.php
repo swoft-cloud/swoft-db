@@ -178,7 +178,7 @@ class Generator extends AbstractGenerator implements GeneratorInterface
      *
      * @return $this;
      */
-    public function settablesEnabled(array $value): self
+    public function setTablesEnabled(array $value): self
     {
         $this->tablesEnabled = $value;
 
@@ -190,7 +190,7 @@ class Generator extends AbstractGenerator implements GeneratorInterface
      *
      * @return array
      */
-    public function gettablesEnabled(): array
+    public function getTablesEnabled(): array
     {
         return $this->tablesEnabled;
     }
@@ -202,7 +202,7 @@ class Generator extends AbstractGenerator implements GeneratorInterface
      *
      * @return $this;
      */
-    public function settablesDisabled(array $value): self
+    public function setTablesDisabled(array $value): self
     {
         $this->tablesDisabled = $value;
 
@@ -214,7 +214,7 @@ class Generator extends AbstractGenerator implements GeneratorInterface
      *
      * @retrun array
      */
-    public function gettablesDisabled(): array
+    public function getTablesDisabled(): array
     {
         return $this->tablesDisabled;
     }
@@ -226,7 +226,7 @@ class Generator extends AbstractGenerator implements GeneratorInterface
      *
      * @return $this;
      */
-    public function setremoveTablePrefix(string $value): self
+    public function setRemoveTablePrefix(string $value): self
     {
         $this->removeTablePrefix = $value;
 
@@ -238,7 +238,7 @@ class Generator extends AbstractGenerator implements GeneratorInterface
      *
      * @retrun string
      */
-    public function getremoveTablePrefix(): string
+    public function getRemoveTablePrefix(): string
     {
         return $this->removeTablePrefix;
     }
