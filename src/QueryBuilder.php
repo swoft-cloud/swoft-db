@@ -289,8 +289,8 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function insert(array $values): ResultInterface
     {
-        $this->insert                   = $this->getTableName();
-        $this->insertValues['columns']  = array_keys($values);
+        $this->insert = $this->getTableName();
+        $this->insertValues['columns'] = array_keys($values);
         $this->insertValues['values'][] = array_values($values);
 
         return $this->execute();
@@ -323,7 +323,7 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function update(array $values): ResultInterface
     {
-        $this->update       = $this->getTableName();
+        $this->update = $this->getTableName();
         $this->updateValues = $values;
 
         return $this->execute();
@@ -331,7 +331,7 @@ class QueryBuilder implements QueryBuilderInterface
 
     /**
      * @param mixed $column
-     * @param int   $amount
+     * @param int $amount
      *
      * @return \Swoft\Core\ResultInterface
      */
@@ -419,9 +419,9 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * inner join语句
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $criteria
-     * @param string       $alias
+     * @param string $alias
      *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
@@ -437,9 +437,9 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * left join语句
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $criteria
-     * @param string       $alias
+     * @param string $alias
      *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
@@ -455,9 +455,9 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * right join语句
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $criteria
-     * @param string       $alias
+     * @param string $alias
      *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
@@ -474,7 +474,7 @@ class QueryBuilder implements QueryBuilderInterface
      * where语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      * @param string $connector
      *
@@ -571,6 +571,10 @@ class QueryBuilder implements QueryBuilderInterface
                 list($column, , $min, $max) = $condition;
                 $this->whereNotBetween($column, $min, $max);
                 break;
+            default:
+                list($column, $operator, $value) = $condition;
+                $this->andWhere($column, $value, $operator);
+                break;
         }
     }
 
@@ -578,7 +582,7 @@ class QueryBuilder implements QueryBuilderInterface
      * where and 语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      *
      * @return QueryBuilder
@@ -616,7 +620,7 @@ class QueryBuilder implements QueryBuilderInterface
      * where or 语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      *
      * @return QueryBuilder
@@ -632,7 +636,7 @@ class QueryBuilder implements QueryBuilderInterface
      * where in 语句
      *
      * @param string $column
-     * @param array  $values
+     * @param array $values
      * @param string $connector
      *
      * @return QueryBuilder
@@ -650,7 +654,7 @@ class QueryBuilder implements QueryBuilderInterface
      * where not in 语句
      *
      * @param string $column
-     * @param array  $values
+     * @param array $values
      * @param string $connector
      *
      * @return QueryBuilder
@@ -668,8 +672,8 @@ class QueryBuilder implements QueryBuilderInterface
      * between语句
      *
      * @param string $column
-     * @param mixed  $min
-     * @param mixed  $max
+     * @param mixed $min
+     * @param mixed $max
      * @param string $connector
      *
      * @return QueryBuilder
@@ -685,8 +689,8 @@ class QueryBuilder implements QueryBuilderInterface
      * not between语句
      *
      * @param string $column
-     * @param mixed  $min
-     * @param mixed  $max
+     * @param mixed $min
+     * @param mixed $max
      * @param string $connector
      *
      * @return QueryBuilder
@@ -702,7 +706,7 @@ class QueryBuilder implements QueryBuilderInterface
      * having语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      * @param string $connector
      *
@@ -719,7 +723,7 @@ class QueryBuilder implements QueryBuilderInterface
      * having and 语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      *
      * @return QueryBuilder
@@ -735,7 +739,7 @@ class QueryBuilder implements QueryBuilderInterface
      * having or 语句
      *
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      *
      * @return QueryBuilder
@@ -751,7 +755,7 @@ class QueryBuilder implements QueryBuilderInterface
      * having in 语句
      *
      * @param string $column
-     * @param array  $values
+     * @param array $values
      * @param string $connector
      *
      * @return QueryBuilder
@@ -767,7 +771,7 @@ class QueryBuilder implements QueryBuilderInterface
      * having not in 语句
      *
      * @param string $column
-     * @param array  $values
+     * @param array $values
      * @param string $connector
      *
      * @return QueryBuilder
@@ -783,8 +787,8 @@ class QueryBuilder implements QueryBuilderInterface
      * having between语句
      *
      * @param string $column
-     * @param mixed  $min
-     * @param mixed  $max
+     * @param mixed $min
+     * @param mixed $max
      * @param string $connector
      *
      * @return QueryBuilder
@@ -800,8 +804,8 @@ class QueryBuilder implements QueryBuilderInterface
      * having not between语句
      *
      * @param string $column
-     * @param mixed  $min
-     * @param mixed  $max
+     * @param mixed $min
+     * @param mixed $max
      * @param string $connector
      *
      * @return QueryBuilder
@@ -847,7 +851,7 @@ class QueryBuilder implements QueryBuilderInterface
     {
         $this->groupBy[] = [
             'column' => $column,
-            'order'  => $order,
+            'order' => $order,
         ];
 
         return $this;
@@ -865,7 +869,7 @@ class QueryBuilder implements QueryBuilderInterface
     {
         $this->orderBy[] = [
             'column' => $column,
-            'order'  => $order,
+            'order' => $order,
         ];
 
         return $this;
@@ -881,7 +885,7 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function limit(int $limit, $offset = 0): QueryBuilder
     {
-        $this->limit['limit']  = $limit;
+        $this->limit['limit'] = $limit;
         $this->limit['offset'] = $offset;
 
         return $this;
@@ -890,9 +894,9 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * 设置参数
      *
-     * @param mixed  $key   参数名称整数和字符串，(?n|:name)
-     * @param mixed  $value 值
-     * @param string $type  类型，默认按照$value传值的类型
+     * @param mixed $key 参数名称整数和字符串，(?n|:name)
+     * @param mixed $value 值
+     * @param string $type 类型，默认按照$value传值的类型
      *
      * @return QueryBuilder
      * @throws \Swoft\Db\Exception\DbException
@@ -938,7 +942,7 @@ class QueryBuilder implements QueryBuilderInterface
             } elseif (\count($parameter) == 2) {
                 list($key, $value) = $parameter;
             } elseif (!\is_array($parameter)) {
-                $key   = $index;
+                $key = $index;
                 $value = $parameter;
             }
 
@@ -997,7 +1001,7 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * 括号条件组拼
      *
-     * @param array  $criteria
+     * @param array $criteria
      * @param string $bracket
      * @param string $connector
      *
@@ -1006,7 +1010,7 @@ class QueryBuilder implements QueryBuilderInterface
     private function bracketCriteria(array &$criteria, string $bracket = self::BRACKET_OPEN, string $connector = self::LOGICAL_AND): QueryBuilder
     {
         $criteria[] = [
-            'bracket'   => $bracket,
+            'bracket' => $bracket,
             'connector' => $connector,
         ];
 
@@ -1016,10 +1020,10 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * join数据组装
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $criteria
-     * @param string       $type
-     * @param string       $alias
+     * @param string $type
+     * @param string $alias
      *
      * @return QueryBuilder
      */
@@ -1032,10 +1036,10 @@ class QueryBuilder implements QueryBuilderInterface
         }
 
         $this->join[] = [
-            'table'    => $table,
+            'table' => $table,
             'criteria' => $criteria,
-            'type'     => $type,
-            'alias'    => $alias,
+            'type' => $type,
+            'alias' => $alias,
         ];
 
         return $this;
@@ -1044,9 +1048,9 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * 条件组装
      *
-     * @param array  $criteria
+     * @param array $criteria
      * @param string $column
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $operator
      * @param string $connector
      *
@@ -1058,11 +1062,12 @@ class QueryBuilder implements QueryBuilderInterface
         $value,
         string $operator = self::OPERATOR_EQ,
         string $connector = self::LOGICAL_AND
-    ): QueryBuilder {
+    ): QueryBuilder
+    {
         $criteria[] = [
-            'column'    => $column,
-            'value'     => $value,
-            'operator'  => $operator,
+            'column' => $column,
+            'value' => $value,
+            'operator' => $operator,
             'connector' => $connector,
         ];
 
@@ -1453,10 +1458,10 @@ class QueryBuilder implements QueryBuilderInterface
      */
     protected function getAllFields(): array
     {
-        $tableName    = $this->getTableName();
-        $entities     = EntityCollector::getCollector();
-        $entityClass  = $entities[$tableName];
-        $entityFields = $entities[$entityClass]['field']??[];
+        $tableName = $this->getTableName();
+        $entities = EntityCollector::getCollector();
+        $entityClass = $entities[$tableName];
+        $entityFields = $entities[$entityClass]['field'] ?? [];
         $entityFields = array_column($entityFields, 'column');
 
         return $entityFields;
@@ -1476,7 +1481,7 @@ class QueryBuilder implements QueryBuilderInterface
 
             if (!empty($result) && empty($this->join)) {
                 $tableName = $this->getTableName();
-                $result    = EntityHelper::formatListByType($result, $tableName);
+                $result = EntityHelper::formatListByType($result, $tableName);
             }
 
             return $result;
