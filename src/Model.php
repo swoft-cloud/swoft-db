@@ -264,7 +264,11 @@ class Model implements \ArrayAccess, \Iterator, Arrayable,\JsonSerializable
      * @param array $attributes
      *
      * $attributes = [
-     *     'name' => $value
+     *     'userName' => $value
+     * ]
+     * or
+     * $attributes = [
+     *     'user_name' => $value
      * ]
      *
      * @return \Swoft\Db\Model
@@ -272,7 +276,14 @@ class Model implements \ArrayAccess, \Iterator, Arrayable,\JsonSerializable
     public function fill(array $attributes): self
     {
         foreach ($attributes as $name => $value) {
-            $methodName = sprintf('set%s', ucfirst($name));
+            if (1 === preg_match('/_/', $name)) {
+                $nameArr = array_map(function ($row) {
+                    return ucfirst($row);
+                }, explode('_', $name));
+                $methodName = sprintf('set%s', implode('', $nameArr));
+            } else {
+                $methodName = sprintf('set%s', ucfirst($name));
+            }
             if (method_exists($this, $methodName)) {
                 $this->$methodName($value);
             }
