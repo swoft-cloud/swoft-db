@@ -276,14 +276,7 @@ class Model implements \ArrayAccess, \Iterator, Arrayable,\JsonSerializable
     public function fill(array $attributes): self
     {
         foreach ($attributes as $name => $value) {
-            if (1 === preg_match('/_/', $name)) {
-                $nameArr = array_map(function ($row) {
-                    return ucfirst($row);
-                }, explode('_', $name));
-                $methodName = sprintf('set%s', implode('', $nameArr));
-            } else {
-                $methodName = sprintf('set%s', ucfirst($name));
-            }
+            $methodName = StringHelper::camel(sprintf('set_%s', $name));
             if (method_exists($this, $methodName)) {
                 $this->$methodName($value);
             }
