@@ -82,6 +82,7 @@ use function bean;
  * @method static Builder leftJoin(string $table, Closure|string $first, string $operator = null, string $second = null)
  * @method static Builder leftJoinWhere(string $table, string $first, string $operator, string $second)
  * @method static Builder leftJoinSub(Closure|QueryBuilder|string $query, string $as, string $first, string $operator = null, string $second = null)
+ * @method static Builder lockForUpdate()
  * @method static Builder rightJoin(string $table, Closure|string $first, string $operator = null, string $second = null)
  * @method static Builder rightJoinWhere(string $table, string $first, string $operator, string $second)
  * @method static Builder rightJoinSub(Closure|QueryBuilder|string $query, string $as, string $first, string $operator = null, string $second = null)
